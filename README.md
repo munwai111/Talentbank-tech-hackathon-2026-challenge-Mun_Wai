@@ -8,7 +8,7 @@ Career OS is a hiring platform that treats your **skills as your résumé** — 
 
 ## Live Demo
 
-**Vercel:** _(deploy URL — added before final submission)_
+**Vercel:** https://career-os-dusky.vercel.app
 
 **Demo accounts:**
 - Candidate: sign up at `/sign-up`, choose Candidate
