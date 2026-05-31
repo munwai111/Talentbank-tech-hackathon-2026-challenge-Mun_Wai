@@ -141,40 +141,40 @@ function buildPathPrompt(input: PathInput): string {
   return context
 }
 
-// ── Main export ───────────────────────────────────────────────────────────────
+// ── Streaming export ──────────────────────────────────────────────────────────
+// Returns a ReadableStream of raw text tokens from Claude.
+// The caller (route handler) pipes this directly to the HTTP response.
+// The client accumulates all chunks and parses the JSON when the stream ends.
+//
+// Using streaming instead of a blocking response gives us 25s on Vercel Hobby
+// (vs 10s for non-streaming Node.js functions) — same mechanism the AI Coach uses.
 
-export async function generateCareerPaths(input: PathInput): Promise<CareerPath[]> {
+export function streamCareerPaths(input: PathInput): ReadableStream<Uint8Array> {
   const prompt = buildPathPrompt(input)
+  const encoder = new TextEncoder()
 
-  const response = await anthropic.messages.create({
-    model: 'claude-haiku-4-5',
-    max_tokens: 1400,  // 3 path objects on Edge — kept tight so Haiku completes in <20s
-    system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
-    messages: [{ role: 'user', content: prompt }],
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        const stream = anthropic.messages.stream({
+          model: 'claude-haiku-4-5',
+          max_tokens: 1400,
+          system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+          messages: [{ role: 'user', content: prompt }],
+        })
+
+        for await (const event of stream) {
+          if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+            controller.enqueue(encoder.encode(event.delta.text))
+          }
+        }
+      } catch (err) {
+        // Emit a JSON error object so the client can display it
+        const msg = err instanceof Error ? err.message : 'Path generation failed'
+        controller.enqueue(encoder.encode(JSON.stringify({ error: msg })))
+      } finally {
+        controller.close()
+      }
+    },
   })
-
-  // Guard against empty content (safety refusal, API hiccup)
-  const firstBlock = response.content[0]
-  if (!firstBlock || firstBlock.type !== 'text') {
-    throw new Error('Claude returned no text content — try again')
-  }
-
-  const raw = firstBlock.text.trim()
-
-  // Strip any accidental markdown fences
-  const json = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '')
-
-  let parsed: PathsResponse
-  try {
-    const result = JSON.parse(json) as unknown
-    // Validate shape — Claude might return a top-level array or missing `paths` key
-    if (typeof result !== 'object' || result === null || !Array.isArray((result as PathsResponse).paths)) {
-      throw new Error('Unexpected response shape from Claude')
-    }
-    parsed = result as PathsResponse
-  } catch (err) {
-    throw new Error(`Failed to parse AI response: ${err instanceof Error ? err.message : String(err)}`)
-  }
-
-  return parsed.paths
 }

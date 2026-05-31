@@ -134,14 +134,42 @@ export default function PathsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Extract the outermost JSON object from accumulated stream text.
+  // Claude occasionally emits a markdown fence or prose prefix despite instructions.
+  function extractJSON(raw: string): string {
+    const start = raw.indexOf('{')
+    const end = raw.lastIndexOf('}')
+    if (start === -1 || end === -1 || start >= end) throw new Error('No JSON object found in response')
+    return raw.slice(start, end + 1)
+  }
+
   async function fetchPaths() {
     setLoading(true)
     setError(null)
     try {
       const res = await fetch('/api/candidate/paths')
-      const data = await res.json() as { paths?: CareerPath[]; error?: string }
-      if (!res.ok) throw new Error(data.error ?? 'Generation failed')
-      setPaths(data.paths ?? [])
+      if (!res.ok || !res.body) {
+        const data = await res.json().catch(() => ({})) as { error?: string }
+        throw new Error(data.error ?? 'Generation failed')
+      }
+
+      // Accumulate streaming tokens — same pattern as AI Coach
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let accumulated = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        accumulated += decoder.decode(value, { stream: true })
+      }
+
+      // Parse the complete JSON from accumulated text
+      const json = extractJSON(accumulated)
+      const parsed = JSON.parse(json) as { paths?: CareerPath[]; error?: string }
+
+      if (parsed.error) throw new Error(parsed.error)
+      setPaths(parsed.paths ?? [])
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     } finally {

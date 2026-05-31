@@ -4,10 +4,9 @@
 // unpdf bundles pdfjs-dist which uses process.release.name (Node.js-only global).
 // Vercel's Edge bundler rejects this, so PDF processing lives here on Node.js.
 //
-// Node.js Hobby plan limit: 10 seconds.
-// Haiku at ~150 tok/s with 1400 max_tokens completes in ~9s — within the window.
-// Very large PDFs or slow API responses may still timeout; users should retry
-// or use the Paste Text option for more reliable results.
+// Timeout: streaming responses get 25s on Vercel Hobby (vs 10s non-streaming).
+// Text is extracted from the PDF synchronously, then Claude streams the JSON.
+// maxDuration = 25 signals this intent to Vercel.
 //
 // See DECISIONS.md ADR-001 for the model choice rationale.
 
@@ -15,9 +14,10 @@ import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { extractText } from 'unpdf'
 import { createServerClient } from '@/lib/supabase/server'
-import { extractProfileFromText } from '@/lib/ai/profile-extractor'
+import { streamProfileExtraction } from '@/lib/ai/profile-extractor'
 
 export const dynamic = 'force-dynamic'
+export const maxDuration = 25
 
 export async function POST(req: Request) {
   const { userId } = await auth()
@@ -51,7 +51,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'PDF must be under 5 MB' }, { status: 400 })
   }
 
-  // Extract text from PDF using unpdf (Node.js only — uses pdfjs-dist internally)
+  // Extract text from PDF (sync step, then stream Claude's response)
   const arrayBuffer = await file.arrayBuffer()
   const { text: pages } = await extractText(new Uint8Array(arrayBuffer), { mergePages: true })
   const rawText = Array.isArray(pages) ? pages.join('\n') : (pages as string)
@@ -63,20 +63,19 @@ export async function POST(req: Request) {
     }, { status: 422 })
   }
 
-  try {
-    const extracted = await extractProfileFromText(
-      rawText,
-      'resume',
-      existingProfile
-        ? { name: existingProfile.name, location: existingProfile.location ?? undefined }
-        : undefined,
-    )
-    return NextResponse.json({ extracted })
-  } catch (err) {
-    console.error('[import/pdf] extraction failed:', err)
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'AI extraction failed — please try again' },
-      { status: 500 }
-    )
-  }
+  const profileContext = existingProfile
+    ? { name: existingProfile.name, location: existingProfile.location ?? undefined }
+    : undefined
+
+  // Stream Claude's extraction tokens to the client.
+  // Client accumulates all chunks and parses the complete JSON when stream ends.
+  const stream = streamProfileExtraction(rawText, 'resume', profileContext)
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked',
+      'Cache-Control': 'no-cache',
+    },
+  })
 }

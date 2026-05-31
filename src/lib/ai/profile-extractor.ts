@@ -147,15 +147,14 @@ function extractJSONObject(raw: string): string {
   return raw.slice(start, end + 1)
 }
 
-// ── Main extraction function ──────────────────────────────────────────────────
+// ── Prompt builder (shared by streaming + non-streaming paths) ────────────────
 
-export async function extractProfileFromText(
+function buildExtractionPrompt(
   rawText: string,
   sourceHint?: 'resume' | 'linkedin' | 'seek' | 'website' | 'unknown',
   existingProfile?: { name?: string; location?: string }
-): Promise<ExtractedProfile> {
-
-  const userPrompt = `Extract the COMPLETE profile from this ${sourceHint ?? 'document'}. Capture all work experience entries and education entries in full — do not summarise or truncate.
+): string {
+  return `Extract the COMPLETE profile from this ${sourceHint ?? 'document'}. Capture all work experience entries and education entries in full — do not summarise or truncate.
 
 ${existingProfile ? `Context: User's current name is "${existingProfile.name ?? 'unknown'}", located in "${existingProfile.location ?? 'unknown'}". Use this to fill any gaps.` : ''}
 
@@ -193,6 +192,55 @@ Return a JSON object matching exactly this schema:
 --- SOURCE CONTENT ---
 ${rawText.slice(0, 12000)}
 --- END CONTENT ---`
+}
+
+// ── Streaming extraction ──────────────────────────────────────────────────────
+// Returns a ReadableStream of raw text tokens from Claude.
+// Route handlers pipe this to the HTTP response; clients accumulate and parse JSON.
+// Streaming gives 25s on Vercel Hobby instead of 10s for non-streaming responses.
+
+export function streamProfileExtraction(
+  rawText: string,
+  sourceHint?: 'resume' | 'linkedin' | 'seek' | 'website' | 'unknown',
+  existingProfile?: { name?: string; location?: string }
+): ReadableStream<Uint8Array> {
+  const userPrompt = buildExtractionPrompt(rawText, sourceHint, existingProfile)
+  const encoder = new TextEncoder()
+
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        const stream = anthropic.messages.stream({
+          model: 'claude-haiku-4-5',
+          max_tokens: 1800,
+          system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+          messages: [{ role: 'user', content: userPrompt }],
+        })
+
+        for await (const event of stream) {
+          if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+            controller.enqueue(encoder.encode(event.delta.text))
+          }
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Extraction failed'
+        controller.enqueue(encoder.encode(JSON.stringify({ error: msg })))
+      } finally {
+        controller.close()
+      }
+    },
+  })
+}
+
+// ── Non-streaming extraction (kept for internal use / tests) ──────────────────
+
+export async function extractProfileFromText(
+  rawText: string,
+  sourceHint?: 'resume' | 'linkedin' | 'seek' | 'website' | 'unknown',
+  existingProfile?: { name?: string; location?: string }
+): Promise<ExtractedProfile> {
+
+  const userPrompt = buildExtractionPrompt(rawText, sourceHint, existingProfile)
 
   const response = await anthropic.messages.create({
     model: 'claude-haiku-4-5',

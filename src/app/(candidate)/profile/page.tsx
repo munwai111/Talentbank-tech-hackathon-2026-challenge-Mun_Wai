@@ -181,6 +181,9 @@ export default function ProfilePage() {
   }
 
   // ── AI profile import ──────────────────────────────────────────
+  // All three modes (PDF, URL, text) now return streaming responses.
+  // Non-200 errors (blocked URL, bad request) are JSON and handled before streaming.
+  // On 200, we accumulate the full stream, then parse the ExtractedProfile JSON.
   async function extractProfile() {
     setExtracting(true)
     setExtractedProfile(null)
@@ -194,7 +197,6 @@ export default function ProfilePage() {
         if (!importFile) { setImportError('Please select a PDF file.'); setExtracting(false); return }
         const fd = new FormData()
         fd.append('file', importFile)
-        // PDF route is Node.js (unpdf is not Edge-compatible); URL/text route is Edge
         res = await fetch('/api/candidate/import/pdf', { method: 'POST', body: fd })
       } else if (importMode === 'url') {
         if (!importUrl.trim()) { setImportError('Please enter a URL.'); setExtracting(false); return }
@@ -212,16 +214,40 @@ export default function ProfilePage() {
         })
       }
 
-      const data = await res.json()
+      // Non-200: JSON error (blocked URL, validation failure, auth error)
       if (!res.ok) {
-        setImportError(data.message ?? data.error ?? 'Extraction failed — please try again.')
+        const err = await res.json().catch(() => ({})) as { error?: string; message?: string }
+        setImportError(err.message ?? err.error ?? 'Extraction failed — please try again.')
+        return
+      }
+
+      // 200: streaming response — accumulate all chunks then parse JSON
+      if (!res.body) throw new Error('Empty response from server')
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let accumulated = ''
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        accumulated += decoder.decode(value, { stream: true })
+      }
+
+      // Extract outermost JSON object (Claude occasionally adds prose despite instructions)
+      const start = accumulated.indexOf('{')
+      const end = accumulated.lastIndexOf('}')
+      if (start === -1 || end === -1 || start >= end) throw new Error('No valid response received')
+      const data = JSON.parse(accumulated.slice(start, end + 1)) as ExtractedProfile & { error?: string }
+
+      if (data.error) {
+        setImportError(data.error)
       } else {
-        setExtractedProfile(data.extracted)
+        setExtractedProfile(data)
       }
     } catch {
       setImportError('Network error — please try again.')
+    } finally {
+      setExtracting(false)
     }
-    setExtracting(false)
   }
 
   async function applyExtracted() {

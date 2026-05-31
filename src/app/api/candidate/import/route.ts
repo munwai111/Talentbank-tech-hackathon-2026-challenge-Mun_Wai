@@ -1,17 +1,20 @@
-// POST /api/candidate/import
-// Handles URL and paste-text import modes only.
-// PDF uploads are handled by /api/candidate/import/pdf (Node.js runtime — unpdf is not Edge-compatible).
+// POST /api/candidate/import — URL and paste-text import modes
+// PDF uploads use /api/candidate/import/pdf (separate route, same streaming pattern).
 //
-// Runtime: Edge — gives 25s on Vercel Hobby vs 10s for Node.js.
-// unpdf uses process.release.name (Node.js global) which Vercel's Edge bundler rejects.
+// Runtime: Node.js (not Edge — Clerk/Supabase/Anthropic SDK have Node.js-specific
+// code paths that Vercel's Edge bundler rejects at deploy time).
+//
+// Timeout: streaming responses get 25s on Vercel Hobby (vs 10s non-streaming).
+// maxDuration = 25 signals this intent. The client accumulates streamed text
+// and parses JSON when the stream ends.
 
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-import { extractProfileFromText, extractTextFromUrl } from '@/lib/ai/profile-extractor'
+import { streamProfileExtraction, extractTextFromUrl } from '@/lib/ai/profile-extractor'
 
-export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
+export const maxDuration = 25
 
 export async function POST(req: Request) {
   const { userId } = await auth()
@@ -61,7 +64,7 @@ export async function POST(req: Request) {
 
   } else {
     return NextResponse.json(
-      { error: 'Use this endpoint for url or text. For PDF upload, use /api/candidate/import/pdf' },
+      { error: 'Provide url or text. For PDF, use /api/candidate/import/pdf' },
       { status: 400 }
     )
   }
@@ -73,20 +76,19 @@ export async function POST(req: Request) {
     }, { status: 422 })
   }
 
-  try {
-    const extracted = await extractProfileFromText(
-      rawText,
-      sourceHint,
-      existingProfile
-        ? { name: existingProfile.name, location: existingProfile.location ?? undefined }
-        : undefined,
-    )
-    return NextResponse.json({ extracted })
-  } catch (err) {
-    console.error('[import] extraction failed:', err)
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : 'AI extraction failed — please try again' },
-      { status: 500 }
-    )
-  }
+  const profileContext = existingProfile
+    ? { name: existingProfile.name, location: existingProfile.location ?? undefined }
+    : undefined
+
+  // Stream Claude's extraction tokens to the client.
+  // Client accumulates and parses the complete JSON when stream ends.
+  const stream = streamProfileExtraction(rawText, sourceHint, profileContext)
+
+  return new Response(stream, {
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Transfer-Encoding': 'chunked',
+      'Cache-Control': 'no-cache',
+    },
+  })
 }
