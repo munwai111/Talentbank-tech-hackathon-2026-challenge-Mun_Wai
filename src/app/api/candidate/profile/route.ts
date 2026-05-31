@@ -21,7 +21,12 @@ export async function GET() {
   // skills(*) and portfolio_items(*) fetch all columns from those tables
   const { data: profile } = await supabase
     .from('candidate_profiles')
-    .select('*, skills(*), portfolio_items(*)')
+    .select(`
+      id, user_id, name, headline, bio, location, github_url, linkedin_url,
+      salary_min, salary_max, availability, embedding, career_data, created_at, updated_at,
+      skills(id, candidate_id, name, level, source, evidence_url, created_at),
+      portfolio_items(id, candidate_id, title, description, url, repo_url, tech_stack, impact, ai_summary, created_at)
+    `)
     .eq('user_id', user.id)
     .single()
 

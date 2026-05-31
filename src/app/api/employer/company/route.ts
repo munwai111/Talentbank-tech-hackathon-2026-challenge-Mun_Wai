@@ -18,7 +18,10 @@ export async function GET() {
   }
 
   const { data: company } = await supabase
-    .from('companies').select('*').eq('user_id', user.id).single()
+    .from('companies')
+    .select('id, user_id, name, industry, size, description, website, logo_url, culture_data, created_at')
+    .eq('user_id', user.id)
+    .single()
 
   return NextResponse.json({ company })
 }

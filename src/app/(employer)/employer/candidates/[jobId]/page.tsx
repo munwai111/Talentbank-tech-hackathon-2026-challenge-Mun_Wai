@@ -54,7 +54,8 @@ export default async function CandidatesForJobPage({
     .from('companies').select('id').eq('user_id', dbUser.id).single()
 
   const { data: job } = await supabase
-    .from('jobs').select('*')
+    .from('jobs')
+    .select('id, title, description, required_skills, nice_to_have_skills, salary_min, salary_max, location, remote, status')
     .eq('id', jobId)
     .eq('company_id', company?.id ?? '')
     .single()

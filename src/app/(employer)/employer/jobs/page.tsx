@@ -22,7 +22,8 @@ export default async function EmployerJobsPage() {
     .from('companies').select('id').eq('user_id', dbUser.id).single()
 
   const { data: jobs } = await supabase
-    .from('jobs').select('*')
+    .from('jobs')
+    .select('id, title, status, location, remote, required_skills, created_at')
     .eq('company_id', company?.id ?? '')
     .order('created_at', { ascending: false })
 
