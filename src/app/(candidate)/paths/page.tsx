@@ -1,0 +1,217 @@
+'use client'
+
+import { useEffect, useState } from 'react'
+import type { CareerPath, PathMatchType } from '@/lib/ai/path-navigator'
+
+// ── Visual config per match type ─────────────────────────────────────────────
+
+type MatchConfig = {
+  label: string
+  border: string
+  badge: string
+  dot: string
+}
+
+const MATCH_CONFIG: Record<PathMatchType, MatchConfig> = {
+  strong:   { label: 'Strong Match',   border: 'border-t-emerald-500', badge: 'bg-emerald-100 text-emerald-800', dot: 'bg-emerald-500' },
+  emerging: { label: 'Emerging Path',  border: 'border-t-amber-400',   badge: 'bg-amber-100 text-amber-800',   dot: 'bg-amber-400'   },
+  stretch:  { label: 'Stretch Goal',   border: 'border-t-blue-500',    badge: 'bg-blue-100 text-blue-800',     dot: 'bg-blue-500'    },
+}
+
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function SkillChip({ name, variant }: { name: string; variant: 'have' | 'develop' }) {
+  const cls = variant === 'have'
+    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+    : 'bg-amber-50 text-amber-700 border border-amber-200'
+  return (
+    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${cls}`}>
+      {name}
+    </span>
+  )
+}
+
+function PathStats({ path }: { path: CareerPath }) {
+  const salary = `RM ${path.salary_min_myr.toLocaleString()} – ${path.salary_max_myr.toLocaleString()}/mo`
+  const timeline = `${path.timeline_months_min}–${path.timeline_months_max} months`
+  return (
+    <div className="flex gap-4 text-sm">
+      <div>
+        <p className="text-xs text-zinc-400 mb-0.5">Salary range</p>
+        <p className="font-semibold text-zinc-800">{salary}</p>
+      </div>
+      <div className="border-l pl-4">
+        <p className="text-xs text-zinc-400 mb-0.5">Typical timeline</p>
+        <p className="font-semibold text-zinc-800">{timeline}</p>
+      </div>
+    </div>
+  )
+}
+
+function SkillSection({ path }: { path: CareerPath }) {
+  return (
+    <div className="space-y-2">
+      {path.skills_you_have.length > 0 && (
+        <div>
+          <p className="text-xs text-zinc-400 mb-1">Skills you have</p>
+          <div className="flex flex-wrap gap-1">
+            {path.skills_you_have.map(s => <SkillChip key={s} name={s} variant="have" />)}
+          </div>
+        </div>
+      )}
+      {path.skills_to_develop.length > 0 && (
+        <div>
+          <p className="text-xs text-zinc-400 mb-1">Skills to develop</p>
+          <div className="flex flex-wrap gap-1">
+            {path.skills_to_develop.map(s => <SkillChip key={s} name={s} variant="develop" />)}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function PathCard({ path }: { path: CareerPath }) {
+  // Fallback for unexpected id values from AI (runtime safety — TypeScript only enforces at compile time)
+  const cfg = MATCH_CONFIG[path.id] ?? MATCH_CONFIG.emerging
+  return (
+    <div className={`bg-white rounded-xl border border-zinc-200 border-t-4 ${cfg.border} shadow-sm flex flex-col gap-5 p-6`}>
+      {/* Header */}
+      <div>
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.badge} mb-3`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
+          {cfg.label}
+        </span>
+        <h3 className="text-lg font-bold text-zinc-900">{path.title}</h3>
+        <p className="text-xs text-zinc-500 mt-1">{path.match_label}</p>
+        <p className="text-xs text-zinc-400 mt-1">
+          {path.company_types.join(' · ')}
+        </p>
+      </div>
+
+      <PathStats path={path} />
+      <SkillSection path={path} />
+
+      {/* Trade-off */}
+      <div className="bg-zinc-50 rounded-lg px-4 py-3 text-xs text-zinc-600 border-l-2 border-zinc-300">
+        <span className="font-semibold text-zinc-700">Trade-off: </span>
+        {path.trade_off}
+      </div>
+
+      {/* Navigation note */}
+      <p className="text-xs text-zinc-400 italic">{path.navigation_note}</p>
+
+      {/* CTA */}
+      <a
+        href="/jobs"
+        className="mt-auto inline-block text-center text-sm font-medium text-white bg-zinc-900 hover:bg-zinc-700 rounded-lg px-4 py-2 transition-colors"
+      >
+        Explore matching jobs →
+      </a>
+    </div>
+  )
+}
+
+function EmptyState() {
+  return (
+    <div className="text-center py-16">
+      <p className="text-4xl mb-4">🗺️</p>
+      <h2 className="text-lg font-semibold text-zinc-700 mb-2">No paths generated yet</h2>
+      <p className="text-sm text-zinc-400 max-w-sm mx-auto">
+        Add some skills to your profile first — the navigator needs at least a few to map realistic paths.
+      </p>
+      <a href="/profile" className="mt-6 inline-block text-sm font-medium text-blue-600 hover:underline">
+        Add skills to your vault →
+      </a>
+    </div>
+  )
+}
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+
+export default function PathsPage() {
+  const [paths, setPaths] = useState<CareerPath[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  async function fetchPaths() {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/candidate/paths')
+      const data = await res.json() as { paths?: CareerPath[]; error?: string }
+      if (!res.ok) throw new Error(data.error ?? 'Generation failed')
+      setPaths(data.paths ?? [])
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchPaths() }, [])
+
+  return (
+    <div className="max-w-5xl mx-auto px-6 py-10">
+      {/* Page header */}
+      <div className="flex items-start justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-zinc-900">Career Path Navigator</h1>
+          <p className="text-sm text-zinc-500 mt-1">
+            3 directions mapped from your skills — not predictions, navigation.
+          </p>
+        </div>
+        <button
+          onClick={fetchPaths}
+          disabled={loading}
+          className="text-sm font-medium text-zinc-600 border border-zinc-200 rounded-lg px-4 py-2 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
+        >
+          {loading ? 'Generating…' : '↺ Refresh paths'}
+        </button>
+      </div>
+
+      {/* Loading skeleton */}
+      {loading && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[0, 1, 2].map(i => (
+            <div key={i} className="bg-white rounded-xl border border-zinc-200 border-t-4 border-t-zinc-200 p-6 animate-pulse space-y-4">
+              <div className="h-4 bg-zinc-100 rounded w-24" />
+              <div className="h-6 bg-zinc-100 rounded w-3/4" />
+              <div className="h-4 bg-zinc-100 rounded w-1/2" />
+              <div className="h-12 bg-zinc-100 rounded" />
+              <div className="h-16 bg-zinc-100 rounded" />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Error state */}
+      {!loading && error && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+          <p className="text-sm text-red-700 font-medium mb-3">{error}</p>
+          <button onClick={fetchPaths} className="text-sm text-red-600 hover:underline">
+            Try again
+          </button>
+        </div>
+      )}
+
+      {/* Paths grid */}
+      {!loading && !error && paths.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {paths.map(path => <PathCard key={path.id} path={path} />)}
+        </div>
+      )}
+
+      {/* Empty state */}
+      {!loading && !error && paths.length === 0 && <EmptyState />}
+
+      {/* Disclaimer — only when paths are visible (not during error state) */}
+      {!loading && !error && paths.length > 0 && (
+        <p className="mt-8 text-xs text-zinc-400 text-center max-w-2xl mx-auto">
+          Paths are generated from aggregated market data and your current skill profile.
+          They show where similar professionals typically move — not a guarantee of any individual outcome.
+        </p>
+      )}
+    </div>
+  )
+}

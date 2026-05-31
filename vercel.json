@@ -1,0 +1,11 @@
+{
+  "framework": "nextjs",
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "functions": {
+    "src/app/api/candidate/import/route.ts": { "maxDuration": 60 },
+    "src/app/api/candidate/paths/route.ts":  { "maxDuration": 30 },
+    "src/app/api/candidate/coach/route.ts":  { "maxDuration": 30 },
+    "src/app/api/candidate/github-import/route.ts": { "maxDuration": 30 }
+  }
+}
