@@ -194,7 +194,8 @@ export default function ProfilePage() {
         if (!importFile) { setImportError('Please select a PDF file.'); setExtracting(false); return }
         const fd = new FormData()
         fd.append('file', importFile)
-        res = await fetch('/api/candidate/import', { method: 'POST', body: fd })
+        // PDF route is Node.js (unpdf is not Edge-compatible); URL/text route is Edge
+        res = await fetch('/api/candidate/import/pdf', { method: 'POST', body: fd })
       } else if (importMode === 'url') {
         if (!importUrl.trim()) { setImportError('Please enter a URL.'); setExtracting(false); return }
         res = await fetch('/api/candidate/import', {

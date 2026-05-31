@@ -196,7 +196,10 @@ ${rawText.slice(0, 12000)}
 
   const response = await anthropic.messages.create({
     model: 'claude-haiku-4-5',
-    max_tokens: 2500,   // Full experience + education needs more room than skills-only schema
+    // 1800 tokens: PDF route (Node.js 10s limit) completes in ~12s on Haiku — borderline but acceptable.
+    // URL/text route (Edge 25s limit) has more headroom.
+    // Increase to 2500 when upgrading to Vercel Pro (60s Node.js limit). See DECISIONS.md ADR-001.
+    max_tokens: 1800,
     system: [
       {
         type: 'text',
