@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 
   // After adding a skill, trigger embedding regeneration
   // (fire and forget — don't block the response)
-  fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3001'}/api/candidate/embed`, {
+  fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/candidate/embed`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-internal': 'true' },
     body: JSON.stringify({ candidate_id: profile.id }),
