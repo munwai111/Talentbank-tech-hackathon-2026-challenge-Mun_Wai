@@ -14,6 +14,27 @@ export type UserRole = 'candidate' | 'employer'
 // These live in candidate_profiles.career_data and companies.culture_data.
 // JSONB lets us evolve the shape without DB migrations for every new field.
 
+// ── Imported history blobs (from resume / paste-text import) ─────────────────
+// Stored as JSONB in candidate_profiles.work_experience and .education.
+// Imported by the AI extraction pipeline; not manually edited by the user.
+
+export type WorkExperienceEntry = {
+  title: string
+  company: string
+  start_date: string | null        // "2021-03" format where possible
+  end_date: string | null          // null = current role
+  duration_months: number | null   // AI-estimated from dates
+  description: string | null       // Key achievements / responsibilities
+  key_technologies: string[]       // Tech stack mentioned in this role
+}
+
+export type EducationEntry = {
+  institution: string
+  degree: string | null            // e.g. "Bachelor of Science"
+  field: string | null             // e.g. "Computer Science"
+  graduation_year: number | null
+}
+
 export type CareerData = {
   // Current situation
   current_situation: 'student' | 'fresh_grad' | 'employed' | 'career_changer' | null
@@ -109,7 +130,9 @@ export type Database = {
           salary_max: number | null
           availability: 'immediate' | 'one_month' | 'three_months' | 'not_looking'
           embedding: number[] | null  // pgvector — generated from skills
-          career_data: CareerData | null  // JSONB — rich career identity profile
+          career_data: CareerData | null          // JSONB — rich career identity profile
+          work_experience: WorkExperienceEntry[] | null  // JSONB — imported work history
+          education: EducationEntry[] | null             // JSONB — imported education
           created_at: string
           updated_at: string
         }
@@ -127,6 +150,8 @@ export type Database = {
           availability?: 'immediate' | 'one_month' | 'three_months' | 'not_looking'
           embedding?: number[] | null
           career_data?: CareerData | null
+          work_experience?: WorkExperienceEntry[] | null
+          education?: EducationEntry[] | null
         }
         Update: {
           name?: string
@@ -140,6 +165,8 @@ export type Database = {
           availability?: 'immediate' | 'one_month' | 'three_months' | 'not_looking'
           embedding?: number[] | null
           career_data?: CareerData | null
+          work_experience?: WorkExperienceEntry[] | null
+          education?: EducationEntry[] | null
         }
         Relationships: [
           { foreignKeyName: 'candidate_profiles_user_id_fkey'; columns: ['user_id']; isOneToOne: true; referencedRelation: 'users'; referencedColumns: ['id'] }

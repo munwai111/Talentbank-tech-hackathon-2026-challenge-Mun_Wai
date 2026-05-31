@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
     const { data: profile } = await supabase
       .from('candidate_profiles')
-      .select('id, name, location, career_data')
+      .select('id, name, location, career_data, work_experience, education')
       .eq('user_id', user.id)
       .single()
 
@@ -65,6 +65,10 @@ export async function POST(req: Request) {
       situation: profile?.career_data?.current_situation ?? null,
       goal1Year: profile?.career_data?.goal_1_year ?? null,
       goal5Year: profile?.career_data?.goal_5_year ?? null,
+      dreamRole: profile?.career_data?.dream_role ?? null,
+      preferredIndustries: profile?.career_data?.preferred_industries ?? [],
+      workExperience: (profile?.work_experience ?? []) as CoachContext['workExperience'],
+      education: (profile?.education ?? []) as CoachContext['education'],
     }
 
     const stream = streamCoachResponse(messages, ctx)

@@ -2,9 +2,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Returns a ReadableStream so the API route can stream tokens to the client.
 // Prompt caching: coaching personality is cached (static); profile context is
-// passed as a second system block (dynamic, not cached).
+// passed as a second system block (dynamic, per user, not cached).
+//
+// Context depth: coach now receives full work history + education from the DB,
+// in addition to skills and career goals — enabling personalised, contextual
+// advice grounded in the candidate's actual career journey.
 
 import Anthropic from '@anthropic-ai/sdk'
+import type { WorkExperienceEntry, EducationEntry } from '@/types/database'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -24,6 +29,10 @@ export type CoachContext = {
   situation: string | null
   goal1Year: string | null
   goal5Year: string | null
+  dreamRole: string | null
+  preferredIndustries: string[]
+  workExperience: WorkExperienceEntry[]
+  education: EducationEntry[]
 }
 
 // ── Static coaching personality (prompt-cached) ───────────────────────────────
@@ -36,7 +45,8 @@ Your style:
 - Ask one focused follow-up question when needed — never fire 5 at once.
 - If a goal is unrealistic given the candidate's stage, say so clearly. Then give a concrete stepping-stone path.
 - Keep responses under 200 words unless the user asks for a deep dive.
-- Talk like a smart friend in tech, not a HR consultant. No jargon.`
+- Talk like a smart friend in tech, not a HR consultant. No jargon.
+- Use the candidate's work history and education to make advice contextual and personal — reference their actual experience.`
 
 // ── Profile context builder ───────────────────────────────────────────────────
 
@@ -45,16 +55,47 @@ function buildProfileContext(ctx: CoachContext): string {
     ? ctx.skills.map(s => `${s.name} (${s.level}/5)`).join(', ')
     : 'none listed yet'
 
+  const workHistory = ctx.workExperience.length > 0
+    ? ctx.workExperience.map(exp => {
+        const period = exp.start_date
+          ? `${exp.start_date} → ${exp.end_date ?? 'Present'}`
+          : exp.duration_months ? `~${Math.round(exp.duration_months / 12)} years` : ''
+        const tech = exp.key_technologies.length > 0 ? ` | Tech: ${exp.key_technologies.join(', ')}` : ''
+        return `  • ${exp.title} at ${exp.company}${period ? ` (${period})` : ''}${tech}${exp.description ? `\n    ${exp.description}` : ''}`
+      }).join('\n')
+    : '  (not yet provided)'
+
+  const educationHistory = ctx.education.length > 0
+    ? ctx.education.map(edu => {
+        const degree = [edu.degree, edu.field].filter(Boolean).join(' in ')
+        const year = edu.graduation_year ? `, ${edu.graduation_year}` : ''
+        return `  • ${degree || 'Qualification'} — ${edu.institution}${year}`
+      }).join('\n')
+    : '  (not yet provided)'
+
   return [
     `---`,
     `CANDIDATE: ${ctx.name}`,
     `Location: ${ctx.location ?? 'not specified'}`,
-    `Situation: ${ctx.situation ?? 'unknown'} | Role: ${ctx.currentRole ?? 'not specified'} | Experience: ${ctx.yearsExperience ?? 0} yrs`,
-    `Skills: ${skillList}`,
-    `1-year goal: ${ctx.goal1Year ?? 'not specified'}`,
-    `5-year goal: ${ctx.goal5Year ?? 'not specified'}`,
+    `Situation: ${ctx.situation ?? 'unknown'} | Experience: ${ctx.yearsExperience ?? 0} years`,
+    `Current/last role: ${ctx.currentRole ?? 'not specified'}`,
+    ``,
+    `SKILLS`,
+    skillList,
+    ``,
+    `WORK HISTORY`,
+    workHistory,
+    ``,
+    `EDUCATION`,
+    educationHistory,
+    ``,
+    `GOALS`,
+    `1-year: ${ctx.goal1Year ?? 'not specified'}`,
+    `5-year: ${ctx.goal5Year ?? 'not specified'}`,
+    `Dream role: ${ctx.dreamRole ?? 'not specified'}`,
+    `Preferred industries: ${ctx.preferredIndustries.join(', ') || 'not specified'}`,
     `---`,
-    `Reference this profile when giving advice. Be personalised.`,
+    `Reference this profile when giving advice. Be specific and personalised to their actual history.`,
   ].join('\n')
 }
 

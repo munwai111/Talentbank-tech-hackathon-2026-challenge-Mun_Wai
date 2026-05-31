@@ -34,7 +34,7 @@ export async function GET() {
     // skills.candidate_id → candidate_profiles.id (NOT users.id — different UUID).
     const { data: profile, error: profileError } = await supabase
       .from('candidate_profiles')
-      .select('id, location, career_data')
+      .select('id, location, career_data, work_experience, education')
       .eq('user_id', user.id)
       .single()
 
@@ -54,6 +54,8 @@ export async function GET() {
       skills: skillsData ?? [],
       career_data: profile.career_data ?? null,
       location: profile.location ?? null,
+      work_experience: (profile.work_experience ?? []) as PathInput['work_experience'],
+      education: (profile.education ?? []) as PathInput['education'],
     }
 
     const paths = await generateCareerPaths(input)

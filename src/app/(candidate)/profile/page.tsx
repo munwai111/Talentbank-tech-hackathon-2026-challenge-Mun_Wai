@@ -640,8 +640,16 @@ export default function ProfilePage() {
                         <p className="font-medium text-sm">{exp.title}</p>
                         <p className="text-xs text-zinc-500">
                           {exp.company}
-                          {exp.duration && ` · ${exp.duration}`}
+                          {exp.start_date && ` · ${exp.start_date} → ${exp.end_date ?? 'Present'}`}
                         </p>
+                        {exp.description && (
+                          <p className="text-xs text-zinc-400 mt-0.5 line-clamp-2">{exp.description}</p>
+                        )}
+                        {exp.key_technologies.length > 0 && (
+                          <p className="text-xs text-zinc-400 mt-0.5">
+                            {exp.key_technologies.slice(0, 5).join(' · ')}
+                          </p>
+                        )}
                       </div>
                     ))}
                   </div>

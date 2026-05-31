@@ -1,56 +1,70 @@
 // Profile Extraction Engine
-// ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 // One unified AI pipeline that takes raw text from ANY source
-// (PDF resume, LinkedIn page, Seek profile, personal website)
+// (PDF resume, LinkedIn paste, Seek profile, personal website)
 // and returns clean, structured, vetted profile data.
 //
-// Model: claude-haiku-4-5 (fast enough for Edge runtime <25s)
-// Schema: only fields we actually save — keeps tokens tight & fast
+// Model: claude-haiku-4-5 (Edge-runtime compatible, ~12–18s for 2000 tokens)
+//
+// Decision record: see DECISIONS.md — Haiku chosen for cost efficiency on
+// Vercel Hobby plan; upgrade path to Sonnet documented for future consideration.
+//
+// Schema: captures the full qualitative picture of the candidate —
+// skills (saved), work history (saved as JSONB), education (saved as JSONB),
+// bio fields (saved). All of this feeds into Path Navigator + AI Coach context.
 
 import Anthropic from '@anthropic-ai/sdk'
+import type { WorkExperienceEntry, EducationEntry } from '@/types/database'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-// ── Output types ──────────────────────────────────────────────
+// ── Output type ───────────────────────────────────────────────────────────────
+// Everything in this type is saved to the database (not just shown in preview).
+// Rich qualitative data gives AI Coach and Path Navigator full context about
+// the candidate's background, progression, and motivational patterns.
 
 export type ExtractedProfile = {
-  // Bio fields — saved to candidate_profiles
+  // ── Bio fields → saved to candidate_profiles ──────────────────────────────
   name: string | null
   headline: string | null
   bio: string | null
   location: string | null
   github_url: string | null
   linkedin_url: string | null
-  salary_min: number | null
+  salary_min: number | null   // MYR/year
   salary_max: number | null
 
-  // Skills — the most important output, saved to skills table
+  // ── Skills → saved to skills table (most important output) ────────────────
   skills: {
     name: string             // Normalised: "React" not "ReactJS"
     level: 1 | 2 | 3 | 4 | 5
-    evidence: string         // One-line reason for this level
-    source_type: 'explicit' | 'inferred'
+    evidence: string         // One-line rationale for this level
+    source_type: 'explicit' | 'inferred'  // Stated vs AI-inferred
   }[]
 
-  // Experience — preview only (shown to user to verify extraction accuracy)
-  // Not saved to DB, used only for skill level cross-checking
-  experience: {
-    title: string
-    company: string
-    duration: string | null  // e.g. "2021–2024" or "2 years"
-  }[]
+  // ── Work experience → saved as candidate_profiles.work_experience (JSONB) ──
+  // Captures the candidate's career progression, responsibilities, and
+  // technical context of each role — feeds AI Coach and Path Navigator.
+  experience: WorkExperienceEntry[]
 
-  // Quality signals
+  // ── Education → saved as candidate_profiles.education (JSONB) ─────────────
+  // Institution, degree, field, and year — used for background context
+  // and skill level calibration (e.g. CS degree → stronger theoretical base).
+  education: EducationEntry[]
+
+  // ── AI quality signals ─────────────────────────────────────────────────────
   confidence: 'high' | 'medium' | 'low'
-  warnings: string[]
+  warnings: string[]   // e.g. "Claimed Expert but only 6 months experience"
   source_type_detected: 'resume' | 'linkedin' | 'seek' | 'website' | 'unknown'
 }
 
-// ── System prompt (cached across all calls) ───────────────────
+// ── System prompt (prompt-cached — static across all extraction calls) ────────
 
-const SYSTEM_PROMPT = `You are a career data analyst for Career OS, a skills-first hiring platform in Southeast Asia.
+const SYSTEM_PROMPT = `You are a senior career data analyst and technical recruiter for Career OS, a skills-first hiring platform in Southeast Asia.
 
-Extract and intelligently vet profile information from any source: resume PDFs, LinkedIn text, portfolio websites, or plain text.
+Extract, structure, and INTELLIGENTLY VET profile information from any source: resumes, LinkedIn text, Seek profiles, personal websites, plain text.
+
+Your goal is to capture the candidate's FULL qualitative picture — not just a skills list, but their career progression, educational background, motivations (inferred from their trajectory), and contextual depth that helps AI systems understand who this person is, where they've come from, and where they're heading.
 
 ## Skill Extraction Rules
 
@@ -62,43 +76,67 @@ Extract and intelligently vet profile information from any source: resume PDFs, 
 - Always use the well-known canonical name
 
 **Skill level (1–5):**
-1 = Beginner: Mentioned once, no project evidence
-2 = Elementary: Used in coursework or minor personal projects
-3 = Intermediate: Multiple real projects or 1–2 years experience
-4 = Advanced: 3+ years, clear technical depth
-5 = Expert: Led others in this skill, open source, wrote about it
+1 = Beginner: Mentioned once, no real project evidence
+2 = Elementary: Coursework or minor personal projects only
+3 = Intermediate: Multiple real projects or 1–2 years hands-on
+4 = Advanced: 3+ years, technical depth evident, led implementations
+5 = Expert: Led teams, open source contributions, wrote about it, deep architecture decisions
 
-**Cross-checking (critical):**
-- Claim of Expert with <1 year → downgrade to Intermediate, add warning
-- Skill only in education (not work) → max level 2
-- No evidence of use → level 1, flag as unverified
+**Cross-checking (CRITICAL for calibration):**
+- Claimed "Expert" with <1 year experience → downgrade to Intermediate, add warning
+- Skill only in education context (not work) → max level 2
+- Skill listed but no evidence of actual use → level 1, flag as unverified
+- Senior/lead role descriptions → infer higher levels on relevant skills
 
-**Implicit inference:**
+**Implicit skill inference:**
 - "Built REST APIs" → add "REST API Design" (Intermediate)
 - "Deployed on AWS" → add "AWS" (level by description depth)
 - "Led a team of 5" → add "Team Leadership"
+- "Managed database performance" → add "Database Optimisation"
+- "Wrote technical specs" → add "Technical Documentation"
 
-**Deduplication:** keep only the highest-level instance per skill.
+**Deduplication:** keep only the highest-level instance per skill with combined evidence.
+
+## Work Experience Extraction
+
+For each role, extract:
+- title, company: exact as stated
+- start_date / end_date: "YYYY-MM" format where possible, null if unclear, null end_date = current
+- duration_months: estimate from dates, null if dates unclear
+- description: 2–4 sentence summary of key responsibilities AND achievements. Include numbers/impact if mentioned. This is the qualitative context for AI analysis.
+- key_technologies: all tech stack mentioned in the context of THIS role only
+
+## Education Extraction
+
+For each qualification:
+- institution, degree, field, graduation_year
+- Include incomplete degrees with a note in warnings[]
 
 ## Salary (APAC context, in MYR by default)
 - If not mentioned, estimate conservatively from role/seniority/location
-- Malaysia mid-level dev: RM 5,000–9,000/mo → RM 60,000–108,000/yr
-- Singapore add ~40%
+- Malaysia mid-level dev: RM 60,000–108,000/year
+- Singapore: add ~40%
+- Express as annual amounts (multiply monthly × 12)
 
-## Source detection
-- resume: CV/resume format
+## Source Detection
+- resume: structured CV/resume format
 - linkedin: LinkedIn profile text
 - seek: Seek job board profile
 - website: Personal portfolio or website
 - unknown: Can't determine
 
+## Confidence Rating
+- high: Clear, well-structured source with consistent dates and verifiable claims
+- medium: Some gaps, inconsistent dates, or unverifiable claims
+- low: Sparse data, contradictions, or very short text
+
 ## Output
 Return ONLY valid JSON. No markdown fences, no commentary, nothing before or after the JSON object.
-Be thorough on skills. Flag anything uncertain in warnings[].`
+Be thorough on both skills AND work history. The richer the experience descriptions, the better the AI coach can give personalised, contextual advice.`
 
-// ── Robust JSON extractor ─────────────────────────────────────
-// Haiku sometimes adds text before/after JSON despite instructions.
-// This finds the outermost { } so we parse correctly regardless.
+// ── Robust JSON extractor ─────────────────────────────────────────────────────
+// Haiku occasionally adds explanatory prose before/after the JSON despite
+// instructions. This finds the outermost { } so we parse correctly regardless.
 
 function extractJSONObject(raw: string): string {
   const start = raw.indexOf('{')
@@ -109,7 +147,7 @@ function extractJSONObject(raw: string): string {
   return raw.slice(start, end + 1)
 }
 
-// ── Main extraction function ──────────────────────────────────
+// ── Main extraction function ──────────────────────────────────────────────────
 
 export async function extractProfileFromText(
   rawText: string,
@@ -117,7 +155,7 @@ export async function extractProfileFromText(
   existingProfile?: { name?: string; location?: string }
 ): Promise<ExtractedProfile> {
 
-  const userPrompt = `Extract ALL profile information from this ${sourceHint ?? 'document'}.
+  const userPrompt = `Extract the COMPLETE profile from this ${sourceHint ?? 'document'}. Capture all work experience entries and education entries in full — do not summarise or truncate.
 
 ${existingProfile ? `Context: User's current name is "${existingProfile.name ?? 'unknown'}", located in "${existingProfile.location ?? 'unknown'}". Use this to fill any gaps.` : ''}
 
@@ -132,7 +170,21 @@ Return a JSON object matching exactly this schema:
   "salary_min": number | null,
   "salary_max": number | null,
   "skills": [{ "name": string, "level": 1|2|3|4|5, "evidence": string, "source_type": "explicit"|"inferred" }],
-  "experience": [{ "title": string, "company": string, "duration": string | null }],
+  "experience": [{
+    "title": string,
+    "company": string,
+    "start_date": string | null,
+    "end_date": string | null,
+    "duration_months": number | null,
+    "description": string | null,
+    "key_technologies": string[]
+  }],
+  "education": [{
+    "institution": string,
+    "degree": string | null,
+    "field": string | null,
+    "graduation_year": number | null
+  }],
   "confidence": "high"|"medium"|"low",
   "warnings": string[],
   "source_type_detected": "resume"|"linkedin"|"seek"|"website"|"unknown"
@@ -144,7 +196,7 @@ ${rawText.slice(0, 12000)}
 
   const response = await anthropic.messages.create({
     model: 'claude-haiku-4-5',
-    max_tokens: 2000,
+    max_tokens: 2500,   // Full experience + education needs more room than skills-only schema
     system: [
       {
         type: 'text',
@@ -169,9 +221,10 @@ ${rawText.slice(0, 12000)}
   }
 }
 
-// ── URL fetch helper ──────────────────────────────────────────
-// Fetches and strips HTML from a URL.
-// LinkedIn and most SPAs will return blocked: true.
+// ── URL fetch helper ──────────────────────────────────────────────────────────
+// Fetches and strips HTML from a public URL.
+// LinkedIn: immediately blocked (requires login — see DECISIONS.md for future
+// scraping API option that would enable seamless onboarding without manual paste).
 
 export async function extractTextFromUrl(url: string): Promise<{
   text: string
@@ -183,14 +236,9 @@ export async function extractTextFromUrl(url: string): Promise<{
     : url.includes('seek.com') ? 'seek'
     : 'website'
 
-  // LinkedIn requires login — no point even trying
+  // LinkedIn requires login — no point attempting a fetch
   if (sourceType === 'linkedin') {
-    return {
-      text: '',
-      sourceType,
-      blocked: true,
-      reason: 'linkedin_login_required',
-    }
+    return { text: '', sourceType, blocked: true, reason: 'linkedin_login_required' }
   }
 
   try {
@@ -209,7 +257,6 @@ export async function extractTextFromUrl(url: string): Promise<{
 
     const html = await res.text()
 
-    // Strip HTML → readable text
     const text = html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
@@ -221,14 +268,9 @@ export async function extractTextFromUrl(url: string): Promise<{
       .replace(/\s+/g, ' ')
       .trim()
 
-    // Detect JavaScript-only sites (SPA) — very little text after stripping
+    // Detect JS-rendered SPAs — very little readable text after HTML stripping
     if (text.length < 300) {
-      return {
-        text: '',
-        sourceType,
-        blocked: true,
-        reason: 'javascript_rendered',
-      }
+      return { text: '', sourceType, blocked: true, reason: 'javascript_rendered' }
     }
 
     return { text, sourceType, blocked: false }

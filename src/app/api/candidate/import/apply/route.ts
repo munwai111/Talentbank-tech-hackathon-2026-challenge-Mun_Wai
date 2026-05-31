@@ -3,12 +3,15 @@
 // The user previews results first (from /api/candidate/import) and selects
 // which sections to apply before calling this route.
 //
-// Rules:
-// - Bio fields: only overwrite if extracted value is non-null
-// - Skills: upsert by name (case-insensitive), higher level always wins
-// - Skills source is saved as 'manual' — same trust level as self-reported
-//   since we can't verify the document authenticity
-// - Triggers embedding regeneration after applying skills
+// What gets saved:
+// - Bio fields → candidate_profiles (name, headline, bio, location, etc.)
+// - Skills → skills table (upsert by name, higher level always wins)
+// - Work experience → candidate_profiles.work_experience (JSONB)
+// - Education → candidate_profiles.education (JSONB)
+//
+// Work history and education are saved whole (replace not merge) because
+// a fresh resume import is expected to be the authoritative source of truth.
+// Skills are merged (upsert) because they may have been added from other sources.
 
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
@@ -38,9 +41,11 @@ export async function POST(req: Request) {
     applySkills: boolean
   } = await req.json()
 
-  // ── Apply bio fields ──────────────────────────────────────────
+  // ── Apply bio fields + work history + education ───────────────────────────
   if (applyBio) {
     const update: ProfileUpdate = {}
+
+    // Bio fields — only overwrite if extracted value is non-null
     if (extracted.name)         update.name         = extracted.name
     if (extracted.headline)     update.headline     = extracted.headline
     if (extracted.bio)          update.bio          = extracted.bio
@@ -50,19 +55,36 @@ export async function POST(req: Request) {
     if (extracted.salary_min)   update.salary_min   = extracted.salary_min
     if (extracted.salary_max)   update.salary_max   = extracted.salary_max
 
+    // Work history — replace entirely (resume is the authoritative source)
+    if (extracted.experience && extracted.experience.length > 0) {
+      update.work_experience = extracted.experience
+    }
+
+    // Education — replace entirely
+    if (extracted.education && extracted.education.length > 0) {
+      update.education = extracted.education
+    }
+
     if (Object.keys(update).length > 0) {
-      await supabase.from('candidate_profiles').update(update).eq('id', profile.id)
+      const { error } = await supabase
+        .from('candidate_profiles')
+        .update(update)
+        .eq('id', profile.id)
+
+      if (error) {
+        console.error('[import/apply] profile update failed:', error)
+        return NextResponse.json({ error: error.message }, { status: 500 })
+      }
     }
   }
 
-  // ── Apply skills (upsert — higher level always wins) ──────────
+  // ── Apply skills (upsert — higher level always wins, never downgrade) ──────
   if (applySkills && extracted.skills.length > 0) {
     const { data: existingSkills } = await supabase
       .from('skills')
       .select('id, name, level')
       .eq('candidate_id', profile.id)
 
-    // Build a lookup map for O(1) matching
     const existingByName = new Map(
       (existingSkills ?? []).map(s => [s.name.toLowerCase(), s])
     )
@@ -72,7 +94,6 @@ export async function POST(req: Request) {
       const existing = existingByName.get(skill.name.toLowerCase())
 
       if (existing) {
-        // Only upgrade the level — never downgrade an existing verified skill
         if (clampedLevel > existing.level) {
           await supabase.from('skills')
             .update({ level: clampedLevel })

@@ -9,7 +9,7 @@
 // Salaries are in MYR, calibrated for Malaysia/Singapore markets.
 
 import Anthropic from '@anthropic-ai/sdk'
-import type { CareerData } from '@/types/database'
+import type { CareerData, WorkExperienceEntry, EducationEntry } from '@/types/database'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -40,6 +40,8 @@ export type PathInput = {
   skills: { name: string; level: number }[]
   career_data: CareerData | null
   location: string | null
+  work_experience: WorkExperienceEntry[]
+  education: EducationEntry[]
 }
 
 // ── System prompt (cached — static across all calls) ─────────────────────────
@@ -85,19 +87,40 @@ OUTPUT: Return ONLY valid JSON — no markdown fences, no commentary, no text be
 // ── Prompt builder ────────────────────────────────────────────────────────────
 
 function buildPathPrompt(input: PathInput): string {
-  const { skills, career_data: cd, location } = input
+  const { skills, career_data: cd, location, work_experience, education } = input
 
   const skillList = skills.length > 0
     ? skills.map(s => `  • ${s.name} (level ${s.level}/5)`).join('\n')
     : '  (no skills listed yet)'
 
+  const workHistory = work_experience.length > 0
+    ? work_experience.map(exp => {
+        const period = exp.start_date
+          ? `${exp.start_date} → ${exp.end_date ?? 'Present'}`
+          : exp.duration_months ? `~${Math.round(exp.duration_months / 12)} yrs` : ''
+        const tech = exp.key_technologies.length > 0 ? ` | Tech: ${exp.key_technologies.join(', ')}` : ''
+        return `  • ${exp.title} @ ${exp.company}${period ? ` (${period})` : ''}${tech}${exp.description ? `\n    ${exp.description}` : ''}`
+      }).join('\n')
+    : '  (not provided — using career form data only)'
+
+  const educationHistory = education.length > 0
+    ? education.map(edu => {
+        const degree = [edu.degree, edu.field].filter(Boolean).join(' in ')
+        return `  • ${degree || 'Qualification'} — ${edu.institution}${edu.graduation_year ? ` (${edu.graduation_year})` : ''}`
+      }).join('\n')
+    : `  ${cd?.education_level ?? 'Not specified'} in ${cd?.education_field ?? 'unspecified field'}`
+
   const context = [
     `CANDIDATE SNAPSHOT`,
     `Location: ${location ?? 'not specified'}`,
-    `Current situation: ${cd?.current_situation ?? 'not specified'}`,
-    `Role: ${cd?.current_or_last_role ?? 'not specified'} at ${cd?.current_or_last_company ?? 'unspecified'}`,
-    `Years of experience: ${cd?.years_experience ?? 0}`,
-    `Education: ${cd?.education_level ?? 'not specified'} in ${cd?.education_field ?? 'unspecified field'}`,
+    `Situation: ${cd?.current_situation ?? 'not specified'} | Experience: ${cd?.years_experience ?? 0} years`,
+    `Current/last role: ${cd?.current_or_last_role ?? 'not specified'} at ${cd?.current_or_last_company ?? 'unspecified'}`,
+    ``,
+    `WORK HISTORY (most recent first)`,
+    workHistory,
+    ``,
+    `EDUCATION`,
+    educationHistory,
     ``,
     `CURRENT SKILLS`,
     skillList,
@@ -108,8 +131,10 @@ function buildPathPrompt(input: PathInput): string {
     `Dream role: ${cd?.dream_role ?? 'not specified'}`,
     `Preferred industries: ${cd?.preferred_industries?.join(', ') || 'not specified'}`,
     `Preferred job functions: ${cd?.preferred_job_functions?.join(', ') || 'not specified'}`,
+    `Values: ${cd?.values_priorities?.join(', ') || 'not specified'}`,
     `Open to relocation: ${cd?.open_to_relocation ? 'yes' : 'no'}`,
     ``,
+    `Use the full work history and education context to generate realistic, personalised paths.`,
     `Map out the 3 career navigation paths now.`,
   ].join('\n')
 
