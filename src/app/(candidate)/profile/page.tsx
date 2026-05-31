@@ -471,26 +471,49 @@ export default function ProfilePage() {
                   value={importUrl}
                   onChange={e => { setImportUrl(e.target.value); setExtractedProfile(null) }}
                 />
-                <p className="text-xs text-zinc-400">
-                  ⚠️ LinkedIn requires login and blocks automated access — use Paste Text for LinkedIn.
-                  Seek profiles and personal websites usually work fine.
-                </p>
+                {importUrl.toLowerCase().includes('linkedin.com') ? (
+                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 space-y-1">
+                    <p className="font-semibold">⚠️ LinkedIn blocks automated access</p>
+                    <p>LinkedIn requires login — we can't fetch it server-side. Instead:</p>
+                    <ol className="list-decimal pl-4 space-y-0.5">
+                      <li>Open your LinkedIn profile in your browser</li>
+                      <li>Press <strong>Ctrl+A</strong> (Windows) or <strong>Cmd+A</strong> (Mac) to select all</li>
+                      <li>Press <strong>Ctrl+C / Cmd+C</strong> to copy</li>
+                      <li>Click <strong>"Paste Text"</strong> tab above and paste</li>
+                    </ol>
+                    <button
+                      onClick={() => { setImportMode('text'); setImportUrl('') }}
+                      className="mt-1 text-amber-700 font-semibold underline hover:text-amber-900"
+                    >
+                      Switch to Paste Text →
+                    </button>
+                  </div>
+                ) : (
+                  <p className="text-xs text-zinc-400">
+                    Works for Seek profiles and most personal/portfolio websites.
+                    If the site uses a JavaScript framework (React, Vue), use Paste Text instead.
+                  </p>
+                )}
               </div>
             )}
 
             {/* Text paste */}
             {importMode === 'text' && (
-              <div>
+              <div className="space-y-2">
                 <Textarea
-                  placeholder="Paste your resume, LinkedIn profile content, Seek profile, or any professional bio here...&#10;&#10;The more text you provide, the better the AI can extract and verify your skills."
+                  placeholder="Paste your resume text, LinkedIn profile, portfolio page, or any professional bio here…&#10;&#10;The more text you provide, the more accurately AI can extract and verify your skills."
                   value={importText}
                   onChange={e => { setImportText(e.target.value); setExtractedProfile(null) }}
                   rows={9}
                   className="text-sm"
                 />
-                <p className="text-xs text-zinc-400 mt-1.5">
-                  Tip: On LinkedIn, press Ctrl+A then Ctrl+C to copy everything — works even behind login.
-                </p>
+                <div className="p-3 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-500 space-y-1">
+                  <p className="font-medium text-zinc-600">How to copy from LinkedIn:</p>
+                  <p>1. Open your LinkedIn profile page in the browser</p>
+                  <p>2. Press <strong>Ctrl+A</strong> (Windows) or <strong>Cmd+A</strong> (Mac) to select all</p>
+                  <p>3. Press <strong>Ctrl+C / Cmd+C</strong> to copy, then paste here</p>
+                  <p className="pt-1 text-zinc-400">Works with any website — just copy the visible text from the page.</p>
+                </div>
               </div>
             )}
 
@@ -617,7 +640,7 @@ export default function ProfilePage() {
                         <p className="font-medium text-sm">{exp.title}</p>
                         <p className="text-xs text-zinc-500">
                           {exp.company}
-                          {exp.start_date && ` · ${exp.start_date} → ${exp.end_date ?? 'Present'}`}
+                          {exp.duration && ` · ${exp.duration}`}
                         </p>
                       </div>
                     ))}

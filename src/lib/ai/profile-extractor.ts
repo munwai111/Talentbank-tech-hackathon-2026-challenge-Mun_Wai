@@ -4,231 +4,235 @@
 // (PDF resume, LinkedIn page, Seek profile, personal website)
 // and returns clean, structured, vetted profile data.
 //
-// The vetting step is what makes this "intelligent":
-// - Normalises skill names (ReactJS → React)
-// - Infers implicit skills from experience descriptions
-// - Cross-checks claimed levels against evidence
-// - Deduplicates across sources
-// - Estimates experience years from dates
+// Model: claude-haiku-4-5 (fast enough for Edge runtime <25s)
+// Schema: only fields we actually save — keeps tokens tight & fast
 
 import Anthropic from '@anthropic-ai/sdk'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-// The structured output Claude always returns
+// ── Output types ──────────────────────────────────────────────
+
 export type ExtractedProfile = {
-  // Bio fields
+  // Bio fields — saved to candidate_profiles
   name: string | null
   headline: string | null
   bio: string | null
   location: string | null
-  email: string | null
-  linkedin_url: string | null
   github_url: string | null
-  website_url: string | null
-
-  // Salary (extracted from "expected salary" mentions or market inference)
+  linkedin_url: string | null
   salary_min: number | null
   salary_max: number | null
 
-  // Skills — the most important output
+  // Skills — the most important output, saved to skills table
   skills: {
-    name: string           // Normalised name e.g. "React", not "ReactJS"
+    name: string             // Normalised: "React" not "ReactJS"
     level: 1 | 2 | 3 | 4 | 5
-    evidence: string       // WHY Claude assigned this level
-    source_type: 'explicit' | 'inferred'  // Did they state it, or did Claude infer it?
+    evidence: string         // One-line reason for this level
+    source_type: 'explicit' | 'inferred'
   }[]
 
-  // Work experience
+  // Experience — preview only (shown to user to verify extraction accuracy)
+  // Not saved to DB, used only for skill level cross-checking
   experience: {
     title: string
     company: string
-    start_date: string | null   // "2021-03" format where possible
-    end_date: string | null     // null = current
-    description: string | null
-    duration_months: number | null
+    duration: string | null  // e.g. "2021–2024" or "2 years"
   }[]
 
-  // Education
-  education: {
-    institution: string
-    degree: string | null
-    field: string | null
-    graduation_year: number | null
-  }[]
-
-  // AI quality assessment
+  // Quality signals
   confidence: 'high' | 'medium' | 'low'
-  warnings: string[]   // e.g. "Claimed Expert level but only 6 months experience"
+  warnings: string[]
   source_type_detected: 'resume' | 'linkedin' | 'seek' | 'website' | 'unknown'
 }
 
-// ─────────────────────────────────────────────────────────────
-// SYSTEM PROMPT — cached across all calls (Anthropic prompt caching)
-// This is the "intelligence" behind the vetting.
-// ─────────────────────────────────────────────────────────────
-const SYSTEM_PROMPT = `You are an expert career data analyst and technical recruiter for Career OS,
-a skills-first hiring platform for APAC graduates.
+// ── System prompt (cached across all calls) ───────────────────
 
-Your job is to extract, structure, and INTELLIGENTLY VET profile information from any source
-(resumes, LinkedIn pages, Seek profiles, personal websites, plain text).
+const SYSTEM_PROMPT = `You are a career data analyst for Career OS, a skills-first hiring platform in Southeast Asia.
+
+Extract and intelligently vet profile information from any source: resume PDFs, LinkedIn text, portfolio websites, or plain text.
 
 ## Skill Extraction Rules
 
-**Normalisation:**
-- ReactJS, React.js → "React"
-- NodeJS, Node, Node.js → "Node.js"
-- PostgreSQL, Postgres → "PostgreSQL"
-- JS → "JavaScript"
-- TS → "TypeScript"
-- Always use the canonical, commonly-recognised name
+**Normalise names:**
+- ReactJS / React.js → "React"
+- NodeJS / Node.js → "Node.js"
+- PostgreSQL / Postgres → "PostgreSQL"
+- JS → "JavaScript", TS → "TypeScript"
+- Always use the well-known canonical name
 
-**Skill Level Assignment (1-5):**
-1 = Beginner: Mentioned once, no evidence of use in real projects
+**Skill level (1–5):**
+1 = Beginner: Mentioned once, no project evidence
 2 = Elementary: Used in coursework or minor personal projects
-3 = Intermediate: Used in multiple real projects or 1-2 years experience
-4 = Advanced: 3+ years, complex usage, technical depth evident
-5 = Expert: Deep expertise, led others, wrote about it, open source contributions
+3 = Intermediate: Multiple real projects or 1–2 years experience
+4 = Advanced: 3+ years, clear technical depth
+5 = Expert: Led others in this skill, open source, wrote about it
 
-**Cross-checking (CRITICAL):**
-- If someone claims "Expert" but has <1 year experience with it → downgrade to Intermediate, add warning
-- If a skill appears only in education (not work) → max level 2
-- If a skill is listed but no evidence of use → level 1, flag as unverified
-- If work description mentions technical depth → infer skill and give credit
+**Cross-checking (critical):**
+- Claim of Expert with <1 year → downgrade to Intermediate, add warning
+- Skill only in education (not work) → max level 2
+- No evidence of use → level 1, flag as unverified
 
-**Implicit Skill Inference:**
+**Implicit inference:**
 - "Built REST APIs" → add "REST API Design" (Intermediate)
-- "Deployed on AWS" → add "AWS" (skill level based on depth of description)
+- "Deployed on AWS" → add "AWS" (level by description depth)
 - "Led a team of 5" → add "Team Leadership"
-- "Managed database performance" → add "Database Optimisation"
 
-## Deduplication
-- If the same skill appears multiple times (e.g. from multiple job experiences),
-  keep only the highest-level instance with combined evidence
+**Deduplication:** keep only the highest-level instance per skill.
 
-## Salary Estimation (APAC context)
-- If salary not mentioned, estimate based on: location, years of experience, role level
-- Use MYR as default currency for Malaysia, SGD for Singapore, IDR for Indonesia
-- Be conservative — give a realistic range, not aspirational
+## Salary (APAC context, in MYR by default)
+- If not mentioned, estimate conservatively from role/seniority/location
+- Malaysia mid-level dev: RM 5,000–9,000/mo → RM 60,000–108,000/yr
+- Singapore add ~40%
 
-## Source Detection
-Identify what type of source this is:
-- resume: structured CV/resume format
-- linkedin: LinkedIn profile page content
+## Source detection
+- resume: CV/resume format
+- linkedin: LinkedIn profile text
 - seek: Seek job board profile
-- website: Personal portfolio/website
+- website: Personal portfolio or website
 - unknown: Can't determine
 
-## Output Format
-Return ONLY valid JSON matching the ExtractedProfile type. No other text.
-Be thorough but honest. Flag anything uncertain in warnings[].`
+## Output
+Return ONLY valid JSON. No markdown fences, no commentary, nothing before or after the JSON object.
+Be thorough on skills. Flag anything uncertain in warnings[].`
 
-// ─────────────────────────────────────────────────────────────
-// Main extraction function
-// ─────────────────────────────────────────────────────────────
+// ── Robust JSON extractor ─────────────────────────────────────
+// Haiku sometimes adds text before/after JSON despite instructions.
+// This finds the outermost { } so we parse correctly regardless.
+
+function extractJSONObject(raw: string): string {
+  const start = raw.indexOf('{')
+  const end = raw.lastIndexOf('}')
+  if (start === -1 || end === -1 || start >= end) {
+    throw new Error('No valid JSON object found in AI response')
+  }
+  return raw.slice(start, end + 1)
+}
+
+// ── Main extraction function ──────────────────────────────────
+
 export async function extractProfileFromText(
   rawText: string,
   sourceHint?: 'resume' | 'linkedin' | 'seek' | 'website' | 'unknown',
   existingProfile?: { name?: string; location?: string }
 ): Promise<ExtractedProfile> {
 
-  const userPrompt = `Extract and vet ALL profile information from this ${sourceHint ?? 'document'}.
+  const userPrompt = `Extract ALL profile information from this ${sourceHint ?? 'document'}.
 
-${existingProfile ? `Context: User's current name is "${existingProfile.name}", located in "${existingProfile.location}". Use this to fill gaps.` : ''}
+${existingProfile ? `Context: User's current name is "${existingProfile.name ?? 'unknown'}", located in "${existingProfile.location ?? 'unknown'}". Use this to fill any gaps.` : ''}
+
+Return a JSON object matching exactly this schema:
+{
+  "name": string | null,
+  "headline": string | null,
+  "bio": string | null,
+  "location": string | null,
+  "github_url": string | null,
+  "linkedin_url": string | null,
+  "salary_min": number | null,
+  "salary_max": number | null,
+  "skills": [{ "name": string, "level": 1|2|3|4|5, "evidence": string, "source_type": "explicit"|"inferred" }],
+  "experience": [{ "title": string, "company": string, "duration": string | null }],
+  "confidence": "high"|"medium"|"low",
+  "warnings": string[],
+  "source_type_detected": "resume"|"linkedin"|"seek"|"website"|"unknown"
+}
 
 --- SOURCE CONTENT ---
-${rawText.slice(0, 15000)}
---- END CONTENT ---
-
-Return the complete ExtractedProfile JSON.`
+${rawText.slice(0, 12000)}
+--- END CONTENT ---`
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-6',  // Use Sonnet for complex extraction — Haiku misses nuance
-    max_tokens: 4000,
+    model: 'claude-haiku-4-5',
+    max_tokens: 2000,
     system: [
       {
         type: 'text',
         text: SYSTEM_PROMPT,
-        // Prompt caching: system prompt is static → cached after first call
-        // Saves ~80% cost on every subsequent extraction
         cache_control: { type: 'ephemeral' },
-      }
+      },
     ],
     messages: [{ role: 'user', content: userPrompt }],
   })
 
-  const raw = (response.content[0] as { text: string }).text.trim()
-
-  // Strip markdown fences if Claude wrapped the JSON
-  const cleaned = raw
-    .replace(/^```json\n?/, '')
-    .replace(/^```\n?/, '')
-    .replace(/\n?```$/, '')
-    .trim()
+  const firstBlock = response.content[0]
+  if (!firstBlock || firstBlock.type !== 'text') {
+    throw new Error('AI returned no text — please try again')
+  }
 
   try {
-    return JSON.parse(cleaned) as ExtractedProfile
-  } catch {
-    // If JSON parse fails, return a minimal safe result rather than crashing
-    console.error('Profile extraction JSON parse failed:', cleaned.slice(0, 200))
+    const json = extractJSONObject(firstBlock.text)
+    return JSON.parse(json) as ExtractedProfile
+  } catch (err) {
+    console.error('[profile-extractor] JSON parse failed:', firstBlock.text.slice(0, 300))
     throw new Error('AI extraction returned invalid format — please try again')
   }
 }
 
-// ─────────────────────────────────────────────────────────────
-// Fetch and extract text from a URL (Seek, website, LinkedIn attempt)
-// ─────────────────────────────────────────────────────────────
+// ── URL fetch helper ──────────────────────────────────────────
+// Fetches and strips HTML from a URL.
+// LinkedIn and most SPAs will return blocked: true.
+
 export async function extractTextFromUrl(url: string): Promise<{
   text: string
   sourceType: 'linkedin' | 'seek' | 'website'
   blocked: boolean
+  reason?: string
 }> {
-  // Detect source type from URL
   const sourceType = url.includes('linkedin.com') ? 'linkedin'
     : url.includes('seek.com') ? 'seek'
     : 'website'
 
+  // LinkedIn requires login — no point even trying
+  if (sourceType === 'linkedin') {
+    return {
+      text: '',
+      sourceType,
+      blocked: true,
+      reason: 'linkedin_login_required',
+    }
+  }
+
   try {
     const res = await fetch(url, {
       headers: {
-        // Use a real browser user agent to reduce blocking
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.5',
       },
-      signal: AbortSignal.timeout(10000),  // 10 second timeout
+      signal: AbortSignal.timeout(7000),
     })
 
     if (!res.ok) {
-      return { text: '', sourceType, blocked: true }
+      return { text: '', sourceType, blocked: true, reason: `HTTP ${res.status}` }
     }
 
     const html = await res.text()
 
-    // Strip HTML tags to get readable text
-    // This is basic but effective for well-structured profile pages
+    // Strip HTML → readable text
     const text = html
-      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')  // Remove scripts
-      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')    // Remove styles
-      .replace(/<[^>]+>/g, ' ')                           // Strip all HTML tags
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
       .replace(/&nbsp;/g, ' ')
       .replace(/&amp;/g, '&')
       .replace(/&lt;/g, '<')
       .replace(/&gt;/g, '>')
-      .replace(/\s+/g, ' ')                              // Collapse whitespace
+      .replace(/\s+/g, ' ')
       .trim()
 
-    // LinkedIn login wall — they redirect to sign-in
-    if (sourceType === 'linkedin' && (
-      text.includes('Join LinkedIn') ||
-      text.includes('Sign in to LinkedIn') ||
-      text.length < 500
-    )) {
-      return { text: '', sourceType, blocked: true }
+    // Detect JavaScript-only sites (SPA) — very little text after stripping
+    if (text.length < 300) {
+      return {
+        text: '',
+        sourceType,
+        blocked: true,
+        reason: 'javascript_rendered',
+      }
     }
 
     return { text, sourceType, blocked: false }
   } catch {
-    return { text: '', sourceType, blocked: true }
+    return { text: '', sourceType, blocked: true, reason: 'network_error' }
   }
 }

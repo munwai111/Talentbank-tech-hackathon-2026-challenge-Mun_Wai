@@ -123,7 +123,7 @@ export async function generateCareerPaths(input: PathInput): Promise<CareerPath[
 
   const response = await anthropic.messages.create({
     model: 'claude-haiku-4-5',
-    max_tokens: 1800,  // 3 verbose path objects need room — 1200 risks truncation
+    max_tokens: 1400,  // 3 path objects on Edge — kept tight so Haiku completes in <20s
     system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
     messages: [{ role: 'user', content: prompt }],
   })

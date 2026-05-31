@@ -8,8 +8,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { generateCareerPaths } from '@/lib/ai/path-navigator'
 import type { PathInput } from '@/lib/ai/path-navigator'
 
+export const runtime = 'edge'
 export const dynamic = 'force-dynamic'
-export const maxDuration = 30
 
 export async function GET() {
   const { userId } = await auth()
