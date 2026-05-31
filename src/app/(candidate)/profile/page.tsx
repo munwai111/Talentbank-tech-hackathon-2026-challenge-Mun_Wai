@@ -235,16 +235,28 @@ export default function ProfilePage() {
       // Extract outermost JSON object (Claude occasionally adds prose despite instructions)
       const start = accumulated.indexOf('{')
       const end = accumulated.lastIndexOf('}')
-      if (start === -1 || end === -1 || start >= end) throw new Error('No valid response received')
-      const data = JSON.parse(accumulated.slice(start, end + 1)) as ExtractedProfile & { error?: string }
+      if (start === -1 || end === -1 || start >= end) {
+        throw new Error('AI returned an unexpected response — please try again')
+      }
 
+      let data: ExtractedProfile & { error?: unknown }
+      try {
+        data = JSON.parse(accumulated.slice(start, end + 1)) as ExtractedProfile & { error?: unknown }
+      } catch {
+        throw new Error('AI response could not be parsed — please try again')
+      }
+
+      // data.error is a string emitted by the server when Claude API fails;
+      // always stringify to prevent React from receiving an object as a child.
       if (data.error) {
-        setImportError(data.error)
+        const errMsg = typeof data.error === 'string' ? data.error : 'AI extraction failed — please try again'
+        setImportError(errMsg)
       } else {
         setExtractedProfile(data)
       }
-    } catch {
-      setImportError('Network error — please try again.')
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Network error — please try again'
+      setImportError(msg)
     } finally {
       setExtracting(false)
     }

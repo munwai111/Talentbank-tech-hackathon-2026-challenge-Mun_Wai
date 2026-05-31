@@ -51,10 +51,20 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'PDF must be under 5 MB' }, { status: 400 })
   }
 
-  // Extract text from PDF (sync step, then stream Claude's response)
-  const arrayBuffer = await file.arrayBuffer()
-  const { text: pages } = await extractText(new Uint8Array(arrayBuffer), { mergePages: true })
-  const rawText = Array.isArray(pages) ? pages.join('\n') : (pages as string)
+  // Extract text from PDF (sync step, then stream Claude's response).
+  // Wrapped in try/catch: unpdf throws on password-protected or corrupt PDFs.
+  let rawText: string
+  try {
+    const arrayBuffer = await file.arrayBuffer()
+    const { text: pages } = await extractText(new Uint8Array(arrayBuffer), { mergePages: true })
+    rawText = Array.isArray(pages) ? pages.join('\n') : (pages as string)
+  } catch (err) {
+    console.error('[import/pdf] PDF text extraction failed:', err)
+    return NextResponse.json({
+      error: 'pdf_parse_error',
+      message: 'Could not read this PDF — it may be password-protected or corrupted. Try copying the text manually and using Paste Text instead.',
+    }, { status: 422 })
+  }
 
   if (!rawText || rawText.trim().length < 50) {
     return NextResponse.json({

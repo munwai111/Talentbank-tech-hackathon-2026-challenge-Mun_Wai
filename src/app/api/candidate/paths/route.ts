@@ -25,51 +25,59 @@ export async function GET() {
 
   const supabase = createServerClient()
 
-  const { data: user } = await supabase
-    .from('users')
-    .select('id')
-    .eq('clerk_id', userId)
-    .single()
+  try {
+    const { data: user } = await supabase
+      .from('users')
+      .select('id')
+      .eq('clerk_id', userId)
+      .single()
 
-  if (!user) {
-    return NextResponse.json({ error: 'User not found' }, { status: 404 })
-  }
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    }
 
-  const { data: profile, error: profileError } = await supabase
-    .from('candidate_profiles')
-    .select('id, location, career_data, work_experience, education')
-    .eq('user_id', user.id)
-    .single()
+    const { data: profile, error: profileError } = await supabase
+      .from('candidate_profiles')
+      .select('id, location, career_data, work_experience, education')
+      .eq('user_id', user.id)
+      .single()
 
-  if (profileError || !profile) {
+    if (profileError || !profile) {
+      return NextResponse.json(
+        { error: 'Profile not found. Complete your profile first.' },
+        { status: 404 },
+      )
+    }
+
+    const { data: skillsData } = await supabase
+      .from('skills')
+      .select('name, level')
+      .eq('candidate_id', profile.id)
+
+    const input: PathInput = {
+      skills: skillsData ?? [],
+      career_data: profile.career_data ?? null,
+      location: profile.location ?? null,
+      work_experience: (profile.work_experience ?? []) as PathInput['work_experience'],
+      education: (profile.education ?? []) as PathInput['education'],
+    }
+
+    // Stream Claude's token output directly to the client.
+    // Client accumulates all chunks and parses the JSON at the end.
+    const stream = streamCareerPaths(input)
+
+    return new Response(stream, {
+      headers: {
+        'Content-Type': 'text/plain; charset=utf-8',
+        'Transfer-Encoding': 'chunked',
+        'Cache-Control': 'no-cache',
+      },
+    })
+  } catch (err) {
+    console.error('[paths] failed to load profile or stream paths:', err)
     return NextResponse.json(
-      { error: 'Profile not found. Complete your profile first.' },
-      { status: 404 },
+      { error: err instanceof Error ? err.message : 'Something went wrong — please try again' },
+      { status: 500 },
     )
   }
-
-  const { data: skillsData } = await supabase
-    .from('skills')
-    .select('name, level')
-    .eq('candidate_id', profile.id)
-
-  const input: PathInput = {
-    skills: skillsData ?? [],
-    career_data: profile.career_data ?? null,
-    location: profile.location ?? null,
-    work_experience: (profile.work_experience ?? []) as PathInput['work_experience'],
-    education: (profile.education ?? []) as PathInput['education'],
-  }
-
-  // Stream Claude's token output directly to the client.
-  // Client accumulates all chunks and parses the JSON at the end.
-  const stream = streamCareerPaths(input)
-
-  return new Response(stream, {
-    headers: {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Transfer-Encoding': 'chunked',
-      'Cache-Control': 'no-cache',
-    },
-  })
 }
