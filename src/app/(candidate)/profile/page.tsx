@@ -234,16 +234,34 @@ export default function ProfilePage() {
 
       // Extract outermost JSON object (Claude occasionally adds prose despite instructions)
       const start = accumulated.indexOf('{')
-      const end = accumulated.lastIndexOf('}')
-      if (start === -1 || end === -1 || start >= end) {
-        throw new Error('AI returned an unexpected response — please try again')
-      }
+      let end = accumulated.lastIndexOf('}')
+      if (start === -1) throw new Error('AI returned an unexpected response — please try again')
 
       let data: ExtractedProfile & { error?: unknown }
       try {
-        data = JSON.parse(accumulated.slice(start, end + 1)) as ExtractedProfile & { error?: unknown }
+        // Primary parse: full well-formed JSON
+        if (end > start) {
+          data = JSON.parse(accumulated.slice(start, end + 1)) as ExtractedProfile & { error?: unknown }
+        } else {
+          throw new SyntaxError('No closing brace')
+        }
       } catch {
-        throw new Error('AI response could not be parsed — please try again')
+        // Fallback: JSON was likely truncated (model hit max_tokens).
+        // Attempt to close the structure — gives the user partial data + a warning
+        // rather than a hard failure that loses all extracted content.
+        const truncated = accumulated.slice(start)
+        const opened = (truncated.match(/\{/g) ?? []).length
+        const closed = (truncated.match(/\}/g) ?? []).length
+        const closingBraces = '}'.repeat(Math.max(0, opened - closed))
+        // Close any open arrays or strings before adding braces
+        const patched = truncated.trimEnd().replace(/,\s*$/, '') + closingBraces
+        try {
+          data = JSON.parse(patched) as ExtractedProfile & { error?: unknown }
+          if (!data.warnings) data.warnings = []
+          ;(data.warnings as string[]).push('Profile may be incomplete — resume was very long and was partially truncated.')
+        } catch {
+          throw new Error('AI response could not be parsed — your resume may be too long. Try Paste Text mode with only the key sections.')
+        }
       }
 
       // data.error is a string emitted by the server when Claude API fails;
