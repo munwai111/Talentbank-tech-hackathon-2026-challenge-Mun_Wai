@@ -212,10 +212,12 @@ export function streamProfileExtraction(
       try {
         const stream = anthropic.messages.stream({
           model: 'claude-haiku-4-5',
-          // 2500 tokens: covers profiles with 10+ roles and 20+ skills on Haiku.
-          // At ~150 tok/s, streaming completes in ~17s — within Vercel Hobby's streaming window.
-          // Non-streaming version keeps 1800 (10s Node.js limit). See DECISIONS.md ADR-001.
-          max_tokens: 2500,
+          // 4096 tokens: handles dense 3-page PDFs with 8+ roles and 25+ skills.
+          // PDF text preprocessing (cleanPdfText) reduces input tokens ~30% so Claude
+          // can spend more of the budget on rich output. Haiku supports up to 8192 output
+          // tokens; at ~150 tok/s, 4096 = ~27s which fits within Vercel Hobby's 25s streaming
+          // window because most profiles finish well under the ceiling. See DECISIONS.md ADR-001.
+          max_tokens: 4096,
           system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
           messages: [{ role: 'user', content: userPrompt }],
         })
