@@ -234,7 +234,7 @@ export default function ProfilePage() {
 
       // Extract outermost JSON object (Claude occasionally adds prose despite instructions)
       const start = accumulated.indexOf('{')
-      let end = accumulated.lastIndexOf('}')
+      const end = accumulated.lastIndexOf('}')
       if (start === -1) throw new Error('AI returned an unexpected response — please try again')
 
       let data: ExtractedProfile & { error?: unknown }
@@ -531,12 +531,12 @@ export default function ProfilePage() {
                 {importUrl.toLowerCase().includes('linkedin.com') ? (
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 space-y-1">
                     <p className="font-semibold">⚠️ LinkedIn blocks automated access</p>
-                    <p>LinkedIn requires login — we can't fetch it server-side. Instead:</p>
+                    <p>LinkedIn requires login — we can&apos;t fetch it server-side. Instead:</p>
                     <ol className="list-decimal pl-4 space-y-0.5">
                       <li>Open your LinkedIn profile in your browser</li>
                       <li>Press <strong>Ctrl+A</strong> (Windows) or <strong>Cmd+A</strong> (Mac) to select all</li>
                       <li>Press <strong>Ctrl+C / Cmd+C</strong> to copy</li>
-                      <li>Click <strong>"Paste Text"</strong> tab above and paste</li>
+                      <li>Click <strong>&quot;Paste Text&quot;</strong> tab above and paste</li>
                     </ol>
                     <button
                       onClick={() => { setImportMode('text'); setImportUrl('') }}

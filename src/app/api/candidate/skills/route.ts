@@ -35,7 +35,11 @@ export async function POST(req: Request) {
   // (fire and forget — don't block the response)
   fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/candidate/embed`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-internal': 'true' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-internal': 'true',                                         // legacy dev fallback
+      'x-internal-secret': process.env.INTERNAL_SECRET ?? '',       // production secret
+    },
     body: JSON.stringify({ candidate_id: profile.id }),
   }).catch(() => {})  // Non-blocking
 

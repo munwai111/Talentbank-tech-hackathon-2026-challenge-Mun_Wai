@@ -59,6 +59,14 @@ export async function POST(req: Request) {
 
   // ── Mode 2: Pasted text ─────────────────────────────────────────────────────
   } else if (body.text) {
+    // Cap input size: the extractor slices to 12,000 chars anyway, but we reject
+    // oversized payloads early to protect against memory pressure and API cost abuse.
+    if (typeof body.text !== 'string' || body.text.length > 50_000) {
+      return NextResponse.json({
+        error: 'text_too_long',
+        message: 'Pasted text is too long (max 50,000 characters). Try selecting only the key sections of your profile.',
+      }, { status: 422 })
+    }
     rawText = body.text
     sourceHint = (body.sourceType as typeof sourceHint) ?? 'unknown'
 

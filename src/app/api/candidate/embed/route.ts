@@ -18,11 +18,17 @@ import OpenAI from 'openai'
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 export async function POST(req: Request) {
-  // This route is called internally (fire-and-forget from skills/github routes)
-  // We check for an internal header instead of Clerk auth to avoid circular issues
-  const isInternal = req.headers.get('x-internal') === 'true'
-  if (!isInternal) {
-    return NextResponse.json({ error: 'Internal only' }, { status: 403 })
+  // Internal-only route — called server-side from skills / github-import / import-apply.
+  // Authentication: compare against INTERNAL_SECRET env var (set in .env.local + Vercel).
+  // Falls back to legacy x-internal header when INTERNAL_SECRET is not configured
+  // (local dev convenience only — always set INTERNAL_SECRET in production).
+  const INTERNAL_SECRET = process.env.INTERNAL_SECRET
+  const authorized = INTERNAL_SECRET
+    ? req.headers.get('x-internal-secret') === INTERNAL_SECRET
+    : req.headers.get('x-internal') === 'true'
+
+  if (!authorized) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
   const { candidate_id } = await req.json()

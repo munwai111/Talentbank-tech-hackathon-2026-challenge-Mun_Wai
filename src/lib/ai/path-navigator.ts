@@ -32,8 +32,6 @@ export type CareerPath = {
   navigation_note: string
 }
 
-type PathsResponse = { paths: CareerPath[] }
-
 // ── Inputs ───────────────────────────────────────────────────────────────────
 
 export type PathInput = {

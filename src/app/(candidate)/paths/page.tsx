@@ -1,7 +1,33 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { CareerPath, PathMatchType } from '@/lib/ai/path-navigator'
+
+// ── Pure utilities (outside component — no closure over state) ────────────────
+
+function extractJSON(raw: string): string {
+  const start = raw.indexOf('{')
+  const end = raw.lastIndexOf('}')
+  if (start === -1 || end === -1 || start >= end) throw new Error('No JSON object found in response')
+  return raw.slice(start, end + 1)
+}
+
+async function readStreamedPaths(): Promise<{ paths?: CareerPath[]; error?: string }> {
+  const res = await fetch('/api/candidate/paths')
+  if (!res.ok || !res.body) {
+    const data = await res.json().catch(() => ({})) as { error?: string }
+    throw new Error(data.error ?? 'Generation failed')
+  }
+  const reader = res.body.getReader()
+  const decoder = new TextDecoder()
+  let accumulated = ''
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    accumulated += decoder.decode(value, { stream: true })
+  }
+  return JSON.parse(extractJSON(accumulated)) as { paths?: CareerPath[]; error?: string }
+}
 
 // ── Visual config per match type ─────────────────────────────────────────────
 
@@ -131,53 +157,47 @@ function EmptyState() {
 
 export default function PathsPage() {
   const [paths, setPaths] = useState<CareerPath[]>([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true)  // true = skeleton visible on mount
   const [error, setError] = useState<string | null>(null)
 
-  // Extract the outermost JSON object from accumulated stream text.
-  // Claude occasionally emits a markdown fence or prose prefix despite instructions.
-  function extractJSON(raw: string): string {
-    const start = raw.indexOf('{')
-    const end = raw.lastIndexOf('}')
-    if (start === -1 || end === -1 || start >= end) throw new Error('No JSON object found in response')
-    return raw.slice(start, end + 1)
-  }
-
-  async function fetchPaths() {
+  // fetchPaths: called from the Refresh button (event handler context).
+  // Calling setLoading(true) synchronously here is fine — event handlers
+  // are not subject to react-hooks/set-state-in-effect.
+  const fetchPaths = useCallback(() => {
     setLoading(true)
     setError(null)
-    try {
-      const res = await fetch('/api/candidate/paths')
-      if (!res.ok || !res.body) {
-        const data = await res.json().catch(() => ({})) as { error?: string }
-        throw new Error(data.error ?? 'Generation failed')
-      }
+    readStreamedPaths()
+      .then(parsed => {
+        if (parsed.error) throw new Error(parsed.error)
+        setPaths(parsed.paths ?? [])
+        setLoading(false)
+      })
+      .catch(err => {
+        setError(err instanceof Error ? err.message : 'Something went wrong')
+        setLoading(false)
+      })
+  }, [])
 
-      // Accumulate streaming tokens — same pattern as AI Coach
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder()
-      let accumulated = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        accumulated += decoder.decode(value, { stream: true })
-      }
-
-      // Parse the complete JSON from accumulated text
-      const json = extractJSON(accumulated)
-      const parsed = JSON.parse(json) as { paths?: CareerPath[]; error?: string }
-
-      if (parsed.error) throw new Error(parsed.error)
-      setPaths(parsed.paths ?? [])
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => { fetchPaths() }, [])
+  // Initial load: inline Promise chain so all setState calls happen inside
+  // callbacks (.then / .catch), never synchronously in the effect body.
+  // This satisfies react-hooks/set-state-in-effect.
+  // `loading` is already true from initial state — no setLoading(true) needed.
+  useEffect(() => {
+    let cancelled = false
+    readStreamedPaths()
+      .then(parsed => {
+        if (cancelled) return
+        if (parsed.error) throw new Error(parsed.error)
+        setPaths(parsed.paths ?? [])
+        setLoading(false)
+      })
+      .catch(err => {
+        if (cancelled) return
+        setError(err instanceof Error ? err.message : 'Something went wrong')
+        setLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [])
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">

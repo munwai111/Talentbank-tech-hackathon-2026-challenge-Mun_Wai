@@ -271,7 +271,7 @@ export async function extractProfileFromText(
   try {
     const json = extractJSONObject(firstBlock.text)
     return JSON.parse(json) as ExtractedProfile
-  } catch (err) {
+  } catch {
     console.error('[profile-extractor] JSON parse failed:', firstBlock.text.slice(0, 300))
     throw new Error('AI extraction returned invalid format — please try again')
   }
