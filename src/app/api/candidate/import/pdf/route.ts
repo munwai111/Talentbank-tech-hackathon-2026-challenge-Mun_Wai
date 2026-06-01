@@ -1,37 +1,66 @@
 // POST /api/candidate/import/pdf
-// PDF resume upload handler — Node.js runtime (unpdf requires it).
+// Multi-format resume / CV upload handler.
 //
-// unpdf bundles pdfjs-dist which uses process.release.name (Node.js-only global).
-// Vercel's Edge bundler rejects this, so PDF processing lives here on Node.js.
+// Supported file types:
+//   PDF  (.pdf)               → Claude native PDF document block (no text extraction)
+//   DOCX (.docx, .doc)        → mammoth text extraction → text path
+//   Text (.txt, .md)          → plain text → text path
+//   Image (.png, .jpg, .jpeg, .webp) → Claude native image block
 //
-// Timeout: streaming responses get 25s on Vercel Hobby (vs 10s non-streaming).
-// Text is extracted from the PDF synchronously, then Claude streams the JSON.
-// maxDuration = 25 signals this intent to Vercel.
+// Why native PDF/image blocks instead of text extraction (unpdf/pdfjs)?
+//   Text extraction is lossy for styled, two-column, or image-based PDFs.
+//   Sending bytes directly to Claude lets it read any layout natively and
+//   eliminates the "AI response could not be parsed" error on complex resumes.
+//   See DECISIONS.md ADR-002.
 //
-// See DECISIONS.md ADR-001 for the model choice rationale.
+// Runtime: Node.js (mammoth + Anthropic SDK have Node.js-specific code paths).
+// maxDuration = 25 signals the 25s streaming window on Vercel Hobby.
 
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
-import { extractText } from 'unpdf'
+import mammoth from 'mammoth'
 import { createServerClient } from '@/lib/supabase/server'
-import { streamProfileExtraction } from '@/lib/ai/profile-extractor'
-
-// Removes letter-spacing artifacts produced by pdfjs on two-column / styled PDFs.
-// Fancy fonts cause pdfjs to store each glyph individually, emitting strings like
-// "L O O I M U N W A I" and "P R O F E S S I O N A L S U M M A R Y".
-// Collapsing these reduces both input and output token counts by ~30 % on affected PDFs.
-function cleanPdfText(raw: string): string {
-  return raw
-    // "P R O F E S S I O N A L" → "PROFESSIONAL"
-    // Matches: word-boundary, 2+ (uppercase-letter + space) groups, final uppercase letter
-    .replace(/\b([A-Z] ){2,}[A-Z]\b/g, m => m.replace(/ /g, ''))
-    .replace(/[ \t]{2,}/g, ' ')   // collapse remaining multi-space runs
-    .replace(/\n{3,}/g, '\n\n')   // cap consecutive blank lines at two
-    .trim()
-}
+import {
+  streamProfileExtraction,
+  streamProfileExtractionFromDocument,
+  type DocumentMediaType,
+} from '@/lib/ai/profile-extractor'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 25
+
+// ── File type helpers ─────────────────────────────────────────────────────────
+
+type FileCategory = 'pdf' | 'docx' | 'text' | 'image'
+
+const ALLOWED_EXTENSIONS: Record<string, FileCategory> = {
+  pdf:  'pdf',
+  docx: 'docx',
+  doc:  'docx',
+  txt:  'text',
+  md:   'text',
+  png:  'image',
+  jpg:  'image',
+  jpeg: 'image',
+  webp: 'image',
+}
+
+const IMAGE_MEDIA_TYPES: Record<string, DocumentMediaType> = {
+  png:  'image/png',
+  jpg:  'image/jpeg',
+  jpeg: 'image/jpeg',
+  webp: 'image/webp',
+}
+
+function getExtension(filename: string): string {
+  return filename.split('.').pop()?.toLowerCase() ?? ''
+}
+
+function getCategory(filename: string): FileCategory | null {
+  return ALLOWED_EXTENSIONS[getExtension(filename)] ?? null
+}
+
+// ── Route handler ─────────────────────────────────────────────────────────────
 
 export async function POST(req: Request) {
   const { userId } = await auth()
@@ -56,45 +85,82 @@ export async function POST(req: Request) {
 
   const formData = await req.formData()
   const file = formData.get('file') as File | null
-
   if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
-  if (!file.name.toLowerCase().endsWith('.pdf')) {
-    return NextResponse.json({ error: 'Only PDF files are supported' }, { status: 400 })
-  }
-  if (file.size > 5 * 1024 * 1024) {
-    return NextResponse.json({ error: 'PDF must be under 5 MB' }, { status: 400 })
+
+  const ext = getExtension(file.name)
+  const category = getCategory(file.name)
+
+  if (!category) {
+    return NextResponse.json({
+      error: 'unsupported_file_type',
+      message: `"${ext}" files are not supported. Please upload a PDF, DOCX, TXT, PNG, JPG, or WEBP file.`,
+    }, { status: 400 })
   }
 
-  // Extract text from PDF (sync step, then stream Claude's response).
-  // Wrapped in try/catch: unpdf throws on password-protected or corrupt PDFs.
-  let rawText: string
-  try {
-    const arrayBuffer = await file.arrayBuffer()
-    const { text: pages } = await extractText(new Uint8Array(arrayBuffer), { mergePages: true })
-    const joined = Array.isArray(pages) ? pages.join('\n') : (pages as string)
-    rawText = cleanPdfText(joined)
-  } catch (err) {
-    console.error('[import/pdf] PDF text extraction failed:', err)
+  const maxBytes = 20 * 1024 * 1024   // 20 MB
+  if (file.size > maxBytes) {
     return NextResponse.json({
-      error: 'pdf_parse_error',
-      message: 'Could not read this PDF — it may be password-protected or corrupted. Try copying the text manually and using Paste Text instead.',
-    }, { status: 422 })
-  }
-
-  if (!rawText || rawText.trim().length < 50) {
-    return NextResponse.json({
-      error: 'insufficient_content',
-      message: 'Could not extract readable text from this PDF. The file may be scanned/image-based. Try copying the text manually and using Paste Text instead.',
-    }, { status: 422 })
+      error: 'file_too_large',
+      message: 'File must be under 20 MB. Try compressing the PDF or splitting it into sections.',
+    }, { status: 400 })
   }
 
   const profileContext = existingProfile
     ? { name: existingProfile.name, location: existingProfile.location ?? undefined }
     : undefined
 
-  // Stream Claude's extraction tokens to the client.
-  // Client accumulates all chunks and parses the complete JSON when stream ends.
-  const stream = streamProfileExtraction(rawText, 'resume', profileContext)
+  const arrayBuffer = await file.arrayBuffer()
+  let stream: ReadableStream<Uint8Array>
+
+  if (category === 'pdf') {
+    // ── PDF: send bytes directly to Claude as a native document block ──────────
+    // No text extraction — Claude reads any layout, orientation, or design natively.
+    const base64 = Buffer.from(arrayBuffer).toString('base64')
+    stream = streamProfileExtractionFromDocument(base64, 'application/pdf', profileContext)
+
+  } else if (category === 'image') {
+    // ── Image: send as native Claude vision block ─────────────────────────────
+    // Handles scanned resumes, photo CVs, and design-heavy image exports.
+    const mediaType = IMAGE_MEDIA_TYPES[ext] ?? 'image/jpeg'
+    const base64 = Buffer.from(arrayBuffer).toString('base64')
+    stream = streamProfileExtractionFromDocument(base64, mediaType, profileContext)
+
+  } else if (category === 'docx') {
+    // ── DOCX: mammoth extracts clean markdown-ish text, then text path ────────
+    let rawText: string
+    try {
+      const { value } = await mammoth.extractRawText({ buffer: Buffer.from(arrayBuffer) })
+      rawText = value.trim()
+    } catch (err) {
+      console.error('[import/pdf] DOCX extraction failed:', err)
+      return NextResponse.json({
+        error: 'docx_parse_error',
+        message: 'Could not read this Word document — it may be password-protected or corrupted.',
+      }, { status: 422 })
+    }
+
+    if (rawText.length < 50) {
+      return NextResponse.json({
+        error: 'insufficient_content',
+        message: 'The document appears to be empty or could not be read. Try saving it as PDF and uploading again.',
+      }, { status: 422 })
+    }
+
+    stream = streamProfileExtraction(rawText, 'resume', profileContext)
+
+  } else {
+    // ── Plain text (.txt / .md) ───────────────────────────────────────────────
+    const rawText = new TextDecoder().decode(arrayBuffer).trim()
+
+    if (rawText.length < 50) {
+      return NextResponse.json({
+        error: 'insufficient_content',
+        message: 'The file appears to be empty or has too little text to extract a profile from.',
+      }, { status: 422 })
+    }
+
+    stream = streamProfileExtraction(rawText, 'resume', profileContext)
+  }
 
   return new Response(stream, {
     headers: {

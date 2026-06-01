@@ -1,10 +1,18 @@
 // Profile Extraction Engine
 // ─────────────────────────────────────────────────────────────────────────────
-// One unified AI pipeline that takes raw text from ANY source
-// (PDF resume, LinkedIn paste, Seek profile, personal website)
-// and returns clean, structured, vetted profile data.
+// Two extraction paths:
 //
-// Model: claude-haiku-4-5 (Edge-runtime compatible, ~12–18s for 2000 tokens)
+// 1. streamProfileExtraction(text, ...)  — text-based (LinkedIn paste, Seek, URL)
+// 2. streamProfileExtractionFromDocument(base64, mediaType, ...) — document-based
+//    Sends PDF or image bytes directly to Claude as a native document/image block.
+//    Bypasses text extraction entirely — Claude reads ANY layout, orientation,
+//    or design natively. Used by the file upload route.
+//
+// Model: claude-haiku-4-5 (~150 tok/s)
+// Token budgets:
+//   text path      → 4096 (URL/paste has 25s Vercel streaming window)
+//   document path  → 8192 (same 25s window; native PDF is much faster to process
+//                    than extracted text and typical resumes finish well under budget)
 //
 // Decision record: see DECISIONS.md — Haiku chosen for cost efficiency on
 // Vercel Hobby plan; upgrade path to Sonnet documented for future consideration.
@@ -221,6 +229,113 @@ export function streamProfileExtraction(
           max_tokens: 4096,
           system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
           messages: [{ role: 'user', content: userPrompt }],
+        })
+
+        for await (const event of stream) {
+          if (event.type === 'content_block_delta' && event.delta.type === 'text_delta') {
+            controller.enqueue(encoder.encode(event.delta.text))
+          }
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Extraction failed'
+        controller.enqueue(encoder.encode(JSON.stringify({ error: msg })))
+      } finally {
+        controller.close()
+      }
+    },
+  })
+}
+
+// ── Document-based streaming extraction (PDF / image native blocks) ───────────
+// Sends the raw file bytes to Claude as a native document or image content block.
+// Claude handles any layout, orientation, multi-column design, or embedded font
+// without intermediate text extraction — resolving the unpdf/pdfjs quality problem.
+
+export type DocumentMediaType =
+  | 'application/pdf'
+  | 'image/png'
+  | 'image/jpeg'
+  | 'image/webp'
+
+type DocumentUserContent =
+  | { type: 'document'; source: { type: 'base64'; media_type: 'application/pdf'; data: string } }
+  | { type: 'image';    source: { type: 'base64'; media_type: 'image/png' | 'image/jpeg' | 'image/webp'; data: string } }
+
+function buildDocumentContent(
+  base64Data: string,
+  mediaType: DocumentMediaType,
+): DocumentUserContent {
+  if (mediaType === 'application/pdf') {
+    return { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: base64Data } }
+  }
+  // image/png | image/jpeg | image/webp
+  return { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64Data } }
+}
+
+function buildDocumentExtractionPrompt(
+  existingProfile?: { name?: string; location?: string },
+): string {
+  return `Extract the COMPLETE profile from the attached document. Capture all work experience entries and education entries in full — do not summarise or truncate.
+
+${existingProfile ? `Context: User's current name is "${existingProfile.name ?? 'unknown'}", located in "${existingProfile.location ?? 'unknown'}". Use this to fill any gaps.` : ''}
+
+Return a JSON object matching exactly this schema:
+{
+  "name": string | null,
+  "headline": string | null,
+  "bio": string | null,
+  "location": string | null,
+  "github_url": string | null,
+  "linkedin_url": string | null,
+  "salary_min": number | null,
+  "salary_max": number | null,
+  "skills": [{ "name": string, "level": 1|2|3|4|5, "evidence": string, "source_type": "explicit"|"inferred" }],
+  "experience": [{
+    "title": string,
+    "company": string,
+    "start_date": string | null,
+    "end_date": string | null,
+    "duration_months": number | null,
+    "description": string | null,
+    "key_technologies": string[]
+  }],
+  "education": [{
+    "institution": string,
+    "degree": string | null,
+    "field": string | null,
+    "graduation_year": number | null
+  }],
+  "confidence": "high"|"medium"|"low",
+  "warnings": string[],
+  "source_type_detected": "resume"|"linkedin"|"seek"|"website"|"unknown"
+}`
+}
+
+export function streamProfileExtractionFromDocument(
+  base64Data: string,
+  mediaType: DocumentMediaType,
+  existingProfile?: { name?: string; location?: string },
+): ReadableStream<Uint8Array> {
+  const textPrompt = buildDocumentExtractionPrompt(existingProfile)
+  const docContent = buildDocumentContent(base64Data, mediaType)
+  const encoder = new TextEncoder()
+
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        const stream = anthropic.messages.stream({
+          model: 'claude-haiku-4-5',
+          // 8192 tokens: native PDF processing is faster than text extraction and
+          // a full 3-page dense resume with rich experience comfortably fits.
+          // At ~150 tok/s this is ~55s worst-case; typical resumes finish in ~20s.
+          // Vercel Hobby streams up to 25s — large files may truncate, the client
+          // applies the same patching fallback as the text path.
+          max_tokens: 8192,
+          system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+          messages: [{
+            role: 'user',
+            content: [docContent, { type: 'text', text: textPrompt }],
+          }],
         })
 
         for await (const event of stream) {

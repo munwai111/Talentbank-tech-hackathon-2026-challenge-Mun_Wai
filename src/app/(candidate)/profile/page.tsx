@@ -194,7 +194,7 @@ export default function ProfilePage() {
       let res: Response
 
       if (importMode === 'pdf') {
-        if (!importFile) { setImportError('Please select a PDF file.'); setExtracting(false); return }
+        if (!importFile) { setImportError('Please select a file.'); setExtracting(false); return }
         const fd = new FormData()
         fd.append('file', importFile)
         res = await fetch('/api/candidate/import/pdf', { method: 'POST', body: fd })
@@ -472,7 +472,7 @@ export default function ProfilePage() {
           <Card className="p-6">
             <h3 className="font-semibold mb-1">📥 Import your profile</h3>
             <p className="text-sm text-zinc-500 mb-5">
-              Upload a PDF resume, paste a URL, or drop in any text. Our AI reads,
+              Upload your resume or CV, paste a URL, or drop in any text. Our AI reads,
               normalises, and cross-checks everything before adding it to your vault.
             </p>
 
@@ -488,33 +488,33 @@ export default function ProfilePage() {
                       : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
                   }`}
                 >
-                  {mode === 'pdf' ? '📄 PDF Resume' : mode === 'url' ? '🔗 URL' : '📋 Paste Text'}
+                  {mode === 'pdf' ? '📎 Upload File' : mode === 'url' ? '🔗 URL' : '📋 Paste Text'}
                 </button>
               ))}
             </div>
 
-            {/* PDF upload */}
+            {/* File upload */}
             {importMode === 'pdf' && (
-              <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
+              <label className={`flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
                 importFile ? 'border-blue-300 bg-blue-50' : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50'
               }`}>
                 <input
                   type="file"
-                  accept=".pdf"
+                  accept=".pdf,.docx,.doc,.txt,.md,.png,.jpg,.jpeg,.webp"
                   className="hidden"
                   onChange={e => { setImportFile(e.target.files?.[0] ?? null); setExtractedProfile(null) }}
                 />
                 {importFile ? (
                   <>
-                    <p className="text-2xl mb-1">📄</p>
+                    <p className="text-2xl mb-1">📎</p>
                     <p className="text-sm font-medium text-blue-700">{importFile.name}</p>
                     <p className="text-xs text-zinc-400">{(importFile.size / 1024).toFixed(0)} KB — click to change</p>
                   </>
                 ) : (
                   <>
                     <p className="text-2xl mb-1">📤</p>
-                    <p className="text-sm text-zinc-500">Click to upload your PDF resume</p>
-                    <p className="text-xs text-zinc-400 mt-1">PDF files only, up to 10 MB</p>
+                    <p className="text-sm text-zinc-500">Click to upload your resume or CV</p>
+                    <p className="text-xs text-zinc-400 mt-1">PDF, DOCX, TXT, or image (PNG/JPG) — up to 20 MB</p>
                   </>
                 )}
               </label>
