@@ -2,30 +2,23 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
-
-async function getCandidateProfile(clerkId: string) {
-  const supabase = createServerClient()
-  const { data: user } = await supabase
-    .from('users').select('id').eq('clerk_id', clerkId).single()
-  if (!user) return null
-  const { data: profile } = await supabase
-    .from('candidate_profiles').select('id').eq('user_id', user.id).single()
-  return profile
-}
+import { getOrCreateCandidateProfile } from '@/lib/supabase/candidate'
 
 export async function POST(req: Request) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const profile = await getCandidateProfile(userId)
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+  const candidate = await getOrCreateCandidateProfile(userId)
+  if (!candidate) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+
+  const { profileId } = candidate
 
   const { name, level, source, evidence_url } = await req.json()
 
   const supabase = createServerClient()
   const { data: skill, error } = await supabase
     .from('skills')
-    .insert({ candidate_id: profile.id, name, level, source: source ?? 'manual', evidence_url })
+    .insert({ candidate_id: profileId, name, level, source: source ?? 'manual', evidence_url })
     .select()
     .single()
 
@@ -40,7 +33,7 @@ export async function POST(req: Request) {
       'x-internal': 'true',                                         // legacy dev fallback
       'x-internal-secret': process.env.INTERNAL_SECRET ?? '',       // production secret
     },
-    body: JSON.stringify({ candidate_id: profile.id }),
+    body: JSON.stringify({ candidate_id: profileId }),
   }).catch(() => {})  // Non-blocking
 
   return NextResponse.json({ skill })

@@ -5,6 +5,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { getOrCreateCandidateProfile } from '@/lib/supabase/candidate'
 import Anthropic from '@anthropic-ai/sdk'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
@@ -23,14 +24,11 @@ export async function POST(req: Request) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const supabase = createServerClient()
-  const { data: user } = await supabase
-    .from('users').select('id').eq('clerk_id', userId).single()
-  if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+  const candidate = await getOrCreateCandidateProfile(userId)
+  if (!candidate) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-  const { data: profile } = await supabase
-    .from('candidate_profiles').select('id').eq('user_id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+  const { profileId } = candidate
+  const supabase = createServerClient()
 
   const { github_url } = await req.json()
 
@@ -161,7 +159,7 @@ Rules:
     const { data: existing } = await supabase
       .from('skills')
       .select('id')
-      .eq('candidate_id', profile.id)
+      .eq('candidate_id', profileId)
       .ilike('name', skill.name)  // case-insensitive match
       .single()
 
@@ -175,7 +173,7 @@ Rules:
       }).eq('id', existing.id)
     } else {
       await supabase.from('skills').insert({
-        candidate_id: profile.id,
+        candidate_id: profileId,
         name: skill.name,
         level: clampedLevel,
         source: 'github',
@@ -188,7 +186,7 @@ Rules:
   // Update github_url on the profile
   await supabase.from('candidate_profiles')
     .update({ github_url: `https://github.com/${username}` })
-    .eq('id', profile.id)
+    .eq('id', profileId)
 
   // Trigger embedding regeneration (non-blocking)
   fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'}/api/candidate/embed`, {
@@ -198,7 +196,7 @@ Rules:
       'x-internal': 'true',                                           // legacy dev fallback
       'x-internal-secret': process.env.INTERNAL_SECRET ?? '',         // production secret
     },
-    body: JSON.stringify({ candidate_id: profile.id }),
+    body: JSON.stringify({ candidate_id: profileId }),
   }).catch(() => {})
 
   return NextResponse.json({

@@ -16,6 +16,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { getOrCreateCandidateProfile } from '@/lib/supabase/candidate'
 import type { ExtractedProfile } from '@/lib/ai/profile-extractor'
 import type { Database } from '@/types/database'
 
@@ -25,15 +26,11 @@ export async function POST(req: Request) {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  const candidate = await getOrCreateCandidateProfile(userId)
+  if (!candidate) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+
+  const { profileId } = candidate
   const supabase = createServerClient()
-
-  const { data: user } = await supabase
-    .from('users').select('id').eq('clerk_id', userId).single()
-  if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 })
-
-  const { data: profile } = await supabase
-    .from('candidate_profiles').select('id').eq('user_id', user.id).single()
-  if (!profile) return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
 
   const { extracted, applyBio, applySkills }: {
     extracted: ExtractedProfile
@@ -69,7 +66,7 @@ export async function POST(req: Request) {
       const { error } = await supabase
         .from('candidate_profiles')
         .update(update)
-        .eq('id', profile.id)
+        .eq('id', profileId)
 
       if (error) {
         console.error('[import/apply] profile update failed:', error)
@@ -83,7 +80,7 @@ export async function POST(req: Request) {
     const { data: existingSkills } = await supabase
       .from('skills')
       .select('id, name, level')
-      .eq('candidate_id', profile.id)
+      .eq('candidate_id', profileId)
 
     const existingByName = new Map(
       (existingSkills ?? []).map(s => [s.name.toLowerCase(), s])
@@ -101,7 +98,7 @@ export async function POST(req: Request) {
         }
       } else {
         await supabase.from('skills').insert({
-          candidate_id: profile.id,
+          candidate_id: profileId,
           name: skill.name,
           level: clampedLevel,
           source: 'import',   // AI-extracted from resume — not self-reported
@@ -117,7 +114,7 @@ export async function POST(req: Request) {
         'x-internal': 'true',                                           // legacy dev fallback
         'x-internal-secret': process.env.INTERNAL_SECRET ?? '',         // production secret
       },
-      body: JSON.stringify({ candidate_id: profile.id }),
+      body: JSON.stringify({ candidate_id: profileId }),
     }).catch(() => {})
   }
 
