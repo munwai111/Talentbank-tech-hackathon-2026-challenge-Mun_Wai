@@ -15,6 +15,7 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 import type { WorkExperienceEntry, EducationEntry } from '@/types/database'
+import { validateUrl } from '@/lib/validate-url'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -291,6 +292,11 @@ export async function extractTextFromUrl(url: string): Promise<{
   const sourceType = url.includes('linkedin.com') ? 'linkedin'
     : url.includes('seek.com') ? 'seek'
     : 'website'
+
+  const urlCheck = validateUrl(url)
+  if (!urlCheck.valid) {
+    return { text: '', sourceType, blocked: true, reason: urlCheck.reason }
+  }
 
   // LinkedIn requires login — no point attempting a fetch
   if (sourceType === 'linkedin') {

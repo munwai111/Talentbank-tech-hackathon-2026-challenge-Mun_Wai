@@ -12,6 +12,7 @@ import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { streamProfileExtraction, extractTextFromUrl } from '@/lib/ai/profile-extractor'
+import { validateUrl } from '@/lib/validate-url'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 25
@@ -39,6 +40,14 @@ export async function POST(req: Request) {
 
   // ── Mode 1: URL fetch ───────────────────────────────────────────────────────
   if (body.url) {
+    const urlCheck = validateUrl(body.url)
+    if (!urlCheck.valid) {
+      return NextResponse.json({
+        error: 'blocked',
+        message: 'The provided URL is not allowed. Only public HTTP/HTTPS URLs are supported.',
+      }, { status: 422 })
+    }
+
     const result = await extractTextFromUrl(body.url)
 
     if (result.blocked) {
