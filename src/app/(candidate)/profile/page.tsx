@@ -247,21 +247,35 @@ export default function ProfilePage() {
         }
       } catch {
         // Fallback: JSON was likely truncated (model hit max_tokens).
-        // Attempt to close the structure — gives the user partial data + a warning
-        // rather than a hard failure that loses all extracted content.
-        const truncated = accumulated.slice(start)
+        // Try several repair strategies in order — gives the user partial data + a
+        // warning rather than a hard failure that loses all extracted content.
+        const truncated = accumulated.slice(start).trimEnd().replace(/,\s*$/, '')
         const opened = (truncated.match(/\{/g) ?? []).length
         const closed = (truncated.match(/\}/g) ?? []).length
-        const closingBraces = '}'.repeat(Math.max(0, opened - closed))
-        // Close any open arrays or strings before adding braces
-        const patched = truncated.trimEnd().replace(/,\s*$/, '') + closingBraces
-        try {
-          data = JSON.parse(patched) as ExtractedProfile & { error?: unknown }
-          if (!data.warnings) data.warnings = []
-          ;(data.warnings as string[]).push('Profile may be incomplete — resume was very long and was partially truncated.')
-        } catch {
+        const braces = '}'.repeat(Math.max(0, opened - closed))
+
+        // Strategy 1: just close open braces (works when truncated between values)
+        // Strategy 2: close an open string first, then close braces
+        // Strategy 3: close string + close object + close braces
+        const candidates = [
+          truncated + braces,
+          truncated + '"' + braces,
+          truncated + '"}' + (braces.length > 1 ? braces.slice(1) : ''),
+          truncated + '"]}' + (braces.length > 2 ? braces.slice(2) : ''),
+        ]
+
+        let patched: string | null = null
+        for (const candidate of candidates) {
+          try { JSON.parse(candidate); patched = candidate; break } catch { /* try next */ }
+        }
+
+        if (!patched) {
           throw new Error('AI response could not be parsed — your resume may be too long. Try Paste Text mode with only the key sections.')
         }
+
+        data = JSON.parse(patched) as ExtractedProfile & { error?: unknown }
+        if (!data.warnings) data.warnings = []
+        ;(data.warnings as string[]).push('Profile may be incomplete — resume was very long and was partially truncated.')
       }
 
       // data.error is a string emitted by the server when Claude API fails;

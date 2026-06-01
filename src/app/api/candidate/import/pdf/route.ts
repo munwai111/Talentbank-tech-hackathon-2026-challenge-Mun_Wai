@@ -2,22 +2,28 @@
 // Multi-format resume / CV upload handler.
 //
 // Supported file types:
-//   PDF  (.pdf)               → Claude native PDF document block (no text extraction)
+//   PDF  (.pdf)               → unpdf text extraction → text path
 //   DOCX (.docx, .doc)        → mammoth text extraction → text path
 //   Text (.txt, .md)          → plain text → text path
-//   Image (.png, .jpg, .jpeg, .webp) → Claude native image block
+//   Image (.png, .jpg, .jpeg, .webp) → Claude native vision block
 //
-// Why native PDF/image blocks instead of text extraction (unpdf/pdfjs)?
-//   Text extraction is lossy for styled, two-column, or image-based PDFs.
-//   Sending bytes directly to Claude lets it read any layout natively and
-//   eliminates the "AI response could not be parsed" error on complex resumes.
-//   See DECISIONS.md ADR-002.
+// Why text extraction for PDFs (not native document blocks)?
+//   Claude's native PDF document block requires Anthropic to read the full PDF
+//   server-side before streaming begins — for a complex 335KB resume this adds
+//   15-25s of overhead that exhausts Vercel Hobby's 25s streaming window.
+//   Text extraction with unpdf is near-instant (<1s), leaving the full window
+//   for token generation. cleanPdfText() fixes the letter-spacing artifacts
+//   that styled PDFs produce. See DECISIONS.md ADR-002.
+//
+//   Images use native vision blocks because image processing overhead is much
+//   lower (~1-2s vs 15-25s for PDFs), fitting comfortably in 25s.
 //
 // Runtime: Node.js (mammoth + Anthropic SDK have Node.js-specific code paths).
 // maxDuration = 25 signals the 25s streaming window on Vercel Hobby.
 
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
+import { extractText } from 'unpdf'
 import mammoth from 'mammoth'
 import { createServerClient } from '@/lib/supabase/server'
 import {
@@ -28,6 +34,21 @@ import {
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 25
+
+// ── PDF text cleaning ─────────────────────────────────────────────────────────
+// Removes letter-spacing artifacts produced by pdfjs on styled/two-column PDFs.
+// e.g. "P R O F E S S I O N A L" → "PROFESSIONAL"
+// Capping input at 6000 chars reduces output token pressure (less truncation risk)
+// while still covering the full content of a standard 2-page resume.
+
+function cleanPdfText(raw: string): string {
+  return raw
+    .replace(/\b([A-Z] ){2,}[A-Z]\b/g, m => m.replace(/ /g, ''))
+    .replace(/[ \t]{2,}/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+    .slice(0, 6000)
+}
 
 // ── File type helpers ─────────────────────────────────────────────────────────
 
@@ -97,7 +118,7 @@ export async function POST(req: Request) {
     }, { status: 400 })
   }
 
-  const maxBytes = 20 * 1024 * 1024   // 20 MB
+  const maxBytes = 20 * 1024 * 1024
   if (file.size > maxBytes) {
     return NextResponse.json({
       error: 'file_too_large',
@@ -113,20 +134,39 @@ export async function POST(req: Request) {
   let stream: ReadableStream<Uint8Array>
 
   if (category === 'pdf') {
-    // ── PDF: send bytes directly to Claude as a native document block ──────────
-    // No text extraction — Claude reads any layout, orientation, or design natively.
-    const base64 = Buffer.from(arrayBuffer).toString('base64')
-    stream = streamProfileExtractionFromDocument(base64, 'application/pdf', profileContext)
+    // ── PDF: text extraction → text path (fast, fits in 25s window) ───────────
+    let rawText: string
+    try {
+      const { text: pages } = await extractText(new Uint8Array(arrayBuffer), { mergePages: true })
+      const joined = Array.isArray(pages) ? pages.join('\n') : (pages as string)
+      rawText = cleanPdfText(joined)
+    } catch (err) {
+      console.error('[import/pdf] PDF text extraction failed:', err)
+      return NextResponse.json({
+        error: 'pdf_parse_error',
+        message: 'Could not read this PDF — it may be password-protected or corrupted. Try copying the text manually and using Paste Text instead.',
+      }, { status: 422 })
+    }
+
+    if (!rawText || rawText.trim().length < 50) {
+      return NextResponse.json({
+        error: 'insufficient_content',
+        message: 'Could not extract readable text from this PDF. The file may be scanned or image-based — try uploading it as a PNG/JPG screenshot instead, or use Paste Text mode.',
+      }, { status: 422 })
+    }
+
+    stream = streamProfileExtraction(rawText, 'resume', profileContext)
 
   } else if (category === 'image') {
-    // ── Image: send as native Claude vision block ─────────────────────────────
-    // Handles scanned resumes, photo CVs, and design-heavy image exports.
+    // ── Image: native Claude vision block ─────────────────────────────────────
+    // Image processing overhead (~1-2s) is much lower than PDF (~15-25s),
+    // fitting comfortably within the 25s window.
     const mediaType = IMAGE_MEDIA_TYPES[ext] ?? 'image/jpeg'
     const base64 = Buffer.from(arrayBuffer).toString('base64')
     stream = streamProfileExtractionFromDocument(base64, mediaType, profileContext)
 
   } else if (category === 'docx') {
-    // ── DOCX: mammoth extracts clean markdown-ish text, then text path ────────
+    // ── DOCX: mammoth extracts clean text → text path ─────────────────────────
     let rawText: string
     try {
       const { value } = await mammoth.extractRawText({ buffer: Buffer.from(arrayBuffer) })
