@@ -72,8 +72,47 @@ export async function GET() {
     return NextResponse.json({ matches: [], reason: 'no_skills' })
   }
 
-  // Build a lowercase set for fast O(1) lookup
-  const candidateSkills = new Set(skills.map(s => s.name.toLowerCase()))
+  // ── Skill normalisation map ───────────────────────────────────────────────
+  // Maps common skill name variants → canonical lowercase form so that
+  // "Microsoft Excel" matches a job requiring "Excel", etc.
+  // Keys are lowercase variants; values are the canonical form to index by.
+  const SYNONYMS: Record<string, string> = {
+    'microsoft excel':        'excel',
+    'ms excel':               'excel',
+    'microsoft word':         'word',
+    'microsoft powerpoint':   'powerpoint',
+    'ms office':              'microsoft office',
+    'ai/machine learning':    'machine learning',
+    'artificial intelligence': 'ai',
+    'ui/ux design':           'ux design',
+    'ui/ux':                  'ux design',
+    'user experience design': 'ux design',
+    'data analyst':           'data analysis',
+    'business development':   'business development',
+    'generative ai':          'ai',
+    'stakeholder management': 'stakeholder management',
+    'reactjs':                'react',
+    'react.js':               'react',
+    'nodejs':                 'node.js',
+    'node js':                'node.js',
+    'postgresql':             'postgresql',
+    'postgres':               'postgresql',
+    'typescript':             'typescript',
+    'javascript':             'javascript',
+    'js':                     'javascript',
+    'ts':                     'typescript',
+    'python3':                'python',
+    'scikit learn':           'scikit-learn',
+    'sklearn':                'scikit-learn',
+  }
+
+  function normalise(skill: string): string {
+    const lower = skill.toLowerCase()
+    return SYNONYMS[lower] ?? lower
+  }
+
+  // Build a set of normalised candidate skills for O(1) matching
+  const candidateSkills = new Set(skills.map(s => normalise(s.name)))
 
   // ── 2. Fetch all open jobs with company info ───────────────────────────────
   const { data: jobs } = await supabase
@@ -94,10 +133,10 @@ export async function GET() {
     const required = job.required_skills ?? []
     const nice = job.nice_to_have_skills ?? []
 
-    const matchedRequired  = required.filter(s => candidateSkills.has(s.toLowerCase()))
-    const missingRequired  = required.filter(s => !candidateSkills.has(s.toLowerCase()))
-    const matchedNice      = nice.filter(s => candidateSkills.has(s.toLowerCase()))
-    const missingNice      = nice.filter(s => !candidateSkills.has(s.toLowerCase()))
+    const matchedRequired  = required.filter(s => candidateSkills.has(normalise(s)))
+    const missingRequired  = required.filter(s => !candidateSkills.has(normalise(s)))
+    const matchedNice      = nice.filter(s => candidateSkills.has(normalise(s)))
+    const missingNice      = nice.filter(s => !candidateSkills.has(normalise(s)))
 
     const requiredScore = required.length > 0 ? matchedRequired.length / required.length : 1
     const niceScore     = nice.length     > 0 ? matchedNice.length     / nice.length     : 0
