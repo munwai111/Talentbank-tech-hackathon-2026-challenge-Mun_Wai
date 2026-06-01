@@ -325,12 +325,14 @@ export function streamProfileExtractionFromDocument(
       try {
         const stream = anthropic.messages.stream({
           model: 'claude-haiku-4-5',
-          // 8192 tokens: native PDF processing is faster than text extraction and
-          // a full 3-page dense resume with rich experience comfortably fits.
-          // At ~150 tok/s this is ~55s worst-case; typical resumes finish in ~20s.
-          // Vercel Hobby streams up to 25s — large files may truncate, the client
-          // applies the same patching fallback as the text path.
-          max_tokens: 8192,
+          // 2500 tokens: native PDF processing adds ~5s overhead before first token
+          // (Anthropic reads the document), leaving ~20s of the 25s Vercel Hobby
+          // streaming window for generation. At ~150 tok/s that's ~3000 usable tokens,
+          // but we cap at 2500 for a comfortable safety margin.
+          // The client applies the same patching + warning fallback as the text path
+          // if output is truncated on very dense profiles.
+          // Upgrade path: Vercel Pro (60s limit) → raise to 6000 tokens.
+          max_tokens: 2500,
           system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
           messages: [{
             role: 'user',
