@@ -175,14 +175,14 @@ export type Database = {
 
       // ── skills ───────────────────────────────────────────────────
       // Each skill is linked to a candidate. Level 1–5.
-      // source: 'manual' (user entered) | 'github' (AI extracted) | 'assessment'
+      // source: 'manual' (user entered) | 'import' (AI resume import) | 'github' (AI extracted) | 'assessment'
       skills: {
         Row: {
           id: string
           candidate_id: string
           name: string
           level: 1 | 2 | 3 | 4 | 5
-          source: 'manual' | 'github' | 'assessment'
+          source: 'manual' | 'import' | 'github' | 'assessment'
           evidence_url: string | null
           created_at: string
         }
@@ -191,7 +191,7 @@ export type Database = {
           candidate_id: string
           name: string
           level: 1 | 2 | 3 | 4 | 5
-          source: 'manual' | 'github' | 'assessment'
+          source: 'manual' | 'import' | 'github' | 'assessment'
           evidence_url?: string | null
         }
         Update: {

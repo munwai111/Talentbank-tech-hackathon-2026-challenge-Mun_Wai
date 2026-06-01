@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { CandidateProfile, Skill, PortfolioItem } from '@/types/database'
+import type { CandidateProfile, Skill, PortfolioItem, WorkExperienceEntry, EducationEntry } from '@/types/database'
 import type { ExtractedProfile } from '@/lib/ai/profile-extractor'
 
 // ─────────────────────────────────────────────────────────────
@@ -19,6 +19,8 @@ import type { ExtractedProfile } from '@/lib/ai/profile-extractor'
 type FullProfile = CandidateProfile & {
   skills: Skill[]
   portfolio_items: PortfolioItem[]
+  work_experience: WorkExperienceEntry[] | null
+  education: EducationEntry[] | null
 }
 
 // Skill level labels — shown as human-readable text not just numbers
@@ -40,9 +42,10 @@ const LEVEL_COLORS: Record<number, string> = {
 
 // Source badge — shows HOW a skill was verified (this is the key trust signal)
 const SOURCE_BADGES: Record<string, { label: string; color: string }> = {
-  manual:     { label: 'Self-reported', color: 'bg-zinc-100 text-zinc-500' },
-  github:     { label: '🐙 GitHub',     color: 'bg-green-100 text-green-700' },
-  assessment: { label: '✅ Assessed',   color: 'bg-blue-100 text-blue-700' },
+  manual:     { label: 'Self-reported',  color: 'bg-zinc-100 text-zinc-500' },
+  import:     { label: '📄 Resume',      color: 'bg-amber-100 text-amber-700' },
+  github:     { label: '🐙 GitHub',      color: 'bg-green-100 text-green-700' },
+  assessment: { label: '✅ Assessed',    color: 'bg-blue-100 text-blue-700' },
 }
 
 export default function ProfilePage() {
@@ -53,6 +56,7 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<FullProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
 
   // Bio form state
   const [bio, setBio] = useState({ name: '', headline: '', location: '', bio: '', github_url: '', salary_min: '', salary_max: '' })
@@ -108,16 +112,23 @@ export default function ProfilePage() {
   // ── Save bio/profile info ──────────────────────────────────
   async function saveBio() {
     setSaving(true)
-    await fetch('/api/candidate/profile', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...bio,
-        salary_min: bio.salary_min ? parseInt(bio.salary_min) : null,
-        salary_max: bio.salary_max ? parseInt(bio.salary_max) : null,
-      }),
-    })
-    setSaving(false)
+    setSaveSuccess(false)
+    try {
+      const res = await fetch('/api/candidate/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...bio,
+          salary_min: bio.salary_min ? parseInt(bio.salary_min) : null,
+          salary_max: bio.salary_max ? parseInt(bio.salary_max) : null,
+        }),
+      })
+      if (res.ok) setSaveSuccess(true)
+    } catch {
+      // error handled by save button remaining in non-success state
+    } finally {
+      setSaving(false)
+    }
   }
 
   // ── Add a skill manually ───────────────────────────────────
@@ -297,17 +308,25 @@ export default function ProfilePage() {
   async function applyExtracted() {
     if (!extractedProfile) return
     setApplying(true)
-    const res = await fetch('/api/candidate/import/apply', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ extracted: extractedProfile, applyBio, applySkills }),
-    })
-    if (res.ok) {
-      setApplySuccess(true)
-      const refreshed = await fetch('/api/candidate/profile').then(r => r.json())
-      setProfile(refreshed.profile)
+    try {
+      const res = await fetch('/api/candidate/import/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ extracted: extractedProfile, applyBio, applySkills }),
+      })
+      if (res.ok) {
+        setApplySuccess(true)
+        const { profile: refreshed } = await fetch('/api/candidate/profile').then(r => r.json())
+        setProfile(refreshed)
+      } else {
+        const err = await res.json().catch(() => ({})) as { error?: string }
+        setImportError(err.error ?? 'Failed to apply profile — please try again.')
+      }
+    } catch {
+      setImportError('Network error — please try again.')
+    } finally {
+      setApplying(false)
     }
-    setApplying(false)
   }
 
   if (loading) {
@@ -386,8 +405,8 @@ export default function ProfilePage() {
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${LEVEL_COLORS[skill.level]}`}>
                     {LEVEL_LABELS[skill.level]}
                   </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${SOURCE_BADGES[skill.source]?.color}`}>
-                    {SOURCE_BADGES[skill.source]?.label}
+                  <span className={`text-xs px-2 py-0.5 rounded-full ${SOURCE_BADGES[skill.source]?.color ?? SOURCE_BADGES.manual.color}`}>
+                    {SOURCE_BADGES[skill.source]?.label ?? SOURCE_BADGES.manual.label}
                   </span>
                   <button
                     onClick={() => deleteSkill(skill.id)}
@@ -399,6 +418,60 @@ export default function ProfilePage() {
               ))
             )}
           </div>
+
+          {/* Work experience — imported from resume */}
+          {(profile?.work_experience ?? []).length > 0 && (
+            <div>
+              <h3 className="font-semibold text-zinc-700 mb-3 mt-6">💼 Work Experience</h3>
+              <div className="space-y-3">
+                {(profile!.work_experience!).map((job, i) => (
+                  <Card key={i} className="p-4">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <div>
+                        <p className="font-semibold text-zinc-900">{job.title}</p>
+                        <p className="text-sm text-zinc-500">{job.company}</p>
+                      </div>
+                      <p className="text-xs text-zinc-400 whitespace-nowrap mt-0.5">
+                        {job.start_date ?? '?'} – {job.end_date ?? 'Present'}
+                      </p>
+                    </div>
+                    {job.description && (
+                      <p className="text-sm text-zinc-600 mt-2 leading-relaxed">{job.description}</p>
+                    )}
+                    {job.key_technologies.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {job.key_technologies.map(t => (
+                          <span key={t} className="text-xs bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded">{t}</span>
+                        ))}
+                      </div>
+                    )}
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Education — imported from resume */}
+          {(profile?.education ?? []).length > 0 && (
+            <div>
+              <h3 className="font-semibold text-zinc-700 mb-3 mt-2">🎓 Education</h3>
+              <div className="space-y-2">
+                {(profile!.education!).map((edu, i) => (
+                  <div key={i} className="flex items-start justify-between p-3 bg-white border rounded-lg">
+                    <div>
+                      <p className="font-medium text-zinc-900">{edu.institution}</p>
+                      <p className="text-sm text-zinc-500">
+                        {[edu.degree, edu.field].filter(Boolean).join(' · ')}
+                      </p>
+                    </div>
+                    {edu.graduation_year && (
+                      <span className="text-xs text-zinc-400 mt-0.5">{edu.graduation_year}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </TabsContent>
 
         {/* ── PORTFOLIO TAB ──────────────────────────────────── */}
@@ -885,9 +958,14 @@ export default function ProfilePage() {
                   <Input type="number" placeholder="72000" value={bio.salary_max} onChange={e => setBio(b => ({ ...b, salary_max: e.target.value }))} />
                 </div>
               </div>
-              <Button onClick={saveBio} disabled={saving}>
-                {saving ? 'Saving...' : 'Save profile'}
-              </Button>
+              <div className="flex items-center gap-3">
+                <Button onClick={() => { setSaveSuccess(false); saveBio() }} disabled={saving}>
+                  {saving ? 'Saving...' : 'Save profile'}
+                </Button>
+                {saveSuccess && (
+                  <span className="text-sm text-green-600 font-medium">✓ Saved</span>
+                )}
+              </div>
             </div>
           </Card>
         </TabsContent>

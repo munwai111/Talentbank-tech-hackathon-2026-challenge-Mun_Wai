@@ -104,7 +104,7 @@ export async function POST(req: Request) {
           candidate_id: profile.id,
           name: skill.name,
           level: clampedLevel,
-          source: 'manual',
+          source: 'import',   // AI-extracted from resume — not self-reported
         })
       }
     }
