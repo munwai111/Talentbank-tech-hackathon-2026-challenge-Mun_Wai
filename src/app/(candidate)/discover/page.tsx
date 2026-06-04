@@ -473,15 +473,15 @@ export default function DiscoverPage() {
   const step5 = (
     <div className="space-y-6">
       <div>
-        <h2 className="text-xl font-bold mb-1">Is there anything about your life right now that should shape your career plan?</h2>
+        <h2 className="text-xl font-bold mb-1">Life comes first.</h2>
         <p className="text-zinc-500 text-sm">
-          This is optional and private — it helps your paths and coach give advice that fits your actual life, not just your job history.
-          Caregiving, health, location constraints, planned breaks — all of it matters.
+          Your career plan should fit your actual life — not the other way around. Is there anything we should know?
+          This step is completely optional and private.
         </p>
       </div>
 
       <div>
-        <p className="text-sm font-medium text-zinc-700 mb-3">Select anything that applies, or write your own below.</p>
+        <p className="text-sm font-medium text-zinc-700 mb-3">Select anything that applies, or describe it below.</p>
         <div className="flex flex-wrap gap-2">
           {LIFE_CHAPTER_PILLS.map(pill => {
             const isSelected = form.life_chapter_context === pill
@@ -504,9 +504,9 @@ export default function DiscoverPage() {
       </div>
 
       <div>
-        <Label className="mb-2 block">Or describe your situation in your own words (optional)</Label>
+        <Label className="mb-2 block">Something else? Tell us in your own words.</Label>
         <Textarea
-          placeholder="e.g. I&apos;m caring for my mum and need to stay in Klang Valley. I can&apos;t take roles with unpredictable hours or frequent travel."
+          placeholder="e.g. I'm caring for my mum and need to stay in Klang Valley. I can't take roles with unpredictable hours or frequent travel."
           value={
             form.life_chapter_context && !LIFE_CHAPTER_PILLS.includes(form.life_chapter_context)
               ? form.life_chapter_context
@@ -516,13 +516,13 @@ export default function DiscoverPage() {
           rows={3}
         />
         <p className="text-xs text-zinc-400 mt-1">
-          Selecting a pill above fills this automatically. You can also type here directly — your words will override the pill selection.
+          Your words will override any pill selection above.
         </p>
       </div>
 
       <div className="bg-zinc-50 rounded-xl p-4 text-sm text-zinc-500 border border-zinc-100">
-        <p className="font-medium text-zinc-700 mb-1">🔒 This is private context</p>
-        <p>This is never shown to employers. It only shapes the career paths and coaching advice you receive — so both are relevant to your real situation, not an idealised version of it.</p>
+        <p className="font-medium text-zinc-700 mb-1">🔒 This is never shown to employers.</p>
+        <p>It only shapes your career paths and coach advice — so both are relevant to your real life, not an idealised version of it. You can skip this step with no impact on your matches.</p>
       </div>
     </div>
   )
@@ -580,7 +580,7 @@ export default function DiscoverPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Career Identity Builder 🧭</h1>
         <p className="text-zinc-500 mt-1">
-          5 steps. About 6 minutes. What you share here shapes every match you get.
+          5 steps. About 6 minutes. What you share here shapes every match, path, and coaching conversation.
         </p>
       </div>
 

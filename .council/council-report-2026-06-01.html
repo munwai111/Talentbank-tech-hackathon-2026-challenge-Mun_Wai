@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Career OS — Council Report · June 1 2026</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f8f8f7; color: #1a1a1a; line-height: 1.6; padding: 32px 16px; }
+  .page { max-width: 860px; margin: 0 auto; }
+
+  /* Header */
+  .header { background: #1a1a1a; color: #fff; border-radius: 12px; padding: 32px; margin-bottom: 24px; }
+  .header .label { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #888; margin-bottom: 8px; }
+  .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+  .header .meta { font-size: 13px; color: #999; }
+  .header .question { margin-top: 16px; padding: 16px; background: rgba(255,255,255,.06); border-radius: 8px; font-size: 13px; color: #ccc; line-height: 1.6; }
+
+  /* Verdict card */
+  .verdict { background: #fff; border-radius: 12px; border: 1px solid #e5e5e5; padding: 32px; margin-bottom: 24px; }
+  .verdict .verdict-label { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #888; margin-bottom: 20px; }
+  .verdict-section { margin-bottom: 28px; }
+  .verdict-section:last-child { margin-bottom: 0; }
+  .verdict-section h2 { font-size: 14px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .verdict-section p, .verdict-section li { font-size: 14px; color: #333; }
+  .verdict-section ul { padding-left: 18px; }
+  .verdict-section li { margin-bottom: 6px; }
+
+  .tag { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+  .tag-agree { background: #e8f5e9; color: #2e7d32; }
+  .tag-clash { background: #fff3e0; color: #e65100; }
+  .tag-blind { background: #e3f2fd; color: #1565c0; }
+  .tag-rec { background: #f3e5f5; color: #6a1b9a; }
+  .tag-one { background: #fce4ec; color: #ad1457; }
+
+  /* One thing */
+  .one-thing { background: #1a1a1a; color: #fff; border-radius: 12px; padding: 24px 32px; margin-bottom: 24px; display: flex; align-items: center; gap: 20px; }
+  .one-thing .icon { font-size: 36px; flex-shrink: 0; }
+  .one-thing .label { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: #888; margin-bottom: 6px; }
+  .one-thing .action { font-size: 17px; font-weight: 700; line-height: 1.4; }
+
+  /* Agreement grid */
+  .grid-card { background: #fff; border-radius: 12px; border: 1px solid #e5e5e5; padding: 24px; margin-bottom: 24px; }
+  .grid-card h3 { font-size: 13px; font-weight: 700; margin-bottom: 16px; color: #444; }
+  .advisor-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  .advisor-cell { text-align: center; }
+  .advisor-cell .name { font-size: 10px; color: #888; margin-bottom: 6px; line-height: 1.3; }
+  .advisor-cell .dot { width: 36px; height: 36px; border-radius: 50%; margin: 0 auto 4px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .dot-agree { background: #e8f5e9; }
+  .dot-clash { background: #fff3e0; }
+  .advisor-cell .verdict-short { font-size: 10px; color: #555; line-height: 1.3; }
+
+  /* Priority table */
+  .priority-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .priority-table th { text-align: left; padding: 8px 12px; background: #f4f4f3; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #666; border-bottom: 1px solid #e5e5e5; }
+  .priority-table td { padding: 12px; border-bottom: 1px solid #f0f0f0; vertical-align: top; }
+  .priority-table tr:last-child td { border-bottom: none; }
+  .day-tag { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; background: #f0f0f0; color: #444; white-space: nowrap; }
+
+  /* Collapsible advisors */
+  details { background: #fff; border-radius: 10px; border: 1px solid #e5e5e5; margin-bottom: 10px; overflow: hidden; }
+  summary { padding: 14px 18px; cursor: pointer; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 10px; list-style: none; }
+  summary::-webkit-details-marker { display: none; }
+  summary::before { content: '▶'; font-size: 10px; color: #999; transition: transform .2s; }
+  details[open] summary::before { transform: rotate(90deg); }
+  .advisor-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+  .badge-contrarian { background: #fde8e8; color: #c62828; }
+  .badge-principles { background: #e8f5e9; color: #2e7d32; }
+  .badge-expansionist { background: #e3f2fd; color: #1565c0; }
+  .badge-outsider { background: #fff8e1; color: #f57f17; }
+  .badge-executor { background: #f3e5f5; color: #6a1b9a; }
+  .advisor-body { padding: 0 18px 18px; font-size: 13px; color: #333; line-height: 1.7; border-top: 1px solid #f0f0f0; }
+
+  /* Peer reviews */
+  .peer-summary { background: #fff; border-radius: 12px; border: 1px solid #e5e5e5; padding: 24px; margin-bottom: 24px; }
+  .peer-row { display: flex; align-items: baseline; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f4f4f3; font-size: 13px; }
+  .peer-row:last-child { border-bottom: none; }
+  .peer-q { font-weight: 600; color: #888; min-width: 130px; font-size: 12px; }
+  .winner { font-weight: 700; color: #2e7d32; }
+
+  /* Footer */
+  .footer { text-align: center; font-size: 11px; color: #bbb; margin-top: 32px; }
+
+  @media (max-width: 600px) {
+    .advisor-grid { grid-template-columns: repeat(3, 1fr); }
+    .one-thing { flex-direction: column; text-align: center; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="label">LLM Council · Career OS · Talentbank Tech Hackathon 2026</div>
+    <h1>Project Recap — Are We On Track?</h1>
+    <div class="meta">June 1 2026 · 5 advisors · 5 peer reviewers · 1 chairman</div>
+    <div class="question">
+      <strong>Question:</strong> Given 14 days to deadline, 3 CRITICAL bugs (new user 404s, wrong skill badges, duplicate skills), and a PDF import that has failed 4 fix attempts — are we on track or derailed? Should we keep debugging PDF import, or pivot to fixing bugs and building judge-facing features? What are the top 3 priorities RIGHT NOW?
+    </div>
+  </div>
+
+  <!-- One Thing -->
+  <div class="one-thing">
+    <div class="icon">⚡</div>
+    <div>
+      <div class="label">The One Thing to Do First</div>
+      <div class="action">Pull up the Talentbank judging rubric right now — then fix the 404s. In that order.</div>
+    </div>
+  </div>
+
+  <!-- Chairman Verdict -->
+  <div class="verdict">
+    <div class="verdict-label">Chairman's Verdict</div>
+
+    <div class="verdict-section">
+      <h2><span class="tag tag-agree">AGREES</span> Where the Council Agrees</h2>
+      <p>Fix the 404s today. Every advisor, every reviewer — unanimous. New users hitting 404s is a demo-ending event. Everything else is secondary to this. Also unanimous: PDF import is a sinkhole. Four failed attempts signals a hard problem, not an easy one. Stop pouring time into it without a hard timebox.</p>
+    </div>
+
+    <div class="verdict-section">
+      <h2><span class="tag tag-clash">CLASHES</span> Where the Council Clashes</h2>
+      <p>The Expansionist wants you building a skills-match "wow" feature while CRITICAL bugs are still open — every peer reviewer flagged this as the biggest blind spot in the room. Premature optimization while the foundation is cracked. The First Principles Thinker says kill PDF import entirely; the Executor says timebox it to 2 hours. The Executor is right — "kill it" ignores the possibility it's on the judging rubric.</p>
+    </div>
+
+    <div class="verdict-section">
+      <h2><span class="tag tag-blind">BLIND SPOT</span> What the Council Caught in Peer Review</h2>
+      <p>All five advisors failed to ask the single most important question: <strong>what does Talentbank actually score?</strong> If PDF import is a required feature criterion, cutting it is self-sabotage. If skills-matching has no rubric weight, building it is vanity. Before touching another line of code, pull up the judging rubric and map every remaining hour against scored criteria. This changes everything.</p>
+    </div>
+
+    <div class="verdict-section">
+      <h2><span class="tag tag-rec">VERDICT</span> The Recommendation — 14-Day Sprint Plan</h2>
+      <table class="priority-table">
+        <thead>
+          <tr><th>When</th><th>What</th><th>Why</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="day-tag">Today</span></td>
+            <td><strong>Fix all 3 CRITICAL bugs in one session</strong><br>Fix 404s via Clerk webhook/middleware profile-row creation. Fix wrong badge + duplicate skill in same pass — they share a code path.</td>
+            <td>Demo-ending events. One session, three bugs.</td>
+          </tr>
+          <tr>
+            <td><span class="day-tag">Day 2–3</span></td>
+            <td><strong>Fix work history display + bio save feedback</strong><br>Data is already in the DB — this is a frontend rendering task. Bio save needs a success toast.</td>
+            <td>Judges will add data, see nothing, and mentally disqualify you.</td>
+          </tr>
+          <tr>
+            <td><span class="day-tag">Day 3 gate</span></td>
+            <td><strong>Check the judging rubric, then decide on PDF</strong><br>If PDF is scored: timebox attempt #4 to 2 hours max. If it fails, ship text-paste fallback framed as "multi-modal import." If PDF is not scored: cut it from demo.</td>
+            <td>Don't optimize for an unknown rubric.</td>
+          </tr>
+          <tr>
+            <td><span class="day-tag">Day 4–10</span></td>
+            <td><strong>Build one judge-facing feature: skills-match score</strong><br>Candidate vs. job listing as a % with skill breakdown. Makes your platform thesis tangible. Claude Haiku already integrated.</td>
+            <td>This is the differentiator judges remember.</td>
+          </tr>
+          <tr>
+            <td><span class="day-tag">Day 11–13</span></td>
+            <td><strong>Walk the demo as a judge. Break it. Fix what breaks.</strong><br>Drag-and-drop, default tab, polish. Only if everything above is done.</td>
+            <td>Polish compounds stable foundations.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Advisor Agreement Grid -->
+  <div class="grid-card">
+    <h3>Advisor Positions at a Glance</h3>
+    <div class="advisor-grid">
+      <div class="advisor-cell">
+        <div class="dot dot-agree">🔴</div>
+        <div class="name">The Contrarian</div>
+        <div class="verdict-short">Derailed. Fix 404s + badge. Drop PDF now.</div>
+      </div>
+      <div class="advisor-cell">
+        <div class="dot dot-agree">🟢</div>
+        <div class="name">First Principles</div>
+        <div class="verdict-short">Wrong triage. Fix loop first. Drop PDF entirely.</div>
+      </div>
+      <div class="advisor-cell">
+        <div class="dot dot-clash">🟡</div>
+        <div class="name">The Expansionist</div>
+        <div class="verdict-short">Fix bugs fast. Build wow feature next. <em>(flagged as blind)</em></div>
+      </div>
+      <div class="advisor-cell">
+        <div class="dot dot-agree">🟤</div>
+        <div class="name">The Outsider</div>
+        <div class="verdict-short">3 bugs kill new users. Fix. Hard-timebox PDF.</div>
+      </div>
+      <div class="advisor-cell">
+        <div class="dot dot-agree">🟣</div>
+        <div class="name">The Executor</div>
+        <div class="verdict-short">Fix bugs today. Timebox PDF 2h. Skills-match by Day 10. <em>(voted strongest 5/5)</em></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Peer Review Highlights -->
+  <div class="peer-summary">
+    <h3 style="font-size:13px;font-weight:700;margin-bottom:16px;color:#444;">Peer Review — Highlights</h3>
+    <div class="peer-row"><span class="peer-q">Strongest (5/5 votes)</span><span class="winner">The Executor</span> — only response with concrete technical implementation (Clerk webhook), day-by-day sequencing, and insight that badge/duplicate bugs share a code path with 404s.</div>
+    <div class="peer-row"><span class="peer-q">Biggest blind spot</span><span>The Expansionist — recommended building new features while CRITICAL bugs remain open. Flagged by all 5 reviewers as premature.</span></div>
+    <div class="peer-row"><span class="peer-q">Missed by all 5</span><span>The judging rubric. No advisor asked what Talentbank actually scores. This single omission potentially invalidates the entire priority stack.</span></div>
+  </div>
+
+  <!-- Advisor Full Responses -->
+  <div class="grid-card">
+    <h3>Full Advisor Responses</h3>
+  </div>
+
+  <details>
+    <summary><span class="advisor-badge badge-contrarian">The Contrarian</span> — "You're derailed and rationalizing."</summary>
+    <div class="advisor-body">
+      <p>You're not "on track with blockers." You're derailed and rationalizing. Here's the fatal flaw: PDF import is a sinkhole that's consumed 3 failed attempts with a 14-day hard deadline. Attempt #4 has no guaranteed success criteria. You don't know why it's failing. That's not debugging — that's gambling.</p>
+      <p style="margin-top:10px">The CRITICAL bugs are worse than you're treating them. New users hitting 404s on GitHub/apply/skills routes means judges will hit those 404s during the demo. Hackathon judges don't give second chances.</p>
+      <p style="margin-top:10px">The "AI-imported skills" showing wrong badges is a credibility catastrophe for a skills-first platform. The core value proposition is broken in a visible, embarrassing way.</p>
+      <p style="margin-top:10px"><strong>Three priorities:</strong> 1) Kill the 404s today. 2) Fix the AI skills badge. 3) Drop PDF import until bugs 1-2 are resolved. Timebox attempt #4 to 4 hours. The uncomfortable question: what does the demo path look like right now, step by step? If a judge breaks it in under a minute, your feature list is irrelevant.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="advisor-badge badge-principles">First Principles</span> — "You're asking a sequencing question when you have a triage question."</summary>
+    <div class="advisor-body">
+      <p>What does a hackathon judge actually evaluate? They click through your demo. If new users hit 404s, the judge hits a 404 — that's a zero-score event. The PDF import is a nice-to-have. A broken core loop is a disqualifier.</p>
+      <p style="margin-top:10px"><strong>Priority stack:</strong> 1) Fix the 404s immediately — one fix, three bugs resolved, do this today. 2) Drop PDF import entirely — you've burned 4 attempts, marginal demo value near zero. 3) Fix work history display — data saving to DB but never rendering is a broken feature. Judges will input data and see nothing.</p>
+      <p style="margin-top:10px">What wins hackathons: a polished, complete core loop that works flawlessly beats a feature-rich demo that crashes.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="advisor-badge badge-expansionist">The Expansionist</span> — "You're one pivot away from winning."</summary>
+    <div class="advisor-body">
+      <p>Stop debugging PDF import — you're burning time on infrastructure while the judging rubric rewards experience and vision. The 3 CRITICAL bugs are actually your fastest path to an impressive demo. Fix them in 48 hours and you have a platform that works end-to-end for a new user.</p>
+      <p style="margin-top:10px"><strong>Top 3:</strong> 1) Fix the 404s — 2-hour fix, do it tonight. 2) Fix work history display — most damaging demo failure. 3) Build one judge-facing "wow" feature: a skills match score between candidate and job as a percentage with breakdown. This is the thesis of your platform made tangible. Claude Haiku already integrated.</p>
+      <p style="margin-top:10px">PDF import? Ship a graceful fallback — paste-your-resume text input. Frame it as "multi-modal import." Judges won't care; they'll care that AI analysis works on whatever input they give.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="advisor-badge badge-outsider">The Outsider</span> — "You have 3 bugs that break the app for every new user. Fix those first."</summary>
+    <div class="advisor-body">
+      <p>A judge evaluating your demo will create a new account. They will hit a 404. They will stop evaluating your demo. The PDF import problem is irrelevant if the person testing your app can't get past the first screen.</p>
+      <p style="margin-top:10px">PDF import has had 3 failed fixes. You are on attempt 4. That pattern tells you something: this problem is harder than you think. Meanwhile, every other broken thing listed is fixable.</p>
+      <p style="margin-top:10px"><strong>Top 3:</strong> 1) Fix the 404s — one null-check away, do it today. 2) Make work history display — you already saved the data, rendering is a frontend task, do it tomorrow. 3) Add bio save feedback — a spinner or success toast, one hour of work.</p>
+      <p style="margin-top:10px">PDF import: set a hard deadline. If attempt 4 is not working by day 3, cut it from your demo. Judges care that your concept works, not that one file format parses correctly.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="advisor-badge badge-executor">The Executor ★ Voted Strongest 5/5</span> — "Stop debugging PDF import. Here's exactly what you do."</summary>
+    <div class="advisor-body">
+      <p>Stop debugging PDF import. You've burned 3 attempts. Ship attempt #4 only if it takes under 2 hours total — if you're not done by lunch Monday, kill it and move on.</p>
+      <p style="margin-top:10px"><strong>Top 3:</strong></p>
+      <p style="margin-top:6px">1. Fix the 3 CRITICAL bugs today. The 404s will get you killed in the demo. Add profile row creation on sign-up via a Clerk webhook or middleware check. Fix wrong-badge and duplicate-skill in the same pass — probably the same code path.</p>
+      <p style="margin-top:6px">2. Fix work history display and bio save feedback by Wednesday. Both are frontend display issues. Block half a day.</p>
+      <p style="margin-top:6px">3. Build one judge-facing demo feature by Day 10. A visual skills match score between candidate and job takes maybe 2 days with Claude Haiku already integrated.</p>
+      <p style="margin-top:10px">PDF drag-and-drop, default tab — do those last, Day 12-13, only if everything else is done.</p>
+    </div>
+  </details>
+
+  <!-- Footer -->
+  <div class="footer">
+    LLM Council · Career OS Project Recap · June 1 2026 · Methodology by Andrej Karpathy
+  </div>
+
+</div>
+</body>
+</html>

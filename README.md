@@ -185,15 +185,35 @@ src/
 
 ---
 
+## Malaysian Market Context
+
+Career OS is built for Malaysia's actual talent pool — not the LinkedIn-native, English-fluent developer demographic. Several design decisions reflect this directly:
+
+| Decision | Why it matters for Malaysia |
+|---|---|
+| MYR salary ranges throughout | Most Malaysian candidates have no market salary data. Guessing costs them. |
+| TVET/diploma-aware framing | Malaysia's graduate pipeline is heavily diploma and TVET — not degree-first. |
+| B40/M40 income bracket awareness | Coach references SOCSO, PERKESO, and JKM reskilling grants where relevant. |
+| HRDC-funded upskilling | Employer-funded training is widely available in Malaysia — Coach surfaces this when recommending skills. |
+| MYSkills alignment (planned) | Malaysia's national skills recognition framework (MYSkills) is the intended credential backbone for verified skills in a production deployment. |
+| MQF integration path (planned) | Malaysian Qualifications Framework credential verification would replace self-reported education levels. |
+| TalentCorp / MDEC awareness | Career paths reference government workforce initiatives and digital economy programs where relevant. |
+
+### Integration Story
+
+Career OS is not built to replace Talentbank — it's built to run on top of it. The database schema maps directly to candidate profiles, employer companies, and job listings. The AI layer (path navigator, coach, profile extractor) is modular and callable via API. A Talentbank integration path would involve pointing the auth layer at Talentbank's existing user database, mapping the candidate and employer profile schemas, and activating the AI features against existing data. No rebuild required — configuration changes and data migration.
+
+---
+
 ## Judging Criteria Alignment
 
 | Criterion | Weight | How we address it |
 |---|---|---|
-| Product & UX | 30% | Navigation metaphor, no jargon, demo-ready end-to-end flow |
-| System Design | 25% | pgvector matching, prompt caching, typed schema, performance indexes |
-| Completeness | 20% | Both candidate and employer flows fully functional |
-| AI Craft | 15% | 6 distinct AI features, streaming chat, navigation framing, caching |
-| Code Quality | 10% | TypeScript strict, CLAUDE.md code review standards, /simplify gate |
+| Product & UX | 30% | Navigation metaphor, no jargon, demo-ready end-to-end flow, Life Chapter Designer |
+| System Design | 25% | pgvector matching, prompt caching, typed schema, shared matching lib, performance indexes |
+| Completeness | 20% | Both candidate and employer flows fully functional, 7 AI features, C-01/C-02/C-03/C-04/C-05/E-01 covered |
+| AI Craft | 15% | Streaming chat, prompt caching, navigation framing, salary reference, goal-alignment scoring |
+| Code Quality | 10% | TypeScript strict, shared utility extraction, CLAUDE.md code review standards |
 
 ---
 

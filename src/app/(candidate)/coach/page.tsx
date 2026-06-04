@@ -12,9 +12,10 @@ import type { CoachMessage } from '@/lib/ai/coach'
 
 const STARTERS = [
   'What should I focus on to get a Senior role in the next 12 months?',
-  'How do I negotiate salary in Malaysia for my level?',
+  'Am I underpaid for my role and experience level in Malaysia?',
   'I want to switch from backend to product management — is that realistic?',
   'What skills are most in-demand right now in KL tech companies?',
+  'How do I negotiate a raise without risking my job?',
 ]
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -155,7 +156,7 @@ export default function CoachPage() {
   }, [messages, streaming])
 
   // Keep the ref current so the nudge effect can call the latest version
-  sendMessageRef.current = sendMessage
+  useEffect(() => { sendMessageRef.current = sendMessage }, [sendMessage])
 
   // If the user arrived via the proactive nudge (?q=...), auto-send the question
   useEffect(() => {

@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# sensitive — credentials, recovery codes, debug files
+recovery-codes.txt
+*.rtf
+debug-*.ts
+debug-*.js

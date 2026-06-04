@@ -1,57 +1,81 @@
-# Talentbank Tech Hackathon 2026 — Intent Form Draft
+# Talentbank Tech Hackathon 2026 — Intent Form
 # Solo submission | Due: June 15, 2026
-# ─────────────────────────────────────────────────────────────────────────────
-# Copy the section below into the form. ~800 words.
 # ─────────────────────────────────────────────────────────────────────────────
 
 ---
 
 ## Project Name
-**Career OS — A Skills-First Career GPS for APAC**
+**Career OS — Asia's Career Co-Pilot, Built for Malaysia**
+
+---
+
+## Module Selections
+
+**Compulsory:**
+- ✅ Career OS / Career Marketplace — dual-sided platform (candidates + employers)
+
+**Optional modules tackled:**
+- ✅ C-01 Career Path Navigator
+- ✅ C-02 Living Portfolio
+- ✅ C-03 AI Career Coach
+- ✅ C-05 Life Chapter Designer
+- ⚡ C-04 Fair Pay Engine *(salary data embedded in career paths; standalone salary signal live)*
+- ⚡ E-01 Smart Talent Matching *(skills-overlap matching + career goal alignment weighting)*
 
 ---
 
 ## Concept Brief (~800 words)
 
-### The problem we're solving
+### The problem
 
-The job market in Southeast Asia is breaking in a specific, underreported way. It's not that jobs are disappearing — it's that the skills required for any given job are changing faster than hiring systems can keep up with. A candidate who was perfectly qualified eighteen months ago may now be missing three critical skills that didn't exist on any job description until recently. Meanwhile, hiring platforms built on résumés and keywords are filtering candidates the same way they did in 2005.
+For most people across Asia, no one tells you what's next. You make the most consequential decisions of your professional life — which skills to build, which moves to make, when to push and when to pivot — with no data, no map, and no co-pilot. Just guesses, peer pressure, and hope.
 
-The people hit hardest are those without a prestigious university brand or a Fortune 500 name on their CV — which is most of the talent pool in Malaysia and the wider APAC region. They have real skills, built through bootcamps, freelance work, open source contributions, and self-teaching. But the hiring system can't see them.
+This is especially acute in Malaysia. A TVET graduate from Kedah with genuine technical ability has no way to show it. A mid-career professional wondering whether to pivot into data engineering has no way to see what that move actually looks like for someone with their background. A fresh IT diploma holder applying to 30 jobs has no idea which ones are realistic and which are out of reach — and why.
 
-Career OS is built to fix this.
+Career OS is the answer to that problem. Not a job board. A career co-pilot.
 
 ### What we built
 
-Career OS is a skills-first hiring platform with two sides: candidates who build a living skills profile, and employers who define jobs by what they actually need someone to be able to do.
+Career OS is a dual-sided Career OS / Career Marketplace: candidates build living profiles and get AI-powered career navigation; employers post skills-first roles and see talent ranked by genuine fit.
 
-The core insight is a shift in framing: instead of asking "does this person's résumé match this job description?" we ask "which of this candidate's verified skills overlap with what this role requires, and what's the gap?" The answer is shown in plain language to both sides — not a black-box percentage, but a specific list of matched and missing skills.
+**Compulsory module — Career OS / Career Marketplace:**
+The platform connects both sides of Malaysia's hiring market. Candidates are not filtered by keyword — they're matched by skill overlap and career trajectory. Employers see not just who qualifies today, but who is heading in the right direction.
 
-**For candidates, the platform has six interconnected features:**
+**C-01 — Career Path Navigator:**
+Claude maps three realistic directions from a candidate's current skill set: a Strong Match (1–6 months away), an Emerging Path (6–18 months), and a Stretch Goal (18–36 months). Every path uses navigation language — "professionals with similar profiles in Malaysia typically..." — not prediction language. Salaries in MYR. Timelines in realistic ranges. No false certainty.
 
-1. **Skills Vault** — A living inventory of verified skills, each tagged with a proficiency level (1–5) and a source (self-reported, GitHub-extracted, or formally assessed). Candidates can import skills directly from GitHub repositories, where Claude reads READMEs and commit history to infer their actual tech stack.
+**C-02 — Living Portfolio:**
+A candidate's skills don't live in a CV — they live in GitHub repositories, past projects, and worked examples. Career OS imports skills directly from GitHub (Claude reads repo languages and READMEs), CV/PDF uploads (Claude extracts structured work history and skills), or manual entry. The Skills Vault is a living, sourced record of what the candidate can actually do.
 
-2. **AI Resume Import** — Upload a PDF or paste a LinkedIn/Seek profile. Claude parses the raw text and extracts a structured profile — experience, education, skills, and career preferences — which the candidate reviews before applying. No locked-in data.
+**C-03 — AI Career Coach:**
+A streaming chat interface powered by Claude that knows the candidate's actual profile — skills, work history, education, career goals. It gives APAC-specific advice: real MYR salary bands, honest assessments of whether a goal is realistic, concrete skill recommendations based on what the KL market actually demands. Not a chatbot. A senior mentor.
 
-3. **Career Identity** — A guided 4-step form that captures where the candidate is now, what they're looking for, what matters to them, and where they want to be in five years. Claude synthesises their answers into a concise Career Identity narrative — a paragraph that captures who this person is professionally without the hollow language of most "professional summaries."
+**C-05 — Life Chapter Designer:**
+Career planning that fits actual life. A new step in the Career Identity flow asks candidates about life context: caregiving responsibilities, planned career breaks, location constraints, health, return after a gap. The Path Navigator and AI Coach use this context to give advice grounded in the candidate's reality — not just their skills.
 
-4. **Career Path Navigator** — The centrepiece feature. Claude takes the candidate's current skill set and career stage and maps out three realistic directions: a Strong Match (roles they can step into in 1–6 months), an Emerging Path (6–18 months of focused development), and a Stretch Goal (18–36 months). Critically, every path uses navigation language — "professionals with similar profiles in Malaysia typically move here within X months" — not prediction language. We show ranges, not certainties.
+**E-01 — Smart Talent Matching (goal-aligned):**
+Matching is not just "does this candidate have these keywords." Career OS scores candidates on skill overlap (70%) and career goal alignment (30%) — surfacing people who are genuinely heading toward the role, not just those who happened to use the right words. Both sides see matched skills, missing skills, and goal alignment in plain view.
 
-5. **Job Matches** — Every open role on the platform is scored against the candidate's skills using deterministic overlap matching. Green chips show matched skills; red chips show missing required skills. No black-box scores. The candidate can see exactly why they match or don't match any role.
-
-6. **AI Coach** — A live streaming chat interface powered by Claude that knows the candidate's actual profile. It gives APAC-specific advice: real salary bands in MYR, which companies in KL are actively hiring, which skills are worth learning given what the market actually demands right now.
-
-**For employers**, the platform provides a talent pool that's ranked by genuine skill fit for each open role, with gap analysis visible at a glance. Employers can also build a Culture Identity — an AI-synthesised employer brand from a culture questionnaire — making their company legible to candidates before they apply.
+**C-04 — Fair Pay Engine:**
+Salary ranges in MYR are embedded in every career path the Path Navigator generates. The AI Coach holds a full salary reference table for Malaysian tech roles at junior, mid, and senior levels — so candidates can ask "am I underpaid?" and get a specific, grounded answer, not a generic response.
 
 ### Technical approach
 
-The platform is built on Next.js 16 with Supabase for data and pgvector for semantic matching, Clerk for authentication, and Claude claude-haiku-4-5 for all AI features. Skill matching is deterministic overlap scoring — no OpenAI embeddings required for the core flow. Prompt caching is applied to all static AI system prompts, reducing API latency and cost by approximately 70–80% on repeat calls. The full stack is TypeScript with strict mode.
+Next.js 16 (App Router) · Supabase + pgvector · Clerk auth · Claude Haiku 4.5 · TypeScript strict · Vercel
+
+All AI calls are prompt-cached — static system prompts are cached across calls, reducing API latency and cost ~70–80%. Skill matching is deterministic overlap scoring with synonym normalisation, augmented by keyword-based goal alignment. The architecture is designed to run on top of an existing candidate/employer database — not just as a greenfield app. Career OS could be deployed against Talentbank's existing talent graph with configuration changes, not a rebuild.
+
+### Malaysian market context
+
+Career OS is built for Malaysia's actual talent pool — not the LinkedIn-native, English-fluent developer demographic. Skills map to roles common in the Malaysian market. Salary ranges are calibrated for MYR, with Singapore noted for comparison. The platform's skills framework is aligned with MYSkills (Malaysia's national skills recognition system) and supports HRDC-funded upskilling tracks as a future integration layer. The career path logic accounts for Malaysia's graduate pipeline: diploma holders, TVET graduates, fresh degree holders entering a market in rapid transition. Candidates in B40/M40 income brackets can be pointed toward SOCSO, PERKESO, and JKM reskilling grants via the AI Coach.
+
+### Integration story
+
+Career OS is not built to replace Talentbank — it's built to run on top of it. The database schema maps directly to candidate profiles, employer companies, and job listings. The AI layer (path navigator, coach, profile extractor) is modular and callable via API. A Talentbank integration path would involve: pointing the auth layer at Talentbank's existing user database, mapping the candidate and employer profile schemas, and activating the AI features against existing data. No rebuild required — configuration changes and data migration.
 
 ### Why this matters
 
-We built Career OS with a specific vision in mind: a world where your career trajectory isn't determined by where you went to school or which companies happened to hire you early on. In a region undergoing rapid economic transition driven by AI adoption, the candidates who'll navigate this best aren't the ones with the most credentials — they're the ones who can see clearly where they are, where similar people have gone, and what they need to learn next.
-
-That's what Career OS is: not a job board. A career GPS.
+Talentbank is building Asia's Career OS. This submission is built with that goal in mind — not a generic platform adapted to Malaysia, but one designed from the start to serve the talent Talentbank knows best. The code is open, the architecture is adoptable, and the product is demo-ready today.
 
 ---
 
@@ -61,13 +85,6 @@ That's what Career OS is: not a job board. A career GPS.
 ---
 
 ## Prototype
-**URL:** _(Vercel deploy URL — available by July 26 submission)_
-**Demo video:** _(to be recorded once deployed)_
-
----
-
-## Module Selections
-_(Fill in based on the specific tracks listed at techhackathon.com)_
-- AI/ML Integration
-- Job & Career Platform
-- _(add any additional relevant tracks)_
+**Live URL:** https://career-os-dusky.vercel.app
+**Demo accounts:** Sign up at `/sign-up` — choose Candidate or Employer (15 seed jobs pre-loaded)
+**Demo video:** *(to be recorded by June 13 — Malaysian candidate persona, Shah Alam, IT diploma, career pivot scenario)*
