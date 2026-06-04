@@ -1,6 +1,7 @@
 // /employer/candidates/[jobId] — Ranked candidates for a specific job
-// The employer's "match view": shows every candidate ranked by skill fit.
-// Mirrors the candidate's /jobs page but from the employer's perspective.
+// The employer's "match view": shows every candidate ranked by combined
+// skill fit + career goal alignment (E-01). Mirrors the candidate's
+// /jobs page but from the employer's perspective.
 
 import { currentUser } from '@clerk/nextjs/server'
 import { createServerClient } from '@/lib/supabase/server'
@@ -9,6 +10,14 @@ import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  normaliseSkill,
+  scoreGoalAlignment,
+  deriveGoalLabel,
+  combinedMatchScore,
+  candidateHasGoals,
+} from '@/lib/matching'
+import type { CareerData } from '@/types/database'
 
 type SkillRow = { name: string; level: number; source: string }
 
@@ -19,6 +28,8 @@ type RankedCandidate = {
   location: string | null
   skills: SkillRow[]
   score_pct: number
+  skill_pct: number
+  goal_alignment_label: 'goal_match' | 'career_pivot' | null
   matched: string[]
   missing_required: string[]
   missing_nice: string[]
@@ -62,10 +73,11 @@ export default async function CandidatesForJobPage({
 
   if (!job) redirect('/employer/jobs')
 
-  // ── Fetch all candidates with their skills ─────────────────────────────────
+  // ── Fetch all candidates with skills + career goals (for E-01 scoring) ───────
+  // Note: career_data is used only for scoring — goal text is never shown to employers.
   const { data: allProfiles } = await supabase
     .from('candidate_profiles')
-    .select('id, name, headline, location, skills(*)')
+    .select('id, name, headline, location, career_data, skills(*)')
 
   if (!allProfiles || allProfiles.length === 0) {
     return (
@@ -82,34 +94,45 @@ export default async function CandidatesForJobPage({
     )
   }
 
-  // ── Rank candidates by skill overlap ──────────────────────────────────────
+  // ── Rank candidates by combined skill + goal alignment (E-01) ───────────────
   const required = job.required_skills ?? []
   const nice = job.nice_to_have_skills ?? []
 
   const ranked: RankedCandidate[] = allProfiles
     .map(profile => {
       const skills = (profile.skills as SkillRow[]) ?? []
-      const candidateSkills = new Set(skills.map(s => s.name.toLowerCase()))
+      const careerData = (profile.career_data ?? null) as CareerData | null
+      const candidateSkills = new Set(skills.map(s => normaliseSkill(s.name)))
 
-      const matchedRequired = required.filter((s: string) => candidateSkills.has(s.toLowerCase()))
-      const missingRequired = required.filter((s: string) => !candidateSkills.has(s.toLowerCase()))
-      const matchedNice     = nice.filter((s: string) => candidateSkills.has(s.toLowerCase()))
-      const missingNice     = nice.filter((s: string) => !candidateSkills.has(s.toLowerCase()))
+      const matchedRequired = required.filter((s: string) => candidateSkills.has(normaliseSkill(s)))
+      const missingRequired = required.filter((s: string) => !candidateSkills.has(normaliseSkill(s)))
+      const matchedNice     = nice.filter((s: string) => candidateSkills.has(normaliseSkill(s)))
+      const missingNice     = nice.filter((s: string) => !candidateSkills.has(normaliseSkill(s)))
 
       const reqScore  = required.length > 0 ? matchedRequired.length / required.length : 1
       const niceScore = nice.length     > 0 ? matchedNice.length     / nice.length     : 0
-      const score     = reqScore * 0.75 + niceScore * 0.25
+      const skillScore = reqScore * 0.75 + niceScore * 0.25
+      const skillPct   = Math.round(skillScore * 100)
+
+      const goalAlignmentPct = scoreGoalAlignment(careerData, {
+        title: job.title,
+        description: job.description,
+      })
+      const hasGoals    = candidateHasGoals(careerData)
+      const combined    = combinedMatchScore(skillScore, goalAlignmentPct, hasGoals)
 
       return {
-        id:               profile.id,
-        name:             profile.name,
-        headline:         profile.headline,
-        location:         profile.location,
+        id:                   profile.id,
+        name:                 profile.name,
+        headline:             profile.headline,
+        location:             profile.location,
         skills,
-        score_pct:        Math.round(score * 100),
-        matched:          [...matchedRequired, ...matchedNice],
-        missing_required: missingRequired,
-        missing_nice:     missingNice,
+        score_pct:            Math.round(combined * 100),
+        skill_pct:            skillPct,
+        goal_alignment_label: deriveGoalLabel(skillPct, goalAlignmentPct),
+        matched:              [...matchedRequired, ...matchedNice],
+        missing_required:     missingRequired,
+        missing_nice:         missingNice,
       }
     })
     .filter(c => c.skills.length > 0)      // Only candidates who have skills
@@ -170,14 +193,26 @@ export default async function CandidatesForJobPage({
                   )}
                 </div>
               </div>
-              {/* Score */}
-              <span className={`text-sm font-bold px-3 py-1 rounded-full border shrink-0 ${
-                candidate.score_pct >= 70 ? 'bg-green-100 text-green-700 border-green-200' :
-                candidate.score_pct >= 40 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                                            'bg-red-100 text-red-700 border-red-200'
-              }`}>
-                {candidate.score_pct}% match
-              </span>
+              {/* Score + goal label */}
+              <div className="flex items-center gap-2 shrink-0">
+                {candidate.goal_alignment_label === 'goal_match' && (
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    🎯 Goal match
+                  </span>
+                )}
+                {candidate.goal_alignment_label === 'career_pivot' && (
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                    🔀 Growth hire
+                  </span>
+                )}
+                <span className={`text-sm font-bold px-3 py-1 rounded-full border ${
+                  candidate.score_pct >= 70 ? 'bg-green-100 text-green-700 border-green-200' :
+                  candidate.score_pct >= 40 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                                              'bg-red-100 text-red-700 border-red-200'
+                }`}>
+                  {candidate.score_pct}% match
+                </span>
+              </div>
             </div>
 
             {/* Score bar */}

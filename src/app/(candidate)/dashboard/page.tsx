@@ -35,7 +35,31 @@ export default async function DashboardPage() {
   const skillCount = profile?.skills?.length ?? 0
   const hasEmbedding = !!profile?.embedding
   const hasCareerIdentity = !!profile?.career_data?.synthesized_at
+  const hasLifeChapter = !!profile?.career_data?.life_chapter_context
   const firstName = user.firstName ?? 'there'
+
+  // Proactive coach nudge logic — surface the most relevant signal
+  // Mirrors Talentbank's C-03 intent: "quiet until something matters"
+  type CoachNudge = { message: string; prompt: string } | null
+  const coachNudge: CoachNudge = (() => {
+    if (!hasCareerIdentity || skillCount < 3) return null
+    if (hasLifeChapter) {
+      return {
+        message: "Your life context is set — your coach can factor it into salary and role advice.",
+        prompt: "Given my life situation, what roles and salary ranges should I be targeting right now?",
+      }
+    }
+    if (skillCount >= 5) {
+      return {
+        message: `You have ${skillCount} skills in your vault. Your coach can tell you if you're paid what you're worth.`,
+        prompt: "Based on my skills, am I being paid what the market says I should be earning in Malaysia?",
+      }
+    }
+    return {
+      message: "Your Career Identity is live. Your coach can map your next realistic move.",
+      prompt: "What's the most realistic next role I should be targeting given where I am right now?",
+    }
+  })()
 
   // Profile completeness score (shown as motivation)
   const completeness = [
@@ -151,6 +175,29 @@ export default async function DashboardPage() {
             <Link href="/paths">
               <Button size="sm" className="shrink-0 ml-4 bg-indigo-600 hover:bg-indigo-700">
                 Navigate →
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      )}
+
+      {/* ── Proactive coach nudge (C-03) ─────────────────────── */}
+      {coachNudge && (
+        <Card className="p-6 border-teal-100 bg-teal-50 mb-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h3 className="font-semibold text-teal-900">🤖 Your coach has something to say</h3>
+              <p className="text-sm text-teal-700 mt-1">{coachNudge.message}</p>
+              <p className="text-xs text-teal-500 mt-2 font-medium">
+                Suggested question: &ldquo;{coachNudge.prompt}&rdquo;
+              </p>
+            </div>
+            <Link
+              href={`/coach?q=${encodeURIComponent(coachNudge.prompt)}`}
+              className="shrink-0"
+            >
+              <Button size="sm" className="bg-teal-600 hover:bg-teal-700 whitespace-nowrap">
+                Ask coach →
               </Button>
             </Link>
           </div>

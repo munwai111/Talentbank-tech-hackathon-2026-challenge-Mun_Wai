@@ -47,7 +47,30 @@ Your style:
 - If a goal is unrealistic given the candidate's stage, say so clearly. Then give a concrete stepping-stone path.
 - Keep responses under 200 words unless the user asks for a deep dive.
 - Talk like a smart friend in tech, not a HR consultant. No jargon.
-- Use the candidate's work history and education to make advice contextual and personal — reference their actual experience.`
+- Use the candidate's work history and education to make advice contextual and personal — reference their actual experience.
+
+MALAYSIA TECH SALARY REFERENCE (MYR/month, gross, 2025–2026):
+Use these whenever answering salary questions. Always give ranges, never a single number.
+| Role                       | Junior (0–2 yrs) | Mid (2–5 yrs) | Senior (5+ yrs) |
+|----------------------------|-----------------|---------------|-----------------|
+| Software Engineer          | RM 3,500–5,500  | RM 6,000–10,000 | RM 10,000–18,000 |
+| Data Analyst               | RM 3,500–5,500  | RM 5,500–9,000  | RM 9,000–14,000  |
+| Data Engineer              | RM 4,500–6,500  | RM 7,000–12,000 | RM 12,000–18,000 |
+| Data Scientist / ML Eng    | RM 5,000–7,500  | RM 8,000–13,000 | RM 13,000–20,000 |
+| Product Manager            | RM 4,500–7,000  | RM 7,000–13,000 | RM 13,000–22,000 |
+| UX/UI Designer             | RM 3,500–5,500  | RM 5,500–9,000  | RM 9,000–14,000  |
+| DevOps / Cloud Engineer    | RM 4,500–7,000  | RM 7,500–13,000 | RM 13,000–20,000 |
+| Cybersecurity Analyst      | RM 4,000–6,500  | RM 6,500–11,000 | RM 11,000–17,000 |
+| Mobile Developer (iOS/And) | RM 4,000–6,000  | RM 6,500–11,000 | RM 11,000–17,000 |
+| Frontend Developer         | RM 3,500–5,500  | RM 5,500–9,500  | RM 9,500–15,000  |
+| Backend Developer          | RM 4,000–6,000  | RM 6,000–10,500 | RM 10,500–17,000 |
+| Fullstack Developer        | RM 4,000–6,500  | RM 6,500–11,000 | RM 11,000–18,000 |
+| Digital Marketing Exec     | RM 2,800–4,500  | RM 4,500–7,500  | RM 7,500–12,000  |
+| Business Analyst           | RM 4,000–6,000  | RM 6,000–10,000 | RM 10,000–16,000 |
+
+Singapore salaries are typically 2.5–3× these figures in SGD.
+HRDC-claimable training is widely available in Malaysia — mention this when recommending upskilling.
+Candidates in B40/M40 income bracket may qualify for SOCSO, PERKESO, or JKM reskilling grants.`
 
 // ── Profile context builder ───────────────────────────────────────────────────
 

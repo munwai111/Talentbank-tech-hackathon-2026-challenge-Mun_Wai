@@ -61,13 +61,17 @@ function PathStats({ path }: { path: CareerPath }) {
   const salary = `RM ${path.salary_min_myr.toLocaleString()} – ${path.salary_max_myr.toLocaleString()}/mo`
   const timeline = `${path.timeline_months_min}–${path.timeline_months_max} months`
   return (
-    <div className="flex gap-4 text-sm">
-      <div>
-        <p className="text-xs text-zinc-400 mb-0.5">Salary range</p>
-        <p className="font-semibold text-zinc-800">{salary}</p>
+    <div className="space-y-3">
+      {/* Fair Pay signal — prominent salary display (C-04) */}
+      <div className="bg-emerald-50 border border-emerald-100 rounded-lg px-4 py-3">
+        <p className="text-xs text-emerald-600 font-medium mb-0.5">💰 Market salary for this move</p>
+        <p className="text-base font-bold text-emerald-900">{salary}</p>
+        <p className="text-xs text-emerald-600 mt-0.5">
+          Professionals in Malaysia with a similar profile typically earn in this range.
+        </p>
       </div>
-      <div className="border-l pl-4">
-        <p className="text-xs text-zinc-400 mb-0.5">Typical timeline</p>
+      <div className="text-sm">
+        <p className="text-xs text-zinc-400 mb-0.5">Typical timeline to reach this role</p>
         <p className="font-semibold text-zinc-800">{timeline}</p>
       </div>
     </div>

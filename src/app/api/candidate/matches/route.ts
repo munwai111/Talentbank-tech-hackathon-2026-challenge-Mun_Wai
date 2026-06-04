@@ -1,29 +1,39 @@
 // GET /api/candidate/matches
 // Returns ranked job matches for the logged-in candidate.
 //
-// ── How the matching works (skill-overlap algorithm) ─────────────────────────
-// We compare the candidate's skill names against each job's required_skills
-// and nice_to_have_skills arrays.
+// ── How the matching works (E-01 goal-based algorithm) ───────────────────────
+// Score = 70% skills overlap + 30% career goal alignment
 //
-// Score formula:
-//   score = (matched_required / total_required) × 0.75
-//         + (matched_nice    / total_nice)      × 0.25
+// Skills overlap formula:
+//   skill_score = (matched_required / total_required) × 0.75
+//               + (matched_nice    / total_nice)      × 0.25
 //
-// The 75/25 weighting reflects that required skills are non-negotiable,
-// nice-to-have skills are a bonus.
+// Goal alignment formula:
+//   goal_score = keyword intersection between candidate goals/industries
+//                and the job title+description (scaled 0–100)
+//
+// Combined: score = skill_score × 0.7 + goal_score × 0.3
+// When career_data is absent: falls back to pure skill_score (goal_score = 0)
 //
 // Matching is case-insensitive. "React" matches "react" matches "REACT".
 //
-// 🔴 DEBT FLAG — Exact name matching only
-// What this is: "React" won't match "ReactJS" unless normalised first.
-// Why it's a problem: Candidates who say "ReactJS" miss React jobs.
-// Fix when: When OpenAI key is active — swap to vector cosine similarity,
-//           which handles semantic equivalence automatically.
-// Recommended solution: src/app/api/candidate/embed + job embeddings + pgvector.
+// ⚠️ DEBT FLAG — Exact name matching only
+// What it is: "React" won't match "ReactJS" unless normalised first.
+// Why it matters: Candidates who say "ReactJS" miss React jobs.
+// Urgency: Before Demo
+// Suggested fix: pgvector cosine similarity — embed already wired up in /embed route.
 
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import type { CareerData } from '@/types/database'
+import {
+  normaliseSkill,
+  scoreGoalAlignment,
+  deriveGoalLabel,
+  combinedMatchScore,
+  candidateHasGoals,
+} from '@/lib/matching'
 
 export type MatchResult = {
   job: {
@@ -43,8 +53,11 @@ export type MatchResult = {
       size: string | null
     }
   }
-  score: number              // 0.0–1.0
-  score_pct: number          // 0–100 for display
+  score: number                                       // 0.0–1.0 combined
+  score_pct: number                                   // 0–100 for display
+  skill_pct: number                                   // skills overlap only (0–100)
+  goal_alignment_pct: number                          // goal alignment only (0–100)
+  goal_alignment_label: 'goal_match' | 'career_pivot' | null
   matched_skills: string[]
   missing_required: string[]
   missing_nice: string[]
@@ -62,8 +75,13 @@ export async function GET() {
   if (!user) return NextResponse.json({ matches: [], error: 'User not found' })
 
   const { data: profile } = await supabase
-    .from('candidate_profiles').select('id').eq('user_id', user.id).single()
+    .from('candidate_profiles')
+    .select('id, career_data')
+    .eq('user_id', user.id)
+    .single()
   if (!profile) return NextResponse.json({ matches: [] })
+
+  const careerData = (profile.career_data ?? null) as CareerData | null
 
   const { data: skills } = await supabase
     .from('skills').select('name').eq('candidate_id', profile.id)
@@ -72,47 +90,8 @@ export async function GET() {
     return NextResponse.json({ matches: [], reason: 'no_skills' })
   }
 
-  // ── Skill normalisation map ───────────────────────────────────────────────
-  // Maps common skill name variants → canonical lowercase form so that
-  // "Microsoft Excel" matches a job requiring "Excel", etc.
-  // Keys are lowercase variants; values are the canonical form to index by.
-  const SYNONYMS: Record<string, string> = {
-    'microsoft excel':        'excel',
-    'ms excel':               'excel',
-    'microsoft word':         'word',
-    'microsoft powerpoint':   'powerpoint',
-    'ms office':              'microsoft office',
-    'ai/machine learning':    'machine learning',
-    'artificial intelligence': 'ai',
-    'ui/ux design':           'ux design',
-    'ui/ux':                  'ux design',
-    'user experience design': 'ux design',
-    'data analyst':           'data analysis',
-    'business development':   'business development',
-    'generative ai':          'ai',
-    'stakeholder management': 'stakeholder management',
-    'reactjs':                'react',
-    'react.js':               'react',
-    'nodejs':                 'node.js',
-    'node js':                'node.js',
-    'postgresql':             'postgresql',
-    'postgres':               'postgresql',
-    'typescript':             'typescript',
-    'javascript':             'javascript',
-    'js':                     'javascript',
-    'ts':                     'typescript',
-    'python3':                'python',
-    'scikit learn':           'scikit-learn',
-    'sklearn':                'scikit-learn',
-  }
-
-  function normalise(skill: string): string {
-    const lower = skill.toLowerCase()
-    return SYNONYMS[lower] ?? lower
-  }
-
   // Build a set of normalised candidate skills for O(1) matching
-  const candidateSkills = new Set(skills.map(s => normalise(s.name)))
+  const candidateSkills = new Set(skills.map(s => normaliseSkill(s.name)))
 
   // ── 2. Fetch all open jobs with company info ───────────────────────────────
   const { data: jobs } = await supabase
@@ -133,15 +112,27 @@ export async function GET() {
     const required = job.required_skills ?? []
     const nice = job.nice_to_have_skills ?? []
 
-    const matchedRequired  = required.filter(s => candidateSkills.has(normalise(s)))
-    const missingRequired  = required.filter(s => !candidateSkills.has(normalise(s)))
-    const matchedNice      = nice.filter(s => candidateSkills.has(normalise(s)))
-    const missingNice      = nice.filter(s => !candidateSkills.has(normalise(s)))
+    const matchedRequired  = required.filter(s => candidateSkills.has(normaliseSkill(s)))
+    const missingRequired  = required.filter(s => !candidateSkills.has(normaliseSkill(s)))
+    const matchedNice      = nice.filter(s => candidateSkills.has(normaliseSkill(s)))
+    const missingNice      = nice.filter(s => !candidateSkills.has(normaliseSkill(s)))
 
     const requiredScore = required.length > 0 ? matchedRequired.length / required.length : 1
     const niceScore     = nice.length     > 0 ? matchedNice.length     / nice.length     : 0
 
-    const score = requiredScore * 0.75 + niceScore * 0.25
+    // Raw skills score (0–1)
+    const skillScore = requiredScore * 0.75 + niceScore * 0.25
+    const skillPct   = Math.round(skillScore * 100)
+
+    // Goal alignment score (0–100) — E-01 enhancement
+    const goalAlignmentPct = scoreGoalAlignment(careerData, {
+      title: job.title,
+      description: job.description,
+    })
+
+    // Combined score: 70% skills, 30% goal alignment (falls back to pure skill when no goals)
+    const hasGoals = candidateHasGoals(careerData)
+    const combinedScore = combinedMatchScore(skillScore, goalAlignmentPct, hasGoals)
 
     // Supabase returns the joined company as an array when using select(*)
     // Handle both array and object shapes defensively
@@ -165,8 +156,11 @@ export async function GET() {
           size: company?.size ?? null,
         },
       },
-      score,
-      score_pct: Math.round(score * 100),
+      score: combinedScore,
+      score_pct: Math.round(combinedScore * 100),
+      skill_pct: skillPct,
+      goal_alignment_pct: goalAlignmentPct,
+      goal_alignment_label: deriveGoalLabel(skillPct, goalAlignmentPct),
       matched_skills: [...matchedRequired, ...matchedNice],
       missing_required: missingRequired,
       missing_nice: missingNice,

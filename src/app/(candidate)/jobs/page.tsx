@@ -2,7 +2,8 @@
 
 // /jobs — Candidate's ranked job matches
 // The core demo page: shows every open role scored against this candidate's
-// verified skill profile. Sorted best-match first. Gap analysis per role.
+// verified skill profile AND career goals (E-01). Sorted best-match first.
+// Gap analysis + goal alignment chips per role.
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
@@ -75,7 +76,7 @@ export default function JobsPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Job Matches 🎯</h1>
         <p className="text-zinc-500 mt-1">
-          Ranked by skill fit — not keywords. Every score shows exactly why.
+          Ranked by skill fit + career goal alignment — not keywords. Every score shows exactly why.
         </p>
       </div>
 
@@ -135,9 +136,27 @@ export default function JobsPage() {
                     )}
                   </p>
                 </div>
-                <ScoreBadge pct={match.score_pct} />
+                <div className="flex items-center gap-2 shrink-0">
+                  {match.goal_alignment_label === 'goal_match' && (
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      🎯 Goal match
+                    </span>
+                  )}
+                  {match.goal_alignment_label === 'career_pivot' && (
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                      🔀 Career pivot
+                    </span>
+                  )}
+                  <ScoreBadge pct={match.score_pct} />
+                </div>
               </div>
               <ScoreBar pct={match.score_pct} />
+              {/* Score breakdown — shown when goal alignment is active */}
+              {match.goal_alignment_pct > 0 && (
+                <p className="text-xs text-zinc-400 mt-1.5">
+                  Skills {match.skill_pct}% · Goals {match.goal_alignment_pct}% · Combined {match.score_pct}%
+                </p>
+              )}
             </div>
 
             {/* Meta row */}
@@ -243,8 +262,11 @@ export default function JobsPage() {
 
       {matches.length > 0 && (
         <p className="text-xs text-zinc-400 text-center mt-6">
-          Scores are based on skill overlap. Add more skills to your vault to improve your matches.
-          {' '}<Link href="/profile" className="underline hover:text-zinc-600">Go to Skills Vault →</Link>
+          Scores combine skill overlap (70%) and career goal alignment (30%).
+          Add skills or complete your Career Identity to improve your matches.
+          {' '}<Link href="/profile" className="underline hover:text-zinc-600">Skills Vault</Link>
+          {' · '}
+          <Link href="/discover" className="underline hover:text-zinc-600">Career Identity →</Link>
         </p>
       )}
     </div>

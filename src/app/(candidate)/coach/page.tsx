@@ -5,6 +5,7 @@
 // Messages are session-local (no persistence needed for demo).
 
 import { useState, useRef, useEffect, useCallback } from 'react'
+import { useSearchParams } from 'next/navigation'
 import type { CoachMessage } from '@/lib/ai/coach'
 
 // ── Starter prompts shown before first message ────────────────────────────────
@@ -72,16 +73,23 @@ function StarterButton({ text, onClick }: { text: string; onClick: () => void })
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function CoachPage() {
+  const searchParams = useSearchParams()
   const [messages, setMessages] = useState<CoachMessage[]>([])
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  // Track whether we've already fired the ?q= nudge so it doesn't re-fire
+  const nudgeFiredRef = useRef(false)
 
   // Auto-scroll to latest message
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
+
+  // sendMessage is defined below; we use a ref so the nudge effect can call it
+  // without creating a circular dependency.
+  const sendMessageRef = useRef<(text: string) => void>(() => undefined)
 
   const sendMessage = useCallback(async (text: string) => {
     if (!text.trim() || streaming) return
@@ -145,6 +153,20 @@ export default function CoachPage() {
       inputRef.current?.focus()
     }
   }, [messages, streaming])
+
+  // Keep the ref current so the nudge effect can call the latest version
+  sendMessageRef.current = sendMessage
+
+  // If the user arrived via the proactive nudge (?q=...), auto-send the question
+  useEffect(() => {
+    if (nudgeFiredRef.current) return
+    const q = searchParams.get('q')
+    if (!q) return
+    nudgeFiredRef.current = true
+    // Small delay so the page paint completes before the first message fires
+    const timer = setTimeout(() => sendMessageRef.current(q), 300)
+    return () => clearTimeout(timer)
+  }, [searchParams])
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
