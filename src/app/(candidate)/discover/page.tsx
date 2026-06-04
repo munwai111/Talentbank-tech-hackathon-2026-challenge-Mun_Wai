@@ -1,11 +1,12 @@
 'use client'
 
-// /discover — Career Identity Builder (4-step form + AI synthesis)
+// /discover — Career Identity Builder (5-step form + AI synthesis)
 //
 // Step 1: Where are you now?      (situation, education, experience)
 // Step 2: What are you looking for? (industries, roles, company type, location)
 // Step 3: What matters to you?    (values, work style, motivation)
 // Step 4: Where are you headed?   (goals, dream role, deal-breakers)
+// Step 5: Life Chapter Designer   (life events that shape career plan — C-05)
 // → AI generates Career Identity narrative from all answers
 
 import { useState, useEffect } from 'react'
@@ -101,9 +102,20 @@ const EMPTY: CareerData = {
   goal_5_year: null,
   dream_role: null,
   deal_breakers: null,
+  life_chapter_context: null,
   career_identity_summary: null,
   synthesized_at: null,
 }
+
+const LIFE_CHAPTER_PILLS = [
+  'I have caregiving responsibilities',
+  "I'm planning a career break or parental leave",
+  "I'm returning after a career gap",
+  'I need to stay in a specific location',
+  "I'm managing a health condition",
+  'I want to reduce hours or go part-time',
+  'None of the above — no constraints right now',
+]
 
 export default function DiscoverPage() {
   const router = useRouter()
@@ -141,7 +153,7 @@ export default function DiscoverPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
       setSynthesis(data.career_identity_summary)
-      setStep(4) // success/result step
+      setStep(5) // success/result step
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong')
     }
@@ -457,7 +469,65 @@ export default function DiscoverPage() {
     </div>
   )
 
-  // ── Step 5: Result (AI synthesis) ────────────────────────────────────────
+  // ── Step 5: Life Chapter Designer (C-05) ────────────────────────────────
+  const step5 = (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl font-bold mb-1">Is there anything about your life right now that should shape your career plan?</h2>
+        <p className="text-zinc-500 text-sm">
+          This is optional and private — it helps your paths and coach give advice that fits your actual life, not just your job history.
+          Caregiving, health, location constraints, planned breaks — all of it matters.
+        </p>
+      </div>
+
+      <div>
+        <p className="text-sm font-medium text-zinc-700 mb-3">Select anything that applies, or write your own below.</p>
+        <div className="flex flex-wrap gap-2">
+          {LIFE_CHAPTER_PILLS.map(pill => {
+            const isSelected = form.life_chapter_context === pill
+            return (
+              <button
+                key={pill}
+                type="button"
+                onClick={() => set('life_chapter_context', isSelected ? null : pill)}
+                className={`px-3 py-2 rounded-full text-sm border transition-all text-left ${
+                  isSelected
+                    ? 'bg-blue-600 text-white border-blue-600'
+                    : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400'
+                }`}
+              >
+                {pill}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      <div>
+        <Label className="mb-2 block">Or describe your situation in your own words (optional)</Label>
+        <Textarea
+          placeholder="e.g. I&apos;m caring for my mum and need to stay in Klang Valley. I can&apos;t take roles with unpredictable hours or frequent travel."
+          value={
+            form.life_chapter_context && !LIFE_CHAPTER_PILLS.includes(form.life_chapter_context)
+              ? form.life_chapter_context
+              : ''
+          }
+          onChange={e => set('life_chapter_context', e.target.value || null)}
+          rows={3}
+        />
+        <p className="text-xs text-zinc-400 mt-1">
+          Selecting a pill above fills this automatically. You can also type here directly — your words will override the pill selection.
+        </p>
+      </div>
+
+      <div className="bg-zinc-50 rounded-xl p-4 text-sm text-zinc-500 border border-zinc-100">
+        <p className="font-medium text-zinc-700 mb-1">🔒 This is private context</p>
+        <p>This is never shown to employers. It only shapes the career paths and coaching advice you receive — so both are relevant to your real situation, not an idealised version of it.</p>
+      </div>
+    </div>
+  )
+
+  // ── Step 6: Result (AI synthesis) ────────────────────────────────────────
   const stepResult = (
     <div className="space-y-6">
       <div className="text-center">
@@ -502,24 +572,24 @@ export default function DiscoverPage() {
     </div>
   )
 
-  const steps = [step1, step2, step3, step4]
-  const isFinalFormStep = step === 3
+  const steps = [step1, step2, step3, step4, step5]
+  const isFinalFormStep = step === 4
 
   return (
     <div className="p-8 max-w-2xl">
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Career Identity Builder 🧭</h1>
         <p className="text-zinc-500 mt-1">
-          4 steps. About 5 minutes. What you share here shapes every match you get.
+          5 steps. About 6 minutes. What you share here shapes every match you get.
         </p>
       </div>
 
-      {step < 4 && <StepProgress current={step} total={4} />}
+      {step < 5 && <StepProgress current={step} total={5} />}
 
       <Card className="p-6">
-        {step < 4 ? steps[step] : stepResult}
+        {step < 5 ? steps[step] : stepResult}
 
-        {step < 4 && (
+        {step < 5 && (
           <>
             {error && (
               <p className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">

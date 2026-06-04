@@ -108,6 +108,10 @@ function buildPathPrompt(input: PathInput): string {
       }).join('\n')
     : `  ${cd?.education_level ?? 'Not specified'} in ${cd?.education_field ?? 'unspecified field'}`
 
+  const lifeContext = cd?.life_chapter_context
+    ? `\nLIFE CONTEXT (account for this in all 3 paths — let it shape trade_offs and navigation_notes):\n  ${cd.life_chapter_context}`
+    : ''
+
   const context = [
     `CANDIDATE SNAPSHOT`,
     `Location: ${location ?? 'not specified'}`,
@@ -131,6 +135,7 @@ function buildPathPrompt(input: PathInput): string {
     `Preferred job functions: ${cd?.preferred_job_functions?.join(', ') || 'not specified'}`,
     `Values: ${cd?.values_priorities?.join(', ') || 'not specified'}`,
     `Open to relocation: ${cd?.open_to_relocation ? 'yes' : 'no'}`,
+    lifeContext,
     ``,
     `Use the full work history and education context to generate realistic, personalised paths.`,
     `Map out the 3 career navigation paths now.`,
@@ -150,6 +155,10 @@ function buildPathPromptCompact(input: PathInput): string {
     ? skills.map(s => `  • ${s.name} (level ${s.level}/5)`).join('\n')
     : '  (no skills listed yet)'
 
+  const lifeContext = cd?.life_chapter_context
+    ? `\nLIFE CONTEXT: ${cd.life_chapter_context}`
+    : ''
+
   return [
     `CANDIDATE SNAPSHOT`,
     `Location: ${location ?? 'not specified'}`,
@@ -162,6 +171,7 @@ function buildPathPromptCompact(input: PathInput): string {
     `1-year: ${cd?.goal_1_year ?? 'not specified'}`,
     `5-year: ${cd?.goal_5_year ?? 'not specified'}`,
     `Dream role: ${cd?.dream_role ?? 'not specified'}`,
+    lifeContext,
     ``,
     `Map out the 3 career navigation paths now.`,
   ].join('\n')

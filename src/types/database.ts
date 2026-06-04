@@ -64,6 +64,8 @@ export type CareerData = {
   goal_5_year: string | null
   dream_role: string | null
   deal_breakers: string | null
+  // Life chapter context (C-05)
+  life_chapter_context: string | null      // Free-text life constraints for path navigation
   // AI synthesis
   career_identity_summary: string | null   // Claude-generated narrative
   synthesized_at: string | null

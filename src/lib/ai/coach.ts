@@ -33,6 +33,7 @@ export type CoachContext = {
   preferredIndustries: string[]
   workExperience: WorkExperienceEntry[]
   education: EducationEntry[]
+  lifeChapterContext: string | null
 }
 
 // ── Static coaching personality (prompt-cached) ───────────────────────────────
@@ -94,8 +95,10 @@ function buildProfileContext(ctx: CoachContext): string {
     `5-year: ${ctx.goal5Year ?? 'not specified'}`,
     `Dream role: ${ctx.dreamRole ?? 'not specified'}`,
     `Preferred industries: ${ctx.preferredIndustries.join(', ') || 'not specified'}`,
+    ...(ctx.lifeChapterContext ? [``, `LIFE CONTEXT`, ctx.lifeChapterContext] : []),
     `---`,
     `Reference this profile when giving advice. Be specific and personalised to their actual history.`,
+    ...(ctx.lifeChapterContext ? [`When life context is present, factor it naturally into your advice without making it the focus.`] : []),
   ].join('\n')
 }
 

@@ -69,6 +69,7 @@ export async function POST(req: Request) {
       preferredIndustries: profile?.career_data?.preferred_industries ?? [],
       workExperience: (profile?.work_experience ?? []) as CoachContext['workExperience'],
       education: (profile?.education ?? []) as CoachContext['education'],
+      lifeChapterContext: profile?.career_data?.life_chapter_context ?? null,
     }
 
     const stream = streamCoachResponse(messages, ctx)
