@@ -202,12 +202,22 @@ async function seed() {
   ]
 
   const allJobs = [...axiataJobs, ...finflowJobs, ...shopmaticJobs, ...talentlabJobs, ...uniqloJobs]
-  const { error: jobError } = await supabase.from('jobs').upsert(
-    allJobs.map(j => ({ ...j, salary_min: j.salary_min * 12, salary_max: j.salary_max * 12 })),
-    { ignoreDuplicates: false }
-  )
-  if (jobError) console.warn(`  ⚠  jobs: ${jobError.message}`)
-  else          console.log(`  ✓  jobs (${allJobs.length} rows)`)
+  const companyIds = [c1, c2, c3, c4, c5]
+
+  // DELETE all existing jobs for our demo companies before re-inserting.
+  // This prevents duplicates on re-runs (jobs have auto-generated UUIDs so
+  // upsert cannot deduplicate them — DELETE + INSERT is the only safe pattern).
+  const { error: deleteError } = await supabase
+    .from('jobs')
+    .delete()
+    .in('company_id', companyIds)
+  if (deleteError) console.warn(`  ⚠  jobs delete: ${deleteError.message}`)
+  else             console.log(`  ✓  jobs cleared`)
+
+  // Salary fields are MYR/month — do NOT multiply by 12.
+  const { error: jobError } = await supabase.from('jobs').insert(allJobs)
+  if (jobError) console.warn(`  ⚠  jobs insert: ${jobError.message}`)
+  else          console.log(`  ✓  jobs (${allJobs.length} rows seeded)`)
 
   console.log('\n✅ Seed complete! Jobs and companies are ready for demo.\n')
 }
