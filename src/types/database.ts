@@ -26,6 +26,10 @@ export type WorkExperienceEntry = {
   duration_months: number | null   // AI-estimated from dates
   description: string | null       // Key achievements / responsibilities
   key_technologies: string[]       // Tech stack mentioned in this role
+  // Guided registration additions
+  employment_type?: 'full_time' | 'part_time' | 'freelance' | 'contract' | 'internship' | null
+  verification_status?: 'unverified' | 'email_sent' | 'document_uploaded' | 'verified'
+  verification_email?: string | null
 }
 
 export type EducationEntry = {
@@ -33,6 +37,32 @@ export type EducationEntry = {
   degree: string | null            // e.g. "Bachelor of Science"
   field: string | null             // e.g. "Computer Science"
   graduation_year: number | null
+  // Guided registration additions
+  mqf_level?: string | null        // MQF Level 1–8 or "high_school"
+  start_year?: number | null
+  currently_enrolled?: boolean
+  document_uploaded?: boolean
+}
+
+// ── Guided registration — SAQ (Short Answer Questions) ───────────────────────
+// Stored as JSONB in candidate_profiles.saq_data
+export type SaqData = {
+  // Section A: Goals (mirrors career_data — stored here for onboarding flow)
+  goal_1_year: string | null
+  goal_5_year: string | null
+  dream_role: string | null
+  // Section B: Korn Ferry-style character assessment
+  character_responses: Record<string, string>   // questionId → selected option key
+  // Section C: Hobbies
+  personal_hobbies: string[]
+  professional_interests: string[]
+  // Section D: Strengths & Weaknesses (scenario-based)
+  strength_scenario: string | null              // selected scenario response key
+  weakness_scenario: string | null
+  // Section E: Platform Intention
+  platform_intention: string | null
+  current_situation_intent: string | null
+  intention_why: string | null                  // free-text "why" context
 }
 
 export type CareerData = {
@@ -135,6 +165,14 @@ export type Database = {
           career_data: CareerData | null          // JSONB — rich career identity profile
           work_experience: WorkExperienceEntry[] | null  // JSONB — imported work history
           education: EducationEntry[] | null             // JSONB — imported education
+          // Guided registration fields
+          first_name: string | null
+          middle_name: string | null
+          last_name: string | null
+          date_of_birth: string | null              // ISO date e.g. "1998-04-15"
+          saq_data: SaqData | null                  // JSONB — SAQ responses
+          onboarding_completed: boolean
+          verified_candidate: boolean
           created_at: string
           updated_at: string
         }
@@ -154,6 +192,13 @@ export type Database = {
           career_data?: CareerData | null
           work_experience?: WorkExperienceEntry[] | null
           education?: EducationEntry[] | null
+          first_name?: string | null
+          middle_name?: string | null
+          last_name?: string | null
+          date_of_birth?: string | null
+          saq_data?: SaqData | null
+          onboarding_completed?: boolean
+          verified_candidate?: boolean
         }
         Update: {
           name?: string
@@ -169,6 +214,13 @@ export type Database = {
           career_data?: CareerData | null
           work_experience?: WorkExperienceEntry[] | null
           education?: EducationEntry[] | null
+          first_name?: string | null
+          middle_name?: string | null
+          last_name?: string | null
+          date_of_birth?: string | null
+          saq_data?: SaqData | null
+          onboarding_completed?: boolean
+          verified_candidate?: boolean
         }
         Relationships: [
           { foreignKeyName: 'candidate_profiles_user_id_fkey'; columns: ['user_id']; isOneToOne: true; referencedRelation: 'users'; referencedColumns: ['id'] }

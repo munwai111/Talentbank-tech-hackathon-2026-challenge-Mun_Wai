@@ -36,8 +36,9 @@ export default function OnboardingPage() {
 
       if (!res.ok) throw new Error('Failed to create profile')
 
-      // 3. Redirect to the right dashboard based on role
-      router.push(selected === 'candidate' ? '/dashboard' : '/employer/dashboard')
+      // 3. Redirect: candidates go through the guided registration wizard,
+      //    employers go straight to their dashboard
+      router.push(selected === 'candidate' ? '/onboarding/profile' : '/employer/dashboard')
     } catch (err) {
       console.error(err)
       setLoading(false)
