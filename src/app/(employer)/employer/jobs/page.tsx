@@ -73,7 +73,7 @@ export default async function EmployerJobsPage() {
                   {job.required_skills?.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-2">
                       {job.required_skills.slice(0, 5).map((s: string) => (
-                        <span key={s} className="text-xs bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full">{s}</span>
+                        <span key={s} className="text-xs bg-white/8 text-zinc-400 px-2 py-0.5 rounded-full">{s}</span>
                       ))}
                       {job.required_skills.length > 5 && (
                         <span className="text-xs text-zinc-400">+{job.required_skills.length - 5} more</span>

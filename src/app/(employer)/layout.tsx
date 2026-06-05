@@ -28,46 +28,56 @@ export default async function EmployerLayout({ children }: { children: React.Rea
   if (dbUser.role !== 'employer') redirect('/dashboard')
 
   return (
-    <div className="flex min-h-screen bg-zinc-50">
+    <div className="flex min-h-screen bg-[#070714]">
       {/* ── Sidebar ────────────────────────────────────────────── */}
-      <aside className="w-56 shrink-0 bg-white border-r flex flex-col">
+      <aside className="w-56 shrink-0 bg-[#08081a] border-r border-white/7 flex flex-col relative overflow-hidden">
+        {/* Aurora glow orbs */}
+        <div className="absolute -top-20 -left-10 w-48 h-48 rounded-full bg-[radial-gradient(circle,#7c3aed,transparent_70%)] opacity-10 pointer-events-none" aria-hidden />
+
         {/* Logo */}
-        <div className="px-5 py-5 border-b">
-          <Link href="/employer/dashboard" className="font-bold text-lg tracking-tight">
-            Career OS
+        <div className="relative px-5 py-5 border-b border-white/7">
+          <Link href="/employer/dashboard" className="flex items-center gap-2.5 group">
+            <div className="w-7 h-7 rounded-md bg-gradient-to-br from-violet-500 to-indigo-600
+              flex items-center justify-center text-xs font-bold shadow-lg shadow-violet-500/30
+              group-hover:shadow-violet-500/50 transition-all text-white">
+              C
+            </div>
+            <div>
+              <p className="font-bold text-base tracking-tight text-white leading-none">Career OS</p>
+              <p className="text-[10px] text-zinc-500 mt-0.5">Employer portal</p>
+            </div>
           </Link>
-          <p className="text-xs text-zinc-400 mt-0.5">Employer portal</p>
         </div>
 
         {/* Nav links */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="relative flex-1 px-3 py-4 space-y-0.5">
           {navItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-zinc-600
-                         hover:bg-zinc-100 hover:text-zinc-900 transition-colors"
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-zinc-400
+                         hover:bg-white/6 hover:text-white transition-colors group"
             >
-              <span>{item.icon}</span>
+              <span className="text-base group-hover:scale-110 transition-transform">{item.icon}</span>
               {item.label}
             </Link>
           ))}
         </nav>
 
         {/* User profile at bottom */}
-        <div className="px-5 py-4 border-t flex items-center gap-3">
+        <div className="relative px-4 py-4 border-t border-white/7 flex items-center gap-3">
           <UserButton />
           <div className="min-w-0">
-            <p className="text-sm font-medium truncate">
+            <p className="text-sm font-medium truncate text-zinc-200">
               {user.firstName ?? user.emailAddresses[0]?.emailAddress}
             </p>
-            <p className="text-xs text-zinc-400">Employer</p>
+            <p className="text-xs text-zinc-500">Employer</p>
           </div>
         </div>
       </aside>
 
       {/* ── Main content area ─────────────────────────────────── */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto bg-[#070714] text-zinc-100">
         {children}
       </main>
     </div>

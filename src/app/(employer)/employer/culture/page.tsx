@@ -34,8 +34,8 @@ function ChipSelect({
           onClick={() => toggle(opt)}
           className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
             selected.includes(opt)
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400'
+              ? 'bg-indigo-600 text-white border-indigo-600'
+              : 'bg-white/6 text-zinc-400 border-white/15 hover:border-white/30'
           }`}
         >
           {opt}
@@ -197,13 +197,13 @@ export default function EmployerCulturePage() {
       </div>
 
       {synthesis ? (
-        <Card className="p-6 bg-gradient-to-br from-blue-50 to-white border-blue-100">
-          <p className="text-sm font-medium text-blue-600 mb-3">🤖 Employer Identity narrative</p>
-          <p className="text-zinc-700 leading-relaxed">{synthesis}</p>
+        <Card className="p-6 bg-gradient-to-br from-indigo-500/10 to-white/4 border-indigo-500/20">
+          <p className="text-sm font-medium text-indigo-400 mb-3">🤖 Employer Identity narrative</p>
+          <p className="text-zinc-300 leading-relaxed">{synthesis}</p>
         </Card>
       ) : (
-        <Card className="p-6 bg-zinc-50">
-          <p className="text-sm text-zinc-500">
+        <Card className="p-6 bg-white/4">
+          <p className="text-sm text-zinc-400">
             Your culture data has been saved. The AI narrative could not be generated this time — your profile is still complete.
           </p>
         </Card>
@@ -228,7 +228,7 @@ export default function EmployerCulturePage() {
         <h1 className="text-2xl font-bold">Culture Profile 🏢</h1>
         <p className="text-zinc-500 mt-1">
           Help candidates understand who you are — not just what the role is.
-          {done && <span className="ml-2 text-green-600 text-sm font-medium">✓ Completed</span>}
+          {done && <span className="ml-2 text-emerald-400 text-sm font-medium">✓ Completed</span>}
         </p>
       </div>
 
@@ -238,13 +238,13 @@ export default function EmployerCulturePage() {
           {[0, 1].map(i => (
             <div key={i} className="flex items-center gap-2">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                i < step ? 'bg-blue-600 text-white' :
-                i === step ? 'bg-blue-100 text-blue-700 border-2 border-blue-600' :
-                'bg-zinc-100 text-zinc-400'
+                i < step ? 'bg-indigo-600 text-white' :
+                i === step ? 'bg-indigo-500/20 text-indigo-300 border-2 border-indigo-500' :
+                'bg-white/8 text-zinc-500'
               }`}>
                 {i < step ? '✓' : i + 1}
               </div>
-              {i < 1 && <div className={`h-0.5 w-8 ${i < step ? 'bg-blue-600' : 'bg-zinc-200'}`} />}
+              {i < 1 && <div className={`h-0.5 w-8 ${i < step ? 'bg-indigo-600' : 'bg-white/15'}`} />}
             </div>
           ))}
           <span className="text-sm text-zinc-400 ml-2">Step {step + 1} of 2</span>
@@ -257,11 +257,11 @@ export default function EmployerCulturePage() {
         {step < 2 && (
           <>
             {error && (
-              <p className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+              <p className="mt-4 text-sm text-red-400 bg-red-500/8 border border-red-500/20 rounded-lg px-4 py-3">
                 ⚠️ {error}
               </p>
             )}
-            <div className="flex justify-between mt-8 pt-4 border-t border-zinc-100">
+            <div className="flex justify-between mt-8 pt-4 border-t border-white/8">
               <Button variant="ghost" onClick={() => setStep(s => s - 1)} disabled={step === 0}>
                 ← Back
               </Button>

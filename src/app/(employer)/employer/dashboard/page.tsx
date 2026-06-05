@@ -69,11 +69,11 @@ export default async function EmployerDashboardPage() {
 
       {/* ── CTA if no jobs yet ────────────────────────────────── */}
       {activeJobs.length === 0 && (
-        <Card className="p-6 border-blue-100 bg-blue-50 mb-8">
+        <Card className="p-6 border-indigo-500/20 bg-indigo-500/8 mb-8">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="font-semibold text-blue-900">Post your first job</h3>
-              <p className="text-sm text-blue-700 mt-1">
+              <h3 className="font-semibold text-indigo-200">Post your first job</h3>
+              <p className="text-sm text-indigo-300/70 mt-1">
                 Skills-based matching starts the moment you post. Candidates are ranked
                 by what they can actually do — not their university name.
               </p>
@@ -88,11 +88,11 @@ export default async function EmployerDashboardPage() {
       {/* ── Recent jobs ───────────────────────────────────────── */}
       {jobs && jobs.length > 0 && (
         <>
-          <h2 className="font-semibold mb-4 text-zinc-700">Your jobs</h2>
+          <h2 className="font-semibold mb-4 text-zinc-300">Your jobs</h2>
           <div className="space-y-3 mb-8">
             {jobs.slice(0, 5).map(job => (
               <div key={job.id}
-                className="flex items-center justify-between p-4 bg-white border rounded-lg">
+                className="flex items-center justify-between p-4 bg-white/4 border border-white/8 rounded-lg">
                 <div>
                   <p className="font-medium text-sm">{job.title}</p>
                   <p className="text-xs text-zinc-400 mt-0.5">
@@ -114,7 +114,7 @@ export default async function EmployerDashboardPage() {
       )}
 
       {/* ── Quick actions ─────────────────────────────────────── */}
-      <h2 className="font-semibold mb-4 text-zinc-700">Quick actions</h2>
+      <h2 className="font-semibold mb-4 text-zinc-300">Quick actions</h2>
       <div className="grid grid-cols-2 gap-4">
         {[
           { href: '/employer/jobs/new',   icon: '➕', title: 'Post a new role',       desc: 'Define skills, salary, and location' },
@@ -123,7 +123,7 @@ export default async function EmployerDashboardPage() {
           { href: '/employer/company',    icon: '🏢', title: 'Update company profile', desc: 'Make your brand visible to candidates' },
         ].map(item => (
           <Link key={item.href} href={item.href}>
-            <Card className="p-5 hover:border-blue-200 hover:bg-blue-50/50 transition-all cursor-pointer h-full">
+            <Card className="p-5 hover:border-indigo-500/30 hover:bg-indigo-500/8 transition-all cursor-pointer h-full group">
               <span className="text-2xl">{item.icon}</span>
               <h3 className="font-medium mt-2">{item.title}</h3>
               <p className="text-sm text-zinc-500 mt-1">{item.desc}</p>

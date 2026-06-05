@@ -40,9 +40,9 @@ const LEVEL_LABELS: Record<number, string> = {
 }
 
 const SOURCE_COLORS: Record<string, string> = {
-  github:     'bg-green-100 text-green-700',
-  assessment: 'bg-blue-100 text-blue-700',
-  manual:     'bg-zinc-100 text-zinc-500',
+  github:     'bg-emerald-500/15 text-emerald-400',
+  assessment: 'bg-blue-500/15 text-blue-400',
+  manual:     'bg-white/8 text-zinc-400',
 }
 
 export default async function CandidatesForJobPage({
@@ -155,12 +155,12 @@ export default async function CandidatesForJobPage({
         </div>
         <div className="flex flex-wrap gap-1.5">
           {required.map((s: string) => (
-            <span key={s} className="text-xs bg-white border border-zinc-200 text-zinc-700 px-2 py-0.5 rounded-full">
+            <span key={s} className="text-xs bg-white/4 border border-white/15 text-zinc-300 px-2 py-0.5 rounded-full">
               {s} <span className="text-red-400">*</span>
             </span>
           ))}
           {nice.map((s: string) => (
-            <span key={s} className="text-xs bg-white border border-zinc-100 text-zinc-400 px-2 py-0.5 rounded-full">{s}</span>
+            <span key={s} className="text-xs bg-white/4 border border-white/8 text-zinc-500 px-2 py-0.5 rounded-full">{s}</span>
           ))}
         </div>
       </Card>
@@ -168,8 +168,8 @@ export default async function CandidatesForJobPage({
       {/* ── Match summary ─────────────────────────────────────── */}
       <div className="flex gap-4 mb-6 text-sm">
         <span className="text-zinc-500">{ranked.length} candidates</span>
-        <span className="text-green-600 font-medium">{strongMatches} strong matches</span>
-        <span className="text-yellow-600">{partialMatches} partial</span>
+        <span className="text-emerald-400 font-medium">{strongMatches} strong matches</span>
+        <span className="text-amber-400">{partialMatches} partial</span>
         <span className="text-zinc-400">{ranked.length - strongMatches - partialMatches} stretch</span>
       </div>
 
@@ -180,7 +180,7 @@ export default async function CandidatesForJobPage({
             <div className="flex items-start justify-between gap-3 mb-3">
               <div className="flex items-start gap-3">
                 {/* Rank number */}
-                <div className="w-7 h-7 rounded-full bg-zinc-100 flex items-center justify-center text-xs font-bold text-zinc-500 shrink-0 mt-0.5">
+                <div className="w-7 h-7 rounded-full bg-white/8 flex items-center justify-center text-xs font-bold text-zinc-400 shrink-0 mt-0.5">
                   {idx + 1}
                 </div>
                 <div>
@@ -196,19 +196,19 @@ export default async function CandidatesForJobPage({
               {/* Score + goal label */}
               <div className="flex items-center gap-2 shrink-0">
                 {candidate.goal_alignment_label === 'goal_match' && (
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                     🎯 Goal match
                   </span>
                 )}
                 {candidate.goal_alignment_label === 'career_pivot' && (
-                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
                     🔀 Growth hire
                   </span>
                 )}
                 <span className={`text-sm font-bold px-3 py-1 rounded-full border ${
-                  candidate.score_pct >= 70 ? 'bg-green-100 text-green-700 border-green-200' :
-                  candidate.score_pct >= 40 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
-                                              'bg-red-100 text-red-700 border-red-200'
+                  candidate.score_pct >= 70 ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' :
+                  candidate.score_pct >= 40 ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' :
+                                              'bg-red-500/15 text-red-400 border-red-500/30'
                 }`}>
                   {candidate.score_pct}% match
                 </span>
@@ -216,11 +216,11 @@ export default async function CandidatesForJobPage({
             </div>
 
             {/* Score bar */}
-            <div className="h-1.5 bg-zinc-100 rounded-full overflow-hidden mb-3">
+            <div className="h-1.5 bg-white/8 rounded-full overflow-hidden mb-3">
               <div
                 className={`h-full rounded-full ${
-                  candidate.score_pct >= 70 ? 'bg-green-500' :
-                  candidate.score_pct >= 40 ? 'bg-yellow-500' : 'bg-red-400'
+                  candidate.score_pct >= 70 ? 'bg-gradient-to-r from-emerald-500 to-teal-500' :
+                  candidate.score_pct >= 40 ? 'bg-gradient-to-r from-amber-500 to-yellow-500' : 'bg-gradient-to-r from-red-500 to-rose-500'
                 }`}
                 style={{ width: `${candidate.score_pct}%` }}
               />
@@ -229,7 +229,7 @@ export default async function CandidatesForJobPage({
             {/* Skills */}
             <div className="flex flex-wrap gap-1.5 mb-3">
               {candidate.matched.map(s => (
-                <Badge key={s} className="bg-green-50 text-green-700 border border-green-200 text-xs font-normal">
+                <Badge key={s} className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 text-xs font-normal">
                   ✓ {s}
                 </Badge>
               ))}
@@ -241,7 +241,7 @@ export default async function CandidatesForJobPage({
             </div>
 
             {/* All candidate skills (trust signals) */}
-            <div className="flex flex-wrap gap-1 pt-3 border-t border-zinc-100">
+            <div className="flex flex-wrap gap-1 pt-3 border-t border-white/8">
               <span className="text-xs text-zinc-400 mr-1 self-center">All skills:</span>
               {candidate.skills.slice(0, 8).map(s => (
                 <span
