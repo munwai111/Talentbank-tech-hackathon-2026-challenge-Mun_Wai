@@ -26,7 +26,7 @@ function TypingDots() {
       {[0, 1, 2].map(i => (
         <span
           key={i}
-          className="w-2 h-2 bg-zinc-400 rounded-full animate-bounce"
+          className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"
           style={{ animationDelay: `${i * 0.15}s` }}
         />
       ))}
@@ -39,20 +39,22 @@ function MessageBubble({ msg }: { msg: CoachMessage & { streaming?: boolean } })
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
       {!isUser && (
-        <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-white text-sm mr-3 shrink-0 mt-0.5">
+        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600
+          flex items-center justify-center text-white text-sm mr-3 shrink-0 mt-0.5
+          shadow-lg shadow-indigo-500/30">
           🤖
         </div>
       )}
       <div
         className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
           isUser
-            ? 'bg-zinc-900 text-white rounded-br-sm'
-            : 'bg-white border border-zinc-200 text-zinc-800 rounded-bl-sm shadow-sm'
+            ? 'bg-indigo-600 text-white rounded-br-sm shadow-lg shadow-indigo-500/20'
+            : 'bg-white/8 border border-white/10 text-zinc-200 rounded-bl-sm backdrop-blur-sm'
         }`}
       >
         {msg.content}
         {msg.streaming && (
-          <span className="inline-block w-0.5 h-4 bg-zinc-500 ml-0.5 animate-pulse align-middle" />
+          <span className="inline-block w-0.5 h-4 bg-indigo-400 ml-0.5 animate-pulse align-middle" />
         )}
       </div>
     </div>
@@ -63,8 +65,8 @@ function StarterButton({ text, onClick }: { text: string; onClick: () => void })
   return (
     <button
       onClick={onClick}
-      className="text-left px-4 py-3 rounded-xl border border-zinc-200 text-sm text-zinc-600
-                 hover:border-zinc-900 hover:text-zinc-900 hover:bg-zinc-50 transition-all"
+      className="text-left px-4 py-3 rounded-xl border border-white/10 bg-white/4 text-sm text-zinc-400
+                 hover:border-indigo-500/40 hover:text-white hover:bg-indigo-500/10 transition-all backdrop-blur-sm"
     >
       {text} →
     </button>
@@ -181,17 +183,18 @@ export default function CoachPage() {
   return (
     <div className="flex flex-col h-screen">
       {/* Header */}
-      <div className="px-6 py-4 border-b bg-white shrink-0">
+      <div className="px-6 py-4 border-b border-white/7 bg-[#08081a]/80 backdrop-blur-sm shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-zinc-900 flex items-center justify-center text-white">
+          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600
+            flex items-center justify-center text-white shadow-lg shadow-indigo-500/30">
             🤖
           </div>
           <div>
-            <h1 className="font-semibold text-zinc-900">AI Career Coach</h1>
-            <p className="text-xs text-zinc-400">Knows your skills · APAC market · Honest advice</p>
+            <h1 className="font-semibold text-white">AI Career Coach</h1>
+            <p className="text-xs text-zinc-500">Knows your skills · APAC market · Honest advice</p>
           </div>
-          <div className="ml-auto flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+          <div className="ml-auto flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             Online
           </div>
         </div>
@@ -203,9 +206,12 @@ export default function CoachPage() {
         {!hasMessages && (
           <div className="max-w-xl mx-auto">
             <div className="text-center mb-8">
-              <p className="text-4xl mb-3">🧠</p>
-              <h2 className="text-lg font-semibold text-zinc-800">Your personal career coach</h2>
-              <p className="text-sm text-zinc-500 mt-2 max-w-sm mx-auto">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600
+                flex items-center justify-center text-3xl mx-auto mb-4 shadow-xl shadow-indigo-500/30">
+                🧠
+              </div>
+              <h2 className="text-lg font-semibold text-white">Your personal career coach</h2>
+              <p className="text-sm text-zinc-400 mt-2 max-w-sm mx-auto">
                 Ask anything about your career path, salary, skill gaps, or what moves to make next.
                 I know your profile — no need to re-explain yourself.
               </p>
@@ -229,10 +235,11 @@ export default function CoachPage() {
             ))}
             {streaming && messages[messages.length - 1]?.role !== 'assistant' && (
               <div className="flex justify-start mb-4">
-                <div className="w-8 h-8 rounded-full bg-zinc-900 flex items-center justify-center text-white text-sm mr-3 shrink-0">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600
+                  flex items-center justify-center text-white text-sm mr-3 shrink-0 shadow-lg shadow-indigo-500/30">
                   🤖
                 </div>
-                <div className="bg-white border border-zinc-200 rounded-2xl rounded-bl-sm shadow-sm">
+                <div className="bg-white/8 border border-white/10 rounded-2xl rounded-bl-sm backdrop-blur-sm">
                   <TypingDots />
                 </div>
               </div>
@@ -243,7 +250,7 @@ export default function CoachPage() {
       </div>
 
       {/* Input area */}
-      <div className="px-6 py-4 border-t bg-white shrink-0">
+      <div className="px-6 py-4 border-t border-white/7 bg-[#08081a]/80 backdrop-blur-sm shrink-0">
         <div className="max-w-2xl mx-auto flex gap-3 items-end">
           <textarea
             ref={inputRef}
@@ -253,16 +260,19 @@ export default function CoachPage() {
             placeholder="Ask anything about your career… (Enter to send)"
             disabled={streaming}
             rows={1}
-            className="flex-1 resize-none rounded-xl border border-zinc-200 px-4 py-3 text-sm
-                       focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-transparent
-                       disabled:opacity-50 disabled:bg-zinc-50 leading-relaxed"
+            className="flex-1 resize-none rounded-xl border border-white/10 bg-white/6 px-4 py-3 text-sm
+                       text-zinc-200 placeholder:text-zinc-600
+                       focus:outline-none focus:ring-1 focus:ring-indigo-500/60 focus:border-indigo-500/40
+                       disabled:opacity-50 leading-relaxed backdrop-blur-sm"
             style={{ maxHeight: '120px' }}
           />
           <button
             onClick={() => sendMessage(input)}
             disabled={!input.trim() || streaming}
-            className="w-10 h-10 rounded-xl bg-zinc-900 text-white flex items-center justify-center
-                       hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shrink-0"
+            className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white
+                       flex items-center justify-center shadow-lg shadow-indigo-500/30
+                       hover:from-violet-500 hover:to-indigo-500
+                       disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0"
           >
             {streaming ? (
               <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -273,7 +283,7 @@ export default function CoachPage() {
             )}
           </button>
         </div>
-        <p className="text-center text-xs text-zinc-400 mt-2 max-w-2xl mx-auto">
+        <p className="text-center text-xs text-zinc-600 mt-2 max-w-2xl mx-auto">
           Shift+Enter for newline · Advice is personalised to your profile
         </p>
       </div>

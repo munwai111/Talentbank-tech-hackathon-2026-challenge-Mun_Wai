@@ -39,17 +39,17 @@ type MatchConfig = {
 }
 
 const MATCH_CONFIG: Record<PathMatchType, MatchConfig> = {
-  strong:   { label: 'Strong Match',   border: 'border-t-emerald-500', badge: 'bg-emerald-100 text-emerald-800', dot: 'bg-emerald-500' },
-  emerging: { label: 'Emerging Path',  border: 'border-t-amber-400',   badge: 'bg-amber-100 text-amber-800',   dot: 'bg-amber-400'   },
-  stretch:  { label: 'Stretch Goal',   border: 'border-t-blue-500',    badge: 'bg-blue-100 text-blue-800',     dot: 'bg-blue-500'    },
+  strong:   { label: 'Strong Match',   border: 'border-t-emerald-500', badge: 'bg-emerald-500/15 text-emerald-400', dot: 'bg-emerald-500' },
+  emerging: { label: 'Emerging Path',  border: 'border-t-amber-400',   badge: 'bg-amber-500/15 text-amber-400',    dot: 'bg-amber-400'   },
+  stretch:  { label: 'Stretch Goal',   border: 'border-t-indigo-500',  badge: 'bg-indigo-500/15 text-indigo-400',  dot: 'bg-indigo-500'  },
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function SkillChip({ name, variant }: { name: string; variant: 'have' | 'develop' }) {
   const cls = variant === 'have'
-    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-    : 'bg-amber-50 text-amber-700 border border-amber-200'
+    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25'
+    : 'bg-amber-500/15 text-amber-400 border border-amber-500/25'
   return (
     <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${cls}`}>
       {name}
@@ -63,16 +63,16 @@ function PathStats({ path }: { path: CareerPath }) {
   return (
     <div className="space-y-3">
       {/* Fair Pay signal — prominent salary display (C-04) */}
-      <div className="bg-emerald-50 border border-emerald-100 rounded-lg px-4 py-3">
-        <p className="text-xs text-emerald-600 font-medium mb-0.5">💰 Market salary for this move</p>
-        <p className="text-base font-bold text-emerald-900">{salary}</p>
-        <p className="text-xs text-emerald-600 mt-0.5">
+      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-4 py-3">
+        <p className="text-xs text-emerald-400 font-medium mb-0.5">💰 Market salary for this move</p>
+        <p className="text-base font-bold text-emerald-300">{salary}</p>
+        <p className="text-xs text-emerald-400/70 mt-0.5">
           Professionals in Malaysia with a similar profile typically earn in this range.
         </p>
       </div>
       <div className="text-sm">
-        <p className="text-xs text-zinc-400 mb-0.5">Typical timeline to reach this role</p>
-        <p className="font-semibold text-zinc-800">{timeline}</p>
+        <p className="text-xs text-zinc-500 mb-0.5">Typical timeline to reach this role</p>
+        <p className="font-semibold text-zinc-200">{timeline}</p>
       </div>
     </div>
   )
@@ -102,19 +102,20 @@ function SkillSection({ path }: { path: CareerPath }) {
 }
 
 function PathCard({ path }: { path: CareerPath }) {
-  // Fallback for unexpected id values from AI (runtime safety — TypeScript only enforces at compile time)
   const cfg = MATCH_CONFIG[path.id] ?? MATCH_CONFIG.emerging
   return (
-    <div className={`bg-white rounded-xl border border-zinc-200 border-t-4 ${cfg.border} shadow-sm flex flex-col gap-5 p-6`}>
+    <div className={`bg-white/4 rounded-xl border border-white/8 border-t-4 ${cfg.border}
+      backdrop-blur-sm flex flex-col gap-5 p-6 hover:border-white/15 transition-all`}>
       {/* Header */}
       <div>
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${cfg.badge} mb-3`}>
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${cfg.badge} mb-3`}
+          style={{ borderColor: 'transparent' }}>
           <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
           {cfg.label}
         </span>
-        <h3 className="text-lg font-bold text-zinc-900">{path.title}</h3>
-        <p className="text-xs text-zinc-500 mt-1">{path.match_label}</p>
-        <p className="text-xs text-zinc-400 mt-1">
+        <h3 className="text-lg font-bold text-white">{path.title}</h3>
+        <p className="text-xs text-zinc-400 mt-1">{path.match_label}</p>
+        <p className="text-xs text-zinc-500 mt-1">
           {path.company_types.join(' · ')}
         </p>
       </div>
@@ -123,18 +124,20 @@ function PathCard({ path }: { path: CareerPath }) {
       <SkillSection path={path} />
 
       {/* Trade-off */}
-      <div className="bg-zinc-50 rounded-lg px-4 py-3 text-xs text-zinc-600 border-l-2 border-zinc-300">
-        <span className="font-semibold text-zinc-700">Trade-off: </span>
+      <div className="bg-white/4 rounded-lg px-4 py-3 text-xs text-zinc-400 border-l-2 border-white/20">
+        <span className="font-semibold text-zinc-300">Trade-off: </span>
         {path.trade_off}
       </div>
 
       {/* Navigation note */}
-      <p className="text-xs text-zinc-400 italic">{path.navigation_note}</p>
+      <p className="text-xs text-zinc-500 italic">{path.navigation_note}</p>
 
       {/* CTA */}
       <a
         href="/jobs"
-        className="mt-auto inline-block text-center text-sm font-medium text-white bg-zinc-900 hover:bg-zinc-700 rounded-lg px-4 py-2 transition-colors"
+        className="mt-auto inline-block text-center text-sm font-medium text-white
+          bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500
+          rounded-lg px-4 py-2 transition-all shadow-lg shadow-indigo-500/20"
       >
         Explore matching jobs →
       </a>
@@ -146,11 +149,11 @@ function EmptyState() {
   return (
     <div className="text-center py-16">
       <p className="text-4xl mb-4">🗺️</p>
-      <h2 className="text-lg font-semibold text-zinc-700 mb-2">No paths generated yet</h2>
+      <h2 className="text-lg font-semibold text-white mb-2">No paths generated yet</h2>
       <p className="text-sm text-zinc-400 max-w-sm mx-auto">
         Add some skills to your profile first — the navigator needs at least a few to map realistic paths.
       </p>
-      <a href="/profile" className="mt-6 inline-block text-sm font-medium text-blue-600 hover:underline">
+      <a href="/profile" className="mt-6 inline-block text-sm font-medium text-indigo-400 hover:text-indigo-300 hover:underline">
         Add skills to your vault →
       </a>
     </div>
@@ -208,15 +211,16 @@ export default function PathsPage() {
       {/* Page header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Career Path Navigator</h1>
-          <p className="text-sm text-zinc-500 mt-1">
+          <h1 className="text-2xl font-bold text-white">Career Path Navigator</h1>
+          <p className="text-sm text-zinc-400 mt-1">
             3 directions mapped from your skills — not predictions, navigation.
           </p>
         </div>
         <button
           onClick={fetchPaths}
           disabled={loading}
-          className="text-sm font-medium text-zinc-600 border border-zinc-200 rounded-lg px-4 py-2 hover:bg-zinc-50 disabled:opacity-50 transition-colors"
+          className="text-sm font-medium text-zinc-400 border border-white/10 bg-white/4
+            rounded-lg px-4 py-2 hover:bg-white/8 hover:text-zinc-200 disabled:opacity-50 transition-colors"
         >
           {loading ? 'Generating…' : '↺ Refresh paths'}
         </button>
@@ -226,12 +230,12 @@ export default function PathsPage() {
       {loading && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[0, 1, 2].map(i => (
-            <div key={i} className="bg-white rounded-xl border border-zinc-200 border-t-4 border-t-zinc-200 p-6 animate-pulse space-y-4">
-              <div className="h-4 bg-zinc-100 rounded w-24" />
-              <div className="h-6 bg-zinc-100 rounded w-3/4" />
-              <div className="h-4 bg-zinc-100 rounded w-1/2" />
-              <div className="h-12 bg-zinc-100 rounded" />
-              <div className="h-16 bg-zinc-100 rounded" />
+            <div key={i} className="bg-white/4 rounded-xl border border-white/8 border-t-4 border-t-white/15 p-6 animate-pulse space-y-4">
+              <div className="h-4 bg-white/8 rounded w-24" />
+              <div className="h-6 bg-white/8 rounded w-3/4" />
+              <div className="h-4 bg-white/8 rounded w-1/2" />
+              <div className="h-12 bg-white/8 rounded" />
+              <div className="h-16 bg-white/8 rounded" />
             </div>
           ))}
         </div>
@@ -239,9 +243,9 @@ export default function PathsPage() {
 
       {/* Error state */}
       {!loading && error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-          <p className="text-sm text-red-700 font-medium mb-3">{error}</p>
-          <button onClick={fetchPaths} className="text-sm text-red-600 hover:underline">
+        <div className="bg-red-500/8 border border-red-500/20 rounded-xl p-6 text-center">
+          <p className="text-sm text-red-400 font-medium mb-3">{error}</p>
+          <button onClick={fetchPaths} className="text-sm text-red-400 hover:text-red-300 hover:underline">
             Try again
           </button>
         </div>

@@ -1,12 +1,9 @@
 // Candidate Dashboard — first screen after login
-// Server Component: fetches profile + match count directly from DB
 import { currentUser } from '@clerk/nextjs/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 
 export default async function DashboardPage() {
   const user = await currentUser()
@@ -14,18 +11,15 @@ export default async function DashboardPage() {
 
   const supabase = createServerClient()
 
-  // Get DB user → candidate profile
   const { data: dbUser } = await supabase
     .from('users')
     .select('id, role')
     .eq('clerk_id', user.id)
     .single()
 
-  // New user who hasn't finished onboarding
   if (!dbUser) redirect('/onboarding')
   if (dbUser.role === 'employer') redirect('/employer/dashboard')
 
-  // Only fetch what the dashboard renders — counts + completeness fields
   const { data: profile } = await supabase
     .from('candidate_profiles')
     .select('headline, bio, location, github_url, embedding, career_data, skills(id)')
@@ -38,8 +32,6 @@ export default async function DashboardPage() {
   const hasLifeChapter = !!profile?.career_data?.life_chapter_context
   const firstName = user.firstName ?? 'there'
 
-  // Proactive coach nudge logic — surface the most relevant signal
-  // Mirrors Talentbank's C-03 intent: "quiet until something matters"
   type CoachNudge = { message: string; prompt: string } | null
   const coachNudge: CoachNudge = (() => {
     if (!hasCareerIdentity || skillCount < 3) return null
@@ -61,202 +53,183 @@ export default async function DashboardPage() {
     }
   })()
 
-  // Profile completeness score (shown as motivation)
   const completeness = [
     profile?.headline,
     profile?.bio,
     profile?.location,
     skillCount > 0,
     profile?.github_url,
-  ].filter(Boolean).length * 20  // 0–100
+  ].filter(Boolean).length * 20
 
   return (
     <div className="p-8 max-w-4xl">
-      {/* ── Greeting ─────────────────────────────────────────── */}
+
+      {/* ── Greeting ────────────────────────────────────────────────────── */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">Hey {firstName} 👋</h1>
-        <p className="text-zinc-500 mt-1">
+        <h1 className="text-2xl font-bold text-white">Hey {firstName} 👋</h1>
+        <p className="text-zinc-400 mt-1">
           {hasEmbedding
             ? "Your profile is active — employers can find you."
             : "Complete your Skills Vault to start getting matched."}
         </p>
       </div>
 
-      {/* ── Status cards ─────────────────────────────────────── */}
+      {/* ── Status cards ────────────────────────────────────────────────── */}
       <div className="grid grid-cols-3 gap-4 mb-8">
-        <Card className="p-5">
-          <p className="text-sm text-zinc-500 mb-1">Profile strength</p>
+        {/* Profile strength */}
+        <div className="rounded-xl border border-white/8 bg-white/4 p-5 backdrop-blur-sm">
+          <p className="text-sm text-zinc-400 mb-1">Profile strength</p>
           <div className="flex items-end gap-2">
-            <span className="text-3xl font-bold">{completeness}%</span>
+            <span className="text-3xl font-bold text-white">{completeness}%</span>
           </div>
-          <div className="mt-2 h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+          <div className="mt-3 h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div
-              className="h-full bg-blue-500 rounded-full transition-all"
-              style={{ width: `${completeness}%` }}
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${completeness}%`,
+                background: 'linear-gradient(90deg, #7c3aed, #4f46e5)',
+              }}
             />
           </div>
-        </Card>
+        </div>
 
-        <Card className="p-5">
-          <p className="text-sm text-zinc-500 mb-1">Skills verified</p>
-          <span className="text-3xl font-bold">{skillCount}</span>
-          <p className="text-xs text-zinc-400 mt-1">
+        {/* Skills verified */}
+        <div className="rounded-xl border border-white/8 bg-white/4 p-5 backdrop-blur-sm">
+          <p className="text-sm text-zinc-400 mb-1">Skills verified</p>
+          <span className="text-3xl font-bold text-white">{skillCount}</span>
+          <p className="text-xs text-zinc-500 mt-1">
             {skillCount === 0 ? 'Add skills to get matched' : 'in your vault'}
           </p>
-        </Card>
+        </div>
 
-        <Card className="p-5">
-          <p className="text-sm text-zinc-500 mb-1">Matching status</p>
-          <Badge variant={hasEmbedding ? 'default' : 'secondary'} className="mt-1">
-            {hasEmbedding ? '🟢 Active' : '⚪ Not active'}
-          </Badge>
-          <p className="text-xs text-zinc-400 mt-1">
+        {/* Matching status */}
+        <div className="rounded-xl border border-white/8 bg-white/4 p-5 backdrop-blur-sm">
+          <p className="text-sm text-zinc-400 mb-1">Matching status</p>
+          <div className="mt-1">
+            {hasEmbedding ? (
+              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-emerald-400">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                Active
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500">
+                <span className="w-2 h-2 rounded-full bg-zinc-600" />
+                Not active
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-zinc-500 mt-1">
             {hasEmbedding ? 'Employers can match you' : 'Add skills to activate'}
           </p>
-        </Card>
+        </div>
       </div>
 
-      {/* ── Career Identity nudge ────────────────────────────── */}
+      {/* ── Career Identity nudge ────────────────────────────────────────── */}
       {!hasCareerIdentity && (
-        <Card className="p-6 border-purple-100 bg-purple-50 mb-6">
-          <div className="flex items-center justify-between">
+        <div className="rounded-xl border border-violet-500/25 bg-violet-500/8 p-6 mb-4 backdrop-blur-sm">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <h3 className="font-semibold text-purple-900">🧭 Build your Career Identity</h3>
-              <p className="text-sm text-purple-700 mt-1">
+              <h3 className="font-semibold text-violet-200">🧭 Build your Career Identity</h3>
+              <p className="text-sm text-violet-300/70 mt-1">
                 5 minutes. Tell us what you actually want — values, goals, work style.
                 It shapes every match you get and shows employers who you really are.
               </p>
             </div>
             <Link href="/discover">
-              <Button size="sm" className="shrink-0 ml-4 bg-purple-600 hover:bg-purple-700">
+              <Button size="sm" className="shrink-0 ml-4 bg-violet-600 hover:bg-violet-500 border-0 text-white">
                 Start →
               </Button>
             </Link>
           </div>
-        </Card>
+        </div>
       )}
 
-      {/* ── Next action prompt ────────────────────────────────── */}
+      {/* ── Profile completion nudge ─────────────────────────────────────── */}
       {completeness < 100 && (
-        <Card className="p-6 border-blue-100 bg-blue-50 mb-8">
-          <div className="flex items-center justify-between">
+        <div className="rounded-xl border border-indigo-500/25 bg-indigo-500/8 p-6 mb-4 backdrop-blur-sm">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <h3 className="font-semibold text-blue-900">
-                {skillCount === 0
-                  ? '🗂️ Build your Skills Vault first'
-                  : '🎯 Almost there — complete your profile'}
+              <h3 className="font-semibold text-indigo-200">
+                {skillCount === 0 ? '🗂️ Build your Skills Vault first' : '🎯 Almost there — complete your profile'}
               </h3>
-              <p className="text-sm text-blue-700 mt-1">
+              <p className="text-sm text-indigo-300/70 mt-1">
                 {skillCount === 0
                   ? "Add your skills and projects so employers can find you based on what you can do — not where you studied."
                   : `You're ${completeness}% done. Fill in the remaining details to activate full matching.`}
               </p>
             </div>
             <Link href="/profile">
-              <Button size="sm" className="shrink-0 ml-4">
+              <Button size="sm" className="shrink-0 ml-4 bg-indigo-600 hover:bg-indigo-500 border-0 text-white">
                 {skillCount === 0 ? 'Build vault →' : 'Complete profile →'}
               </Button>
             </Link>
           </div>
-        </Card>
+        </div>
       )}
 
-      {/* ── Path Navigator nudge (show once profile is reasonably built) ─── */}
+      {/* ── Path Navigator nudge ─────────────────────────────────────────── */}
       {skillCount > 0 && hasCareerIdentity && (
-        <Card className="p-6 border-indigo-100 bg-indigo-50 mb-6">
-          <div className="flex items-center justify-between">
+        <div className="rounded-xl border border-blue-500/25 bg-blue-500/8 p-6 mb-4 backdrop-blur-sm">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <h3 className="font-semibold text-indigo-900">🗺️ See your Career Path Navigator</h3>
-              <p className="text-sm text-indigo-700 mt-1">
+              <h3 className="font-semibold text-blue-200">🗺️ See your Career Path Navigator</h3>
+              <p className="text-sm text-blue-300/70 mt-1">
                 3 directions mapped from your actual skills — not a prediction, a navigation.
                 Where do people like you typically go next?
               </p>
             </div>
             <Link href="/paths">
-              <Button size="sm" className="shrink-0 ml-4 bg-indigo-600 hover:bg-indigo-700">
+              <Button size="sm" className="shrink-0 ml-4 bg-blue-600 hover:bg-blue-500 border-0 text-white">
                 Navigate →
               </Button>
             </Link>
           </div>
-        </Card>
+        </div>
       )}
 
-      {/* ── Proactive coach nudge (C-03) ─────────────────────── */}
+      {/* ── Proactive coach nudge ────────────────────────────────────────── */}
       {coachNudge && (
-        <Card className="p-6 border-teal-100 bg-teal-50 mb-6">
+        <div className="rounded-xl border border-teal-500/25 bg-teal-500/8 p-6 mb-4 backdrop-blur-sm">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <h3 className="font-semibold text-teal-900">🤖 Your coach has something to say</h3>
-              <p className="text-sm text-teal-700 mt-1">{coachNudge.message}</p>
-              <p className="text-xs text-teal-500 mt-2 font-medium">
-                Suggested question: &ldquo;{coachNudge.prompt}&rdquo;
+              <h3 className="font-semibold text-teal-200">🤖 Your coach has something to say</h3>
+              <p className="text-sm text-teal-300/70 mt-1">{coachNudge.message}</p>
+              <p className="text-xs text-teal-400/60 mt-2 font-medium">
+                Suggested: &ldquo;{coachNudge.prompt}&rdquo;
               </p>
             </div>
-            <Link
-              href={`/coach?q=${encodeURIComponent(coachNudge.prompt)}`}
-              className="shrink-0"
-            >
-              <Button size="sm" className="bg-teal-600 hover:bg-teal-700 whitespace-nowrap">
+            <Link href={`/coach?q=${encodeURIComponent(coachNudge.prompt)}`} className="shrink-0">
+              <Button size="sm" className="bg-teal-600 hover:bg-teal-500 border-0 text-white whitespace-nowrap">
                 Ask coach →
               </Button>
             </Link>
           </div>
-        </Card>
+        </div>
       )}
 
-      {/* ── Quick actions ─────────────────────────────────────── */}
-      <h2 className="font-semibold mb-4 text-zinc-700">Quick actions</h2>
-      <div className="grid grid-cols-2 gap-4">
+      {/* ── Quick actions ─────────────────────────────────────────────────── */}
+      <h2 className="font-semibold mb-4 text-zinc-400 text-sm uppercase tracking-wide mt-8">Quick actions</h2>
+      <div className="grid grid-cols-2 gap-3">
         {[
-          {
-            href: '/profile',
-            icon: '🗂️',
-            title: 'Skills Vault',
-            desc: 'Add skills, projects, and import from GitHub',
-          },
-          {
-            href: '/paths',
-            icon: '🗺️',
-            title: 'Path Navigator',
-            desc: skillCount > 0 ? 'See 3 directions based on your skills' : 'Add skills first to unlock',
-            disabled: skillCount === 0,
-          },
-          {
-            href: '/jobs',
-            icon: '🎯',
-            title: 'View job matches',
-            desc: skillCount > 0 ? 'See roles matched to your skills' : 'Add skills first to unlock',
-            disabled: skillCount === 0,
-          },
-          {
-            href: '/coach',
-            icon: '🤖',
-            title: 'Talk to AI Coach',
-            desc: 'Get honest advice on your career path',
-          },
-          {
-            href: '/portfolio',
-            icon: '🗃️',
-            title: 'Living Portfolio',
-            desc: 'Show what you\'ve built — not just what you know',
-          },
-          {
-            href: '/profile?tab=github',
-            icon: '🐙',
-            title: 'Import from GitHub',
-            desc: 'AI extracts skills from your repos automatically',
-          },
+          { href: '/profile',        icon: '🗂️', title: 'Skills Vault',      desc: 'Add skills, projects, and import from GitHub' },
+          { href: '/paths',          icon: '🗺️', title: 'Path Navigator',    desc: skillCount > 0 ? 'See 3 directions based on your skills' : 'Add skills first to unlock', disabled: skillCount === 0 },
+          { href: '/jobs',           icon: '🎯', title: 'View job matches',  desc: skillCount > 0 ? 'See roles matched to your skills' : 'Add skills first to unlock',    disabled: skillCount === 0 },
+          { href: '/coach',          icon: '🤖', title: 'Talk to AI Coach',  desc: 'Get honest advice on your career path' },
+          { href: '/portfolio',      icon: '🗃️', title: 'Living Portfolio',  desc: "Show what you've built — not just what you know" },
+          { href: '/profile?tab=github', icon: '🐙', title: 'Import from GitHub', desc: 'AI extracts skills from your repos automatically' },
         ].map((item) => (
           <Link
             key={item.href}
             href={item.disabled ? '#' : item.href}
-            className={item.disabled ? 'pointer-events-none opacity-50' : ''}
+            className={item.disabled ? 'pointer-events-none opacity-40' : ''}
           >
-            <Card className="p-5 hover:border-blue-200 hover:bg-blue-50/50 transition-all cursor-pointer h-full">
-              <span className="text-2xl">{item.icon}</span>
-              <h3 className="font-medium mt-2">{item.title}</h3>
+            <div className="rounded-xl border border-white/7 bg-white/3 p-5
+              hover:border-indigo-500/30 hover:bg-indigo-500/8 transition-all duration-200
+              cursor-pointer h-full group">
+              <span className="text-2xl group-hover:scale-110 transition-transform inline-block">{item.icon}</span>
+              <h3 className="font-medium mt-2 text-zinc-200">{item.title}</h3>
               <p className="text-sm text-zinc-500 mt-1">{item.desc}</p>
-            </Card>
+            </div>
           </Link>
         ))}
       </div>

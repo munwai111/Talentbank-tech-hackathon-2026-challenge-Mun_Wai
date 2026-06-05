@@ -23,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${geist.variable} h-full antialiased`}>
+      <html lang="en" className={`${geist.variable} h-full antialiased dark`}>
         <body className="min-h-full flex flex-col bg-background text-foreground">
           {children}
         </body>

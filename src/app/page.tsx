@@ -4,149 +4,240 @@ import { Button } from "@/components/ui/button";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
-// Landing page — first thing judges and new users see.
-// Server Component: no interactivity needed, fast load.
 export default async function Home() {
   const { userId } = await auth()
   if (userId) redirect('/dashboard')
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      {/* ── Nav ─────────────────────────────────────────────────── */}
-      <header className="border-b px-6 py-4 flex items-center justify-between max-w-6xl mx-auto w-full">
-        <div className="flex items-center gap-2">
+    <div className="flex flex-col min-h-screen bg-[#070714] text-white overflow-hidden">
+
+      {/* ── Aurora background blobs ──────────────────────────────────────── */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden>
+        {/* Violet — top left */}
+        <div className="absolute -top-40 -left-40 w-[600px] h-[600px] rounded-full opacity-30
+          bg-[radial-gradient(circle,#7c3aed,transparent_70%)]"
+          style={{ animation: 'aurora-1 18s ease-in-out infinite' }} />
+        {/* Indigo — top right */}
+        <div className="absolute -top-20 right-0 w-[500px] h-[500px] rounded-full opacity-25
+          bg-[radial-gradient(circle,#4f46e5,transparent_70%)]"
+          style={{ animation: 'aurora-2 22s ease-in-out infinite' }} />
+        {/* Blue — bottom center */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full opacity-20
+          bg-[radial-gradient(circle,#2563eb,transparent_70%)]"
+          style={{ animation: 'aurora-3 26s ease-in-out infinite' }} />
+        {/* Pink — mid right */}
+        <div className="absolute top-1/2 -right-20 w-[400px] h-[400px] rounded-full opacity-15
+          bg-[radial-gradient(circle,#a855f7,transparent_70%)]"
+          style={{ animation: 'aurora-4 20s ease-in-out infinite' }} />
+        {/* Teal — mid left */}
+        <div className="absolute bottom-1/3 -left-20 w-[350px] h-[350px] rounded-full opacity-15
+          bg-[radial-gradient(circle,#0ea5e9,transparent_70%)]"
+          style={{ animation: 'aurora-1 30s ease-in-out infinite reverse' }} />
+      </div>
+
+      {/* ── Nav ─────────────────────────────────────────────────────────── */}
+      <header className="relative z-10 px-6 py-5 flex items-center justify-between max-w-6xl mx-auto w-full">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600
+            flex items-center justify-center text-sm font-bold shadow-lg shadow-violet-500/30">
+            C
+          </div>
           <span className="font-bold text-xl tracking-tight">Career OS</span>
-          <Badge variant="secondary" className="text-xs">APAC</Badge>
+          <Badge className="text-xs bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 ml-1">
+            APAC
+          </Badge>
         </div>
-        <div className="flex gap-3">
+        <div className="flex gap-3 items-center">
           <Link href="/sign-in">
-            <Button variant="ghost" size="sm">Sign in</Button>
+            <Button variant="ghost" size="sm"
+              className="text-zinc-300 hover:text-white hover:bg-white/10">
+              Sign in
+            </Button>
           </Link>
           <Link href="/sign-up">
-            <Button size="sm">Get started free</Button>
+            <Button size="sm"
+              className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500
+                hover:to-indigo-500 border-0 shadow-lg shadow-indigo-500/30 text-white">
+              Get started free
+            </Button>
           </Link>
         </div>
       </header>
 
-      {/* ── Hero ─────────────────────────────────────────────────── */}
-      <main className="flex flex-col items-center text-center px-6 py-20 max-w-4xl mx-auto">
-        <Badge variant="outline" className="mb-6 text-zinc-500">
+      {/* ── Hero ────────────────────────────────────────────────────────── */}
+      <main className="relative z-10 flex flex-col items-center text-center px-6 pt-16 pb-24 max-w-4xl mx-auto">
+        <div className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full
+          border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-sm">
+          <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
           Talentbank Tech Hackathon 2026
-        </Badge>
+        </div>
 
-        <h1 className="text-5xl font-bold tracking-tight leading-tight mb-4">
-          Your career GPS —<br />
-          <span className="text-blue-600">not a job board.</span>
+        <h1 className="text-6xl font-bold tracking-tight leading-tight mb-5">
+          Your career GPS —{" "}
+          <br />
+          <span
+            className="animate-shimmer"
+            style={{
+              background: 'linear-gradient(135deg, #818cf8, #a78bfa, #60a5fa, #818cf8)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundSize: '200% 200%',
+            }}
+          >
+            not a job board.
+          </span>
         </h1>
 
-        <p className="text-xl text-zinc-500 max-w-2xl mb-4 leading-relaxed">
+        <p className="text-xl text-zinc-400 max-w-2xl mb-4 leading-relaxed">
           Career OS shows you where your skills stand, where people like you
           typically go next, and exactly what to build to get there.
           No keyword games. No school-name filters.
         </p>
 
-        <p className="text-sm text-zinc-400 mb-10">
+        <p className="text-sm text-zinc-500 mb-10">
           Designed for Malaysia &amp; Singapore — salary ranges in MYR, APAC market context.
         </p>
 
         <div className="flex gap-4 flex-wrap justify-center">
           <Link href="/sign-up">
-            <Button size="lg" className="px-8">
+            <Button size="lg"
+              className="px-8 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500
+                hover:to-indigo-500 border-0 shadow-xl shadow-indigo-500/30 text-white text-base">
               Start navigating your career →
             </Button>
           </Link>
           <Link href="/sign-up">
-            <Button size="lg" variant="outline" className="px-8">
+            <Button size="lg" variant="outline"
+              className="px-8 border-white/20 bg-white/5 hover:bg-white/10 text-white backdrop-blur-sm text-base">
               I&apos;m hiring talent
             </Button>
           </Link>
         </div>
+
+        {/* Trust strip */}
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-zinc-500">
+          {['Skills-first matching', 'MYR salary intelligence', 'AI career coaching', 'Free to start'].map(t => (
+            <span key={t} className="flex items-center gap-1.5">
+              <span className="w-1 h-1 rounded-full bg-indigo-500" />
+              {t}
+            </span>
+          ))}
+        </div>
       </main>
 
-      {/* ── Feature grid ─────────────────────────────────────────── */}
-      <section className="border-t bg-zinc-50 px-6 py-20">
+      {/* ── Feature grid ─────────────────────────────────────────────────── */}
+      <section className="relative z-10 px-6 py-20 border-t border-white/5">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
+          <div className="text-center mb-14">
             <h2 className="text-3xl font-bold mb-3">Everything your career needs in one OS</h2>
-            <p className="text-zinc-500 max-w-xl mx-auto">
+            <p className="text-zinc-400 max-w-xl mx-auto">
               Six interconnected modules. Each one makes the next more powerful.
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-5">
+          <div className="grid md:grid-cols-3 gap-4">
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className={`bg-white rounded-xl p-6 border transition-all ${
-                  f.highlight ? 'border-blue-200 ring-1 ring-blue-100' : 'border-zinc-200'
-                }`}
+                className={`rounded-xl p-6 border backdrop-blur-sm transition-all duration-300
+                  hover:-translate-y-0.5 hover:shadow-lg group
+                  ${f.highlight
+                    ? 'border-indigo-500/40 bg-indigo-500/10 hover:border-indigo-400/60 hover:shadow-indigo-500/20'
+                    : 'border-white/8 bg-white/4 hover:border-white/15 hover:bg-white/6'
+                  }`}
               >
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-3xl">{f.icon}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                    f.highlight ? 'bg-blue-100 text-blue-700' : 'bg-zinc-100 text-zinc-500'
-                  }`}>
+                <div className="flex items-center justify-between mb-4">
+                  <span className={`w-11 h-11 rounded-xl flex items-center justify-center text-2xl
+                    ${f.highlight ? 'bg-indigo-500/20' : 'bg-white/8'}`}>
+                    {f.icon}
+                  </span>
+                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium border
+                    ${f.highlight
+                      ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+                      : 'bg-white/8 text-zinc-400 border-white/10'
+                    }`}>
                     {f.tag}
                   </span>
                 </div>
-                <h3 className="font-semibold text-zinc-900 mb-2">{f.title}</h3>
-                <p className="text-zinc-500 text-sm leading-relaxed">{f.desc}</p>
+                <h3 className="font-semibold text-white mb-2">{f.title}</h3>
+                <p className="text-zinc-400 text-sm leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Employer strip ───────────────────────────────────────── */}
-      <section className="border-t px-6 py-16">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-10">
+      {/* ── Employer strip ───────────────────────────────────────────────── */}
+      <section className="relative z-10 px-6 py-20 border-t border-white/5">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center gap-12">
           <div className="flex-1">
-            <h2 className="text-2xl font-bold mb-3">For employers: hire on ability, not labels</h2>
-            <p className="text-zinc-500 leading-relaxed mb-4">
+            <Badge className="mb-4 bg-emerald-500/15 text-emerald-300 border border-emerald-500/25 text-xs">
+              For Employers
+            </Badge>
+            <h2 className="text-2xl font-bold mb-3">Hire on ability, not labels</h2>
+            <p className="text-zinc-400 leading-relaxed mb-6">
               Post jobs with required and nice-to-have skills. Get a ranked shortlist where
               every candidate&apos;s skill fit is visible at a glance — matched skills, gaps, and
               the exact profiles worth interviewing. No more CV keyword roulette.
             </p>
             <Link href="/sign-up">
-              <Button variant="outline">Post a role →</Button>
+              <Button variant="outline"
+                className="border-white/20 bg-white/5 hover:bg-white/10 text-white">
+                Post a role →
+              </Button>
             </Link>
           </div>
           <div className="flex-1 grid grid-cols-2 gap-3">
             {EMPLOYER_FEATURES.map(item => (
-              <div key={item.label} className="flex items-center gap-3 bg-zinc-50 rounded-lg p-4 border">
-                <span className="text-xl">{item.icon}</span>
-                <span className="text-sm font-medium text-zinc-700">{item.label}</span>
+              <div key={item.label}
+                className="flex items-center gap-3 rounded-xl p-4 border border-white/8 bg-white/4 backdrop-blur-sm">
+                <span className="w-9 h-9 rounded-lg bg-white/8 flex items-center justify-center text-lg shrink-0">
+                  {item.icon}
+                </span>
+                <span className="text-sm font-medium text-zinc-300">{item.label}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Footer CTA ───────────────────────────────────────────── */}
-      <section className="border-t bg-zinc-900 text-white px-6 py-16">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-3xl font-bold mb-4">Stop guessing. Start navigating.</h2>
-          <p className="text-zinc-400 mb-8">
+      {/* ── Footer CTA ───────────────────────────────────────────────────── */}
+      <section className="relative z-10 px-6 py-20 border-t border-white/5">
+        {/* Glow behind CTA */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" aria-hidden>
+          <div className="w-96 h-48 bg-indigo-600/15 blur-3xl rounded-full" />
+        </div>
+        <div className="relative max-w-2xl mx-auto text-center">
+          <h2 className="text-4xl font-bold mb-4
+            bg-gradient-to-r from-violet-300 via-indigo-300 to-blue-300
+            bg-clip-text text-transparent">
+            Stop guessing. Start navigating.
+          </h2>
+          <p className="text-zinc-400 mb-8 text-lg">
             Free to use. No CV required to start. Build your skills profile
             and see your career paths in under 5 minutes.
           </p>
           <Link href="/sign-up">
-            <Button size="lg" className="bg-white text-zinc-900 hover:bg-zinc-100 px-10">
+            <Button size="lg"
+              className="px-12 py-6 text-base bg-gradient-to-r from-violet-600 to-indigo-600
+                hover:from-violet-500 hover:to-indigo-500 border-0
+                shadow-2xl shadow-indigo-500/40 text-white">
               Get started free →
             </Button>
           </Link>
         </div>
       </section>
 
-      {/* ── Footer ───────────────────────────────────────────────── */}
-      <footer className="border-t px-6 py-6 text-center text-xs text-zinc-400">
+      {/* ── Footer ───────────────────────────────────────────────────────── */}
+      <footer className="relative z-10 border-t border-white/5 px-6 py-6 text-center text-xs text-zinc-600">
         Career OS · Skills-first hiring for APAC · Talentbank Tech Hackathon 2026
       </footer>
     </div>
   )
 }
 
-// ── Static data ──────────────────────────────────────────────────────────────
+// ── Static data ────────────────────────────────────────────────────────────────
 
 const FEATURES = [
   {
@@ -159,7 +250,7 @@ const FEATURES = [
   {
     icon: '🧭',
     title: 'Career Identity',
-    desc: 'Answer 4 questions about goals, values, and work style. Claude writes a professional narrative that tells employers who you actually are — not just what you\'ve done.',
+    desc: "Answer 4 questions about goals, values, and work style. Claude writes a professional narrative that tells employers who you actually are — not just what you've done.",
     tag: 'AI-powered',
     highlight: false,
   },
@@ -173,7 +264,7 @@ const FEATURES = [
   {
     icon: '🎯',
     title: 'Job Matches',
-    desc: 'Every open role ranked by skill overlap. Matched skills in green, gaps in red. No black-box scores — you see exactly why you match or don\'t.',
+    desc: "Every open role ranked by skill overlap. Matched skills in green, gaps in red. No black-box scores — you see exactly why you match or don't.",
     tag: 'Transparent',
     highlight: false,
   },
@@ -187,7 +278,7 @@ const FEATURES = [
   {
     icon: '🗃️',
     title: 'Living Portfolio',
-    desc: 'Showcase what you\'ve built, not just what you know. Projects with tech stack, impact metrics, and AI-generated summaries that make your work legible.',
+    desc: "Showcase what you've built, not just what you know. Projects with tech stack, impact metrics, and AI-generated summaries that make your work legible.",
     tag: 'Evidence',
     highlight: false,
   },
