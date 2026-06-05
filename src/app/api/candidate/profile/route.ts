@@ -61,17 +61,64 @@ export async function POST(req: Request) {
     const email = clerkUser.emailAddresses[0]?.emailAddress ?? ''
     const name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || 'New User'
 
-    // Upsert user — safe to re-run. ON CONFLICT (clerk_id) updates role + email.
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .upsert({ clerk_id: userId, email, role }, { onConflict: 'clerk_id' })
-      .select('id')
-      .single()
+    // Find or create the user record.
+    //
+    // We cannot use a simple upsert(onConflict:'clerk_id') here because the users
+    // table has TWO unique constraints: clerk_id AND email.
+    // If the Clerk webhook already created the row, an insert attempt would
+    // conflict on email even though clerk_id also matches.
+    //
+    // Strategy:
+    //   1. Look up by clerk_id (most common — webhook created it already)
+    //   2. If not found, look up by email (re-registration after delete, or race)
+    //   3. If found by email but not clerk_id, update clerk_id + role on that row
+    //   4. If truly new, insert fresh
 
-    if (userError || !user) {
-      console.error('[profile/POST] users upsert failed:', userError)
-      return NextResponse.json({ error: userError?.message ?? 'Failed to create user record' }, { status: 500 })
+    let userId_db: string | null = null
+
+    // Step 1: by clerk_id
+    const { data: byClerkId } = await supabase
+      .from('users')
+      .select('id')
+      .eq('clerk_id', userId)
+      .maybeSingle()
+
+    if (byClerkId) {
+      userId_db = byClerkId.id
+      // Update role in case it changed
+      await supabase.from('users').update({ role }).eq('id', userId_db)
+    } else {
+      // Step 2: by email
+      const { data: byEmail } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle()
+
+      if (byEmail) {
+        // Row exists under this email — update it to claim this new clerk_id
+        userId_db = byEmail.id
+        await supabase.from('users').update({ clerk_id: userId, role }).eq('id', userId_db)
+      } else {
+        // Step 3: brand new user — insert
+        const { data: inserted, error: insertError } = await supabase
+          .from('users')
+          .insert({ clerk_id: userId, email, role })
+          .select('id')
+          .single()
+
+        if (insertError || !inserted) {
+          console.error('[profile/POST] users insert failed:', insertError)
+          return NextResponse.json(
+            { error: insertError?.message ?? 'Failed to create user record' },
+            { status: 500 }
+          )
+        }
+        userId_db = inserted.id
+      }
     }
+
+    const user = { id: userId_db }
 
     if (role === 'candidate') {
       const { error: profileError } = await supabase

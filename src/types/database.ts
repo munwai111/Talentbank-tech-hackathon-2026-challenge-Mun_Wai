@@ -148,6 +148,7 @@ export type Database = {
           scheduled_purge_at?: string | null
         }
         Update: {
+          clerk_id?: string
           role?: UserRole
           email?: string
           deleted_at?: string | null
