@@ -14,11 +14,11 @@ import type { PortfolioItem } from '@/types/database'
 
 function PortfolioCard({ item }: { item: PortfolioItem }) {
   return (
-    <div className="bg-white rounded-xl border border-zinc-200 p-6 flex flex-col gap-4 hover:border-zinc-300 transition-colors">
+    <div className="bg-white/4 rounded-xl border border-white/8 p-6 flex flex-col gap-4 hover:border-white/15 transition-colors backdrop-blur-sm">
       {/* Title + links */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-zinc-900 truncate">{item.title}</h3>
+          <h3 className="font-semibold text-white truncate">{item.title}</h3>
           {item.ai_summary && (
             <p className="text-xs text-zinc-500 mt-1 leading-relaxed">{item.ai_summary}</p>
           )}
@@ -29,7 +29,7 @@ function PortfolioCard({ item }: { item: PortfolioItem }) {
               href={item.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-zinc-500 hover:text-zinc-900 border border-zinc-200 px-2.5 py-1 rounded-lg hover:border-zinc-400 transition-colors"
+              className="text-xs text-zinc-400 hover:text-zinc-200 border border-white/15 px-2.5 py-1 rounded-lg hover:border-white/30 transition-colors"
             >
               Live ↗
             </a>
@@ -39,7 +39,7 @@ function PortfolioCard({ item }: { item: PortfolioItem }) {
               href={item.repo_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-zinc-500 hover:text-zinc-900 border border-zinc-200 px-2.5 py-1 rounded-lg hover:border-zinc-400 transition-colors"
+              className="text-xs text-zinc-400 hover:text-zinc-200 border border-white/15 px-2.5 py-1 rounded-lg hover:border-white/30 transition-colors"
             >
               🐙 Repo ↗
             </a>
@@ -49,7 +49,7 @@ function PortfolioCard({ item }: { item: PortfolioItem }) {
 
       {/* Description */}
       {item.description && (
-        <p className="text-sm text-zinc-600 leading-relaxed">{item.description}</p>
+        <p className="text-sm text-zinc-400 leading-relaxed">{item.description}</p>
       )}
 
       {/* Tech stack */}
@@ -59,7 +59,7 @@ function PortfolioCard({ item }: { item: PortfolioItem }) {
             <Badge
               key={tech}
               variant="outline"
-              className="text-xs text-zinc-600 border-zinc-200"
+              className="text-xs text-zinc-400 border-white/15"
             >
               {tech}
             </Badge>
@@ -69,9 +69,9 @@ function PortfolioCard({ item }: { item: PortfolioItem }) {
 
       {/* Impact */}
       {item.impact && (
-        <div className="flex items-start gap-2 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2">
-          <span className="text-emerald-600 text-sm">📈</span>
-          <p className="text-xs text-emerald-700 font-medium">{item.impact}</p>
+        <div className="flex items-start gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2">
+          <span className="text-emerald-400 text-sm">📈</span>
+          <p className="text-xs text-emerald-400 font-medium">{item.impact}</p>
         </div>
       )}
     </div>
@@ -84,7 +84,7 @@ function EmptyPortfolio() {
   return (
     <div className="text-center py-20">
       <p className="text-5xl mb-4">🗃️</p>
-      <h2 className="text-lg font-semibold text-zinc-700 mb-2">No projects yet</h2>
+      <h2 className="text-lg font-semibold text-zinc-200 mb-2">No projects yet</h2>
       <p className="text-sm text-zinc-400 max-w-sm mx-auto mb-6">
         Add projects from the Skills Vault — or import from GitHub and let AI extract your tech stack automatically.
       </p>
@@ -137,7 +137,7 @@ export default async function PortfolioPage() {
       {/* Header */}
       <div className="flex items-start justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Living Portfolio</h1>
+          <h1 className="text-2xl font-bold text-white">Living Portfolio</h1>
           <p className="text-sm text-zinc-500 mt-1">
             {portfolio.length > 0
               ? `${portfolio.length} project${portfolio.length !== 1 ? 's' : ''} — evidence of what you can actually build`

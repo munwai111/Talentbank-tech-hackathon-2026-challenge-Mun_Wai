@@ -44,8 +44,8 @@ function ChipSelect({
           onClick={() => toggle(opt)}
           className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
             selected.includes(opt)
-              ? 'bg-blue-600 text-white border-blue-600'
-              : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400'
+              ? 'bg-indigo-600 text-white border-indigo-600'
+              : 'bg-white/6 text-zinc-400 border-white/15 hover:border-white/30'
           }`}
         >
           {opt}
@@ -62,14 +62,14 @@ function StepProgress({ current, total }: { current: number; total: number }) {
       {Array.from({ length: total }).map((_, i) => (
         <div key={i} className="flex items-center gap-2">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
-            i < current ? 'bg-blue-600 text-white' :
-            i === current ? 'bg-blue-100 text-blue-700 border-2 border-blue-600' :
-            'bg-zinc-100 text-zinc-400'
+            i < current ? 'bg-indigo-600 text-white' :
+            i === current ? 'bg-indigo-500/20 text-indigo-300 border-2 border-indigo-500' :
+            'bg-white/8 text-zinc-500'
           }`}>
             {i < current ? '✓' : i + 1}
           </div>
           {i < total - 1 && (
-            <div className={`h-0.5 w-8 ${i < current ? 'bg-blue-600' : 'bg-zinc-200'}`} />
+            <div className={`h-0.5 w-8 ${i < current ? 'bg-indigo-600' : 'bg-white/15'}`} />
           )}
         </div>
       ))}
@@ -183,8 +183,8 @@ export default function DiscoverPage() {
               onClick={() => set('current_situation', opt.value)}
               className={`p-4 rounded-xl border-2 text-left transition-all ${
                 form.current_situation === opt.value
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-zinc-200 hover:border-zinc-300'
+                  ? 'border-indigo-500 bg-indigo-500/10'
+                  : 'border-white/15 hover:border-white/30'
               }`}
             >
               <span className="text-sm font-medium">{opt.label}</span>
@@ -211,8 +211,8 @@ export default function DiscoverPage() {
                 onClick={() => set('education_level', value)}
                 className={`w-full text-left px-3 py-2 rounded-lg text-sm border transition-all ${
                   form.education_level === value
-                    ? 'border-blue-500 bg-blue-50 text-blue-700'
-                    : 'border-zinc-200 hover:border-zinc-300'
+                    ? 'border-indigo-500 bg-indigo-500/10 text-indigo-300'
+                    : 'border-white/15 hover:border-white/30'
                 }`}
               >
                 {label}
@@ -345,8 +345,8 @@ export default function DiscoverPage() {
               onClick={() => set('preferred_work_arrangement', opt.value)}
               className={`flex-1 py-2.5 rounded-lg text-sm border-2 transition-all ${
                 form.preferred_work_arrangement === opt.value
-                  ? 'border-blue-500 bg-blue-50 text-blue-700 font-medium'
-                  : 'border-zinc-200 hover:border-zinc-300'
+                  ? 'border-indigo-500 bg-indigo-500/10 text-indigo-300 font-medium'
+                  : 'border-white/15 hover:border-white/30'
               }`}
             >
               {opt.label}
@@ -481,7 +481,7 @@ export default function DiscoverPage() {
       </div>
 
       <div>
-        <p className="text-sm font-medium text-zinc-700 mb-3">Select anything that applies, or describe it below.</p>
+        <p className="text-sm font-medium text-zinc-300 mb-3">Select anything that applies, or describe it below.</p>
         <div className="flex flex-wrap gap-2">
           {LIFE_CHAPTER_PILLS.map(pill => {
             const isSelected = form.life_chapter_context === pill
@@ -492,8 +492,8 @@ export default function DiscoverPage() {
                 onClick={() => set('life_chapter_context', isSelected ? null : pill)}
                 className={`px-3 py-2 rounded-full text-sm border transition-all text-left ${
                   isSelected
-                    ? 'bg-blue-600 text-white border-blue-600'
-                    : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400'
+                    ? 'bg-indigo-600 text-white border-indigo-600'
+                    : 'bg-white/6 text-zinc-400 border-white/15 hover:border-white/30'
                 }`}
               >
                 {pill}
@@ -520,8 +520,8 @@ export default function DiscoverPage() {
         </p>
       </div>
 
-      <div className="bg-zinc-50 rounded-xl p-4 text-sm text-zinc-500 border border-zinc-100">
-        <p className="font-medium text-zinc-700 mb-1">🔒 This is never shown to employers.</p>
+      <div className="bg-white/4 rounded-xl p-4 text-sm text-zinc-400 border border-white/8">
+        <p className="font-medium text-zinc-300 mb-1">🔒 This is never shown to employers.</p>
         <p>It only shapes your career paths and coach advice — so both are relevant to your real life, not an idealised version of it. You can skip this step with no impact on your matches.</p>
       </div>
     </div>
@@ -537,21 +537,21 @@ export default function DiscoverPage() {
       </div>
 
       {synthesis ? (
-        <Card className="p-6 bg-gradient-to-br from-blue-50 to-white border-blue-100">
-          <p className="text-sm font-medium text-blue-600 mb-3">🤖 Career Identity narrative</p>
-          <p className="text-zinc-700 leading-relaxed">{synthesis}</p>
+        <Card className="p-6 bg-gradient-to-br from-indigo-500/10 to-white/4 border-indigo-500/20">
+          <p className="text-sm font-medium text-indigo-400 mb-3">🤖 Career Identity narrative</p>
+          <p className="text-zinc-300 leading-relaxed">{synthesis}</p>
         </Card>
       ) : (
-        <Card className="p-6 bg-zinc-50">
-          <p className="text-sm text-zinc-500">
+        <Card className="p-6 bg-white/4">
+          <p className="text-sm text-zinc-400">
             Your answers have been saved. The AI narrative could not be generated this time —
             but your profile data is complete and is being used for matching.
           </p>
         </Card>
       )}
 
-      <Card className="p-5 border-zinc-100">
-        <p className="text-sm font-medium text-zinc-700 mb-3">Summary of your profile</p>
+      <Card className="p-5 border-white/10">
+        <p className="text-sm font-medium text-zinc-300 mb-3">Summary of your profile</p>
         <dl className="space-y-2 text-sm">
           {form.current_situation && <div className="flex gap-2"><dt className="text-zinc-400 w-28 shrink-0">Situation</dt><dd>{form.current_situation.replace('_', ' ')}</dd></div>}
           {form.education_field && <div className="flex gap-2"><dt className="text-zinc-400 w-28 shrink-0">Education</dt><dd>{form.education_level} in {form.education_field}</dd></div>}
@@ -592,11 +592,11 @@ export default function DiscoverPage() {
         {step < 5 && (
           <>
             {error && (
-              <p className="mt-4 text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
+              <p className="mt-4 text-sm text-red-400 bg-red-500/8 border border-red-500/20 rounded-lg px-4 py-3">
                 ⚠️ {error}
               </p>
             )}
-            <div className="flex justify-between mt-8 pt-4 border-t border-zinc-100">
+            <div className="flex justify-between mt-8 pt-4 border-t border-white/8">
               <Button
                 variant="ghost"
                 onClick={() => setStep(s => s - 1)}

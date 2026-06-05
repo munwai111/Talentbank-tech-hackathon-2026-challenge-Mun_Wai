@@ -33,19 +33,19 @@ const LEVEL_LABELS: Record<number, string> = {
 }
 
 const LEVEL_COLORS: Record<number, string> = {
-  1: 'bg-zinc-100 text-zinc-600',
-  2: 'bg-blue-100 text-blue-700',
-  3: 'bg-green-100 text-green-700',
-  4: 'bg-purple-100 text-purple-700',
-  5: 'bg-orange-100 text-orange-700',
+  1: 'bg-white/8 text-zinc-400',
+  2: 'bg-blue-500/15 text-blue-400',
+  3: 'bg-emerald-500/15 text-emerald-400',
+  4: 'bg-purple-500/15 text-purple-400',
+  5: 'bg-orange-500/15 text-orange-400',
 }
 
 // Source badge — shows HOW a skill was verified (this is the key trust signal)
 const SOURCE_BADGES: Record<string, { label: string; color: string }> = {
-  manual:     { label: 'Self-reported',  color: 'bg-zinc-100 text-zinc-500' },
-  import:     { label: '📄 Resume',      color: 'bg-amber-100 text-amber-700' },
-  github:     { label: '🐙 GitHub',      color: 'bg-green-100 text-green-700' },
-  assessment: { label: '✅ Assessed',    color: 'bg-blue-100 text-blue-700' },
+  manual:     { label: 'Self-reported',  color: 'bg-white/8 text-zinc-400' },
+  import:     { label: '📄 Resume',      color: 'bg-amber-500/15 text-amber-400' },
+  github:     { label: '🐙 GitHub',      color: 'bg-emerald-500/15 text-emerald-400' },
+  assessment: { label: '✅ Assessed',    color: 'bg-blue-500/15 text-blue-400' },
 }
 
 export default function ProfilePage() {
@@ -398,7 +398,7 @@ export default function ProfilePage() {
               </div>
             ) : (
               (profile?.skills ?? []).map(skill => (
-                <div key={skill.id} className="flex items-center gap-3 p-3 bg-white border rounded-lg">
+                <div key={skill.id} className="flex items-center gap-3 p-3 bg-white/4 border border-white/8 rounded-lg">
                   <div className="flex-1">
                     <span className="font-medium">{skill.name}</span>
                   </div>
@@ -422,13 +422,13 @@ export default function ProfilePage() {
           {/* Work experience — imported from resume */}
           {(profile?.work_experience ?? []).length > 0 && (
             <div>
-              <h3 className="font-semibold text-zinc-700 mb-3 mt-6">💼 Work Experience</h3>
+              <h3 className="font-semibold text-zinc-300 mb-3 mt-6">💼 Work Experience</h3>
               <div className="space-y-3">
                 {(profile!.work_experience!).map((job, i) => (
                   <Card key={i} className="p-4">
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <div>
-                        <p className="font-semibold text-zinc-900">{job.title}</p>
+                        <p className="font-semibold text-white">{job.title}</p>
                         <p className="text-sm text-zinc-500">{job.company}</p>
                       </div>
                       <p className="text-xs text-zinc-400 whitespace-nowrap mt-0.5">
@@ -436,12 +436,12 @@ export default function ProfilePage() {
                       </p>
                     </div>
                     {job.description && (
-                      <p className="text-sm text-zinc-600 mt-2 leading-relaxed">{job.description}</p>
+                      <p className="text-sm text-zinc-400 mt-2 leading-relaxed">{job.description}</p>
                     )}
                     {job.key_technologies.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {job.key_technologies.map(t => (
-                          <span key={t} className="text-xs bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded">{t}</span>
+                          <span key={t} className="text-xs bg-white/8 text-zinc-400 px-2 py-0.5 rounded">{t}</span>
                         ))}
                       </div>
                     )}
@@ -454,12 +454,12 @@ export default function ProfilePage() {
           {/* Education — imported from resume */}
           {(profile?.education ?? []).length > 0 && (
             <div>
-              <h3 className="font-semibold text-zinc-700 mb-3 mt-2">🎓 Education</h3>
+              <h3 className="font-semibold text-zinc-300 mb-3 mt-2">🎓 Education</h3>
               <div className="space-y-2">
                 {(profile!.education!).map((edu, i) => (
-                  <div key={i} className="flex items-start justify-between p-3 bg-white border rounded-lg">
+                  <div key={i} className="flex items-start justify-between p-3 bg-white/4 border border-white/8 rounded-lg">
                     <div>
-                      <p className="font-medium text-zinc-900">{edu.institution}</p>
+                      <p className="font-medium text-white">{edu.institution}</p>
                       <p className="text-sm text-zinc-500">
                         {[edu.degree, edu.field].filter(Boolean).join(' · ')}
                       </p>
@@ -529,11 +529,11 @@ export default function ProfilePage() {
                   <div className="flex items-start justify-between">
                     <h3 className="font-semibold">{item.title}</h3>
                     <div className="flex gap-2">
-                      {item.url && <a href={item.url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline">Live ↗</a>}
-                      {item.repo_url && <a href={item.repo_url} target="_blank" rel="noreferrer" className="text-xs text-blue-600 hover:underline">GitHub ↗</a>}
+                      {item.url && <a href={item.url} target="_blank" rel="noreferrer" className="text-xs text-indigo-400 hover:underline">Live ↗</a>}
+                      {item.repo_url && <a href={item.repo_url} target="_blank" rel="noreferrer" className="text-xs text-indigo-400 hover:underline">GitHub ↗</a>}
                     </div>
                   </div>
-                  {item.impact && <p className="text-sm text-green-700 font-medium mt-1">✓ {item.impact}</p>}
+                  {item.impact && <p className="text-sm text-emerald-400 font-medium mt-1">✓ {item.impact}</p>}
                   {item.description && <p className="text-sm text-zinc-500 mt-1">{item.description}</p>}
                   {item.tech_stack?.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-3">
@@ -543,9 +543,9 @@ export default function ProfilePage() {
                     </div>
                   )}
                   {item.ai_summary && (
-                    <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-                      <p className="text-xs font-medium text-blue-700 mb-1">🤖 AI analysis</p>
-                      <p className="text-xs text-blue-600">{item.ai_summary}</p>
+                    <div className="mt-3 p-3 bg-indigo-500/8 rounded-lg">
+                      <p className="text-xs font-medium text-indigo-400 mb-1">🤖 AI analysis</p>
+                      <p className="text-xs text-indigo-300/80">{item.ai_summary}</p>
                     </div>
                   )}
                 </Card>
@@ -571,8 +571,8 @@ export default function ProfilePage() {
                   onClick={() => { setImportMode(mode); setImportError(null); setExtractedProfile(null) }}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                     importMode === mode
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-white/6 text-zinc-400 hover:bg-white/10'
                   }`}
                 >
                   {mode === 'pdf' ? '📎 Upload File' : mode === 'url' ? '🔗 URL' : '📋 Paste Text'}
@@ -583,7 +583,7 @@ export default function ProfilePage() {
             {/* File upload */}
             {importMode === 'pdf' && (
               <label className={`flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-xl cursor-pointer transition-colors ${
-                importFile ? 'border-blue-300 bg-blue-50' : 'border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50'
+                importFile ? 'border-indigo-500/50 bg-indigo-500/8' : 'border-white/15 hover:border-white/30 hover:bg-white/4'
               }`}>
                 <input
                   type="file"
@@ -594,7 +594,7 @@ export default function ProfilePage() {
                 {importFile ? (
                   <>
                     <p className="text-2xl mb-1">📎</p>
-                    <p className="text-sm font-medium text-blue-700">{importFile.name}</p>
+                    <p className="text-sm font-medium text-indigo-300">{importFile.name}</p>
                     <p className="text-xs text-zinc-400">{(importFile.size / 1024).toFixed(0)} KB — click to change</p>
                   </>
                 ) : (
@@ -616,7 +616,7 @@ export default function ProfilePage() {
                   onChange={e => { setImportUrl(e.target.value); setExtractedProfile(null) }}
                 />
                 {importUrl.toLowerCase().includes('linkedin.com') ? (
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800 space-y-1">
+                  <div className="p-3 bg-amber-500/8 border border-amber-500/20 rounded-lg text-xs text-amber-400 space-y-1">
                     <p className="font-semibold">⚠️ LinkedIn blocks automated access</p>
                     <p>LinkedIn requires login — we can&apos;t fetch it server-side. Instead:</p>
                     <ol className="list-decimal pl-4 space-y-0.5">
@@ -627,7 +627,7 @@ export default function ProfilePage() {
                     </ol>
                     <button
                       onClick={() => { setImportMode('text'); setImportUrl('') }}
-                      className="mt-1 text-amber-700 font-semibold underline hover:text-amber-900"
+                      className="mt-1 text-amber-400 font-semibold underline hover:text-amber-300"
                     >
                       Switch to Paste Text →
                     </button>
@@ -651,8 +651,8 @@ export default function ProfilePage() {
                   rows={9}
                   className="text-sm"
                 />
-                <div className="p-3 bg-zinc-50 border border-zinc-200 rounded-lg text-xs text-zinc-500 space-y-1">
-                  <p className="font-medium text-zinc-600">How to copy from LinkedIn:</p>
+                <div className="p-3 bg-white/4 border border-white/8 rounded-lg text-xs text-zinc-400 space-y-1">
+                  <p className="font-medium text-zinc-300">How to copy from LinkedIn:</p>
                   <p>1. Open your LinkedIn profile page in the browser</p>
                   <p>2. Press <strong>Ctrl+A</strong> (Windows) or <strong>Cmd+A</strong> (Mac) to select all</p>
                   <p>3. Press <strong>Ctrl+C / Cmd+C</strong> to copy, then paste here</p>
@@ -677,14 +677,14 @@ export default function ProfilePage() {
 
           {/* Error */}
           {importError && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+            <div className="p-4 bg-red-500/8 border border-red-500/20 rounded-xl text-sm text-red-400">
               ⚠️ {importError}
             </div>
           )}
 
           {/* Progress messages while extracting */}
           {extracting && (
-            <div className="p-4 bg-zinc-50 rounded-xl text-sm text-zinc-500 space-y-1.5">
+            <div className="p-4 bg-white/4 rounded-xl text-sm text-zinc-400 space-y-1.5">
               <p>🔍 Reading source content...</p>
               <p>🧠 Identifying skills, experience, and background...</p>
               <p>✅ Cross-checking skill levels against evidence...</p>
@@ -698,9 +698,9 @@ export default function ProfilePage() {
               {/* Confidence + source detected */}
               <div className="flex items-center gap-3">
                 <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                  extractedProfile.confidence === 'high'   ? 'bg-green-100 text-green-700' :
-                  extractedProfile.confidence === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                                                             'bg-red-100 text-red-700'
+                  extractedProfile.confidence === 'high'   ? 'bg-emerald-500/15 text-emerald-400' :
+                  extractedProfile.confidence === 'medium' ? 'bg-amber-500/15 text-amber-400' :
+                                                             'bg-red-500/15 text-red-400'
                 }`}>
                   {extractedProfile.confidence === 'high'   ? '✓ High confidence' :
                    extractedProfile.confidence === 'medium' ? '~ Medium confidence' :
@@ -713,11 +713,11 @@ export default function ProfilePage() {
 
               {/* AI warnings */}
               {extractedProfile.warnings.length > 0 && (
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
-                  <p className="text-xs font-semibold text-amber-700 mb-2">⚠️ AI flagged these for review:</p>
+                <div className="p-4 bg-amber-500/8 border border-amber-500/20 rounded-xl">
+                  <p className="text-xs font-semibold text-amber-400 mb-2">⚠️ AI flagged these for review:</p>
                   <ul className="space-y-1">
                     {extractedProfile.warnings.map((w, i) => (
-                      <li key={i} className="text-xs text-amber-700">• {w}</li>
+                      <li key={i} className="text-xs text-amber-400">• {w}</li>
                     ))}
                   </ul>
                 </div>
@@ -780,7 +780,7 @@ export default function ProfilePage() {
                   <h4 className="font-semibold text-sm mb-3">Experience detected</h4>
                   <div className="space-y-3">
                     {extractedProfile.experience.map((exp, i) => (
-                      <div key={i} className="border-l-2 border-zinc-200 pl-3">
+                      <div key={i} className="border-l-2 border-white/20 pl-3">
                         <p className="font-medium text-sm">{exp.title}</p>
                         <p className="text-xs text-zinc-500">
                           {exp.company}
@@ -804,7 +804,7 @@ export default function ProfilePage() {
               )}
 
               {/* Apply options */}
-              <Card className="p-5 border-blue-200 bg-blue-50">
+              <Card className="p-5 border-indigo-500/20 bg-indigo-500/8">
                 <h4 className="font-semibold text-sm mb-4">What would you like to apply?</h4>
                 <div className="space-y-3 mb-5">
                   <label className="flex items-center gap-3 cursor-pointer">
@@ -846,7 +846,7 @@ export default function ProfilePage() {
                 </Button>
 
                 {applySuccess && (
-                  <p className="text-sm text-green-700 font-medium text-center mt-3">
+                  <p className="text-sm text-emerald-400 font-medium text-center mt-3">
                     ✅ Done! Check your Skills tab and Profile Info tab to see the changes.
                   </p>
                 )}
@@ -862,7 +862,7 @@ export default function ProfilePage() {
             <p className="text-sm text-zinc-500 mb-5">
               Paste your GitHub profile URL. Our AI reads your top repositories,
               extracts real skills from your actual code, and adds them to your vault
-              with a <span className="font-medium text-green-700">GitHub-verified</span> badge —
+              with a <span className="font-medium text-emerald-400">GitHub-verified</span> badge —
               more trusted than self-reported skills.
             </p>
 
@@ -884,7 +884,7 @@ export default function ProfilePage() {
             </div>
 
             {importing && (
-              <div className="mt-4 p-4 bg-zinc-50 rounded-lg text-sm text-zinc-500 space-y-1">
+              <div className="mt-4 p-4 bg-white/4 rounded-lg text-sm text-zinc-400 space-y-1">
                 <p>🔍 Fetching your public repositories...</p>
                 <p>🧠 Reading code to identify skills...</p>
                 <p>✨ Generating skill evidence...</p>
@@ -892,23 +892,23 @@ export default function ProfilePage() {
             )}
 
             {importResult && (
-              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                <p className="font-medium text-green-800 mb-2">
+              <div className="mt-4 p-4 bg-emerald-500/8 border border-emerald-500/20 rounded-lg">
+                <p className="font-medium text-emerald-300 mb-2">
                   ✅ {importResult.skills.length} skills extracted!
                 </p>
                 <div className="flex flex-wrap gap-1.5 mb-3">
                   {importResult.skills.map(s => (
-                    <Badge key={s} className="bg-green-100 text-green-800 border-0">{s}</Badge>
+                    <Badge key={s} className="bg-emerald-500/15 text-emerald-400 border-0">{s}</Badge>
                   ))}
                 </div>
-                <p className="text-sm text-green-700">{importResult.summary}</p>
+                <p className="text-sm text-emerald-400/80">{importResult.summary}</p>
               </div>
             )}
           </Card>
 
-          <Card className="p-5 border-zinc-100 bg-zinc-50">
+          <Card className="p-5 border-white/8 bg-white/4">
             <h4 className="font-medium mb-2 text-sm">Why GitHub-verified skills matter</h4>
-            <div className="space-y-2 text-sm text-zinc-500">
+            <div className="space-y-2 text-sm text-zinc-400">
               <p>🏷️ <strong>Self-reported</strong> — you said you know it. Least weight in matching.</p>
               <p>🐙 <strong>GitHub-verified</strong> — AI found evidence in your actual code. More trusted.</p>
               <p>✅ <strong>Assessed</strong> — you passed a skills test. Highest trust signal.</p>
