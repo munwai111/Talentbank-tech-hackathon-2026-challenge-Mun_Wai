@@ -38,12 +38,6 @@ const DELETION_REASONS = [
     promptDetail: true,
   },
   {
-    value: 'fresh_start',
-    emoji: '🔄',
-    label: 'I want to start fresh with a new profile',
-    promptDetail: false,
-  },
-  {
     value: 'not_looking',
     emoji: '⏸️',
     label: "I'm not currently looking for work",
@@ -60,12 +54,6 @@ const DELETION_REASONS = [
     emoji: '⚙️',
     label: 'Technical issues — things weren\'t working',
     promptDetail: true,
-  },
-  {
-    value: 'mistake',
-    emoji: '😅',
-    label: 'I created this account by mistake',
-    promptDetail: false,
   },
   {
     value: 'other',
