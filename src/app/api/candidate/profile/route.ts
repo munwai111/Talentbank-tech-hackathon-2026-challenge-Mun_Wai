@@ -38,35 +38,68 @@ export async function GET() {
 // POST: create user + profile records (called from onboarding)
 export async function POST(req: Request) {
   const { userId } = await auth()
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!userId) {
+    console.error('[profile/POST] No userId from auth() — session not established yet')
+    return NextResponse.json({ error: 'Unauthorized — please try again in a moment' }, { status: 401 })
+  }
 
-  const { role } = await req.json()
   const supabase = createServerClient()
 
-  const { clerkClient } = await import('@clerk/nextjs/server')
-  const client = await clerkClient()
-  const clerkUser = await client.users.getUser(userId)
-  const email = clerkUser.emailAddresses[0]?.emailAddress ?? ''
-  const name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || 'New User'
+  try {
+    const body = await req.json() as { role?: string }
+    const rawRole = body.role
 
-  // Upsert user (handles both fresh + re-runs safely)
-  const { data: user, error: userError } = await supabase
-    .from('users')
-    .upsert({ clerk_id: userId, email, role }, { onConflict: 'clerk_id' })
-    .select().single()
+    if (!rawRole) return NextResponse.json({ error: 'role is required' }, { status: 400 })
+    if (rawRole !== 'candidate' && rawRole !== 'employer') {
+      return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
+    }
+    const role = rawRole as 'candidate' | 'employer'
 
-  if (userError) return NextResponse.json({ error: userError.message }, { status: 500 })
+    const { clerkClient } = await import('@clerk/nextjs/server')
+    const client = await clerkClient()
+    const clerkUser = await client.users.getUser(userId)
+    const email = clerkUser.emailAddresses[0]?.emailAddress ?? ''
+    const name = [clerkUser.firstName, clerkUser.lastName].filter(Boolean).join(' ') || 'New User'
 
-  if (role === 'candidate') {
-    await supabase.from('candidate_profiles')
-      .upsert({ user_id: user.id, name }, { onConflict: 'user_id' })
+    // Upsert user — safe to re-run. ON CONFLICT (clerk_id) updates role + email.
+    const { data: user, error: userError } = await supabase
+      .from('users')
+      .upsert({ clerk_id: userId, email, role }, { onConflict: 'clerk_id' })
+      .select('id')
+      .single()
+
+    if (userError || !user) {
+      console.error('[profile/POST] users upsert failed:', userError)
+      return NextResponse.json({ error: userError?.message ?? 'Failed to create user record' }, { status: 500 })
+    }
+
+    if (role === 'candidate') {
+      const { error: profileError } = await supabase
+        .from('candidate_profiles')
+        .upsert({ user_id: user.id, name }, { onConflict: 'user_id' })
+      if (profileError) {
+        console.error('[profile/POST] candidate_profiles upsert failed:', profileError)
+        // Non-fatal — user record exists, profile can be created on first dashboard load
+      }
+    }
+
+    if (role === 'employer') {
+      const { error: companyError } = await supabase
+        .from('companies')
+        .upsert({ user_id: user.id, name: `${name}'s Company` }, { onConflict: 'user_id' })
+      if (companyError) {
+        console.error('[profile/POST] companies upsert failed:', companyError)
+      }
+    }
+
+    return NextResponse.json({ success: true, role })
+  } catch (err) {
+    console.error('[profile/POST] unexpected error:', err)
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : 'Something went wrong' },
+      { status: 500 }
+    )
   }
-  if (role === 'employer') {
-    await supabase.from('companies')
-      .upsert({ user_id: user.id, name: name + "'s Company" }, { onConflict: 'user_id' })
-  }
-
-  return NextResponse.json({ success: true, role })
 }
 
 // PUT: update profile bio fields

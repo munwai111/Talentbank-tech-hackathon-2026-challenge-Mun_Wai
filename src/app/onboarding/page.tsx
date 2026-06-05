@@ -10,37 +10,54 @@ import { useUser } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
+// Small delay to ensure the new Clerk session cookie is fully propagated
+// before the first server-side auth() call in the profile API.
+function wait(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
 export default function OnboardingPage() {
   const { user } = useUser()
   const router = useRouter()
   const [selected, setSelected] = useState<'candidate' | 'employer' | null>(null)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleContinue() {
     if (!selected || !user) return
     setLoading(true)
+    setError(null)
 
     try {
-      // 1. Save role to Clerk's publicMetadata
-      //    This syncs to our webhook → Supabase users table
-      await user.update({
-        unsafeMetadata: { role: selected },
-      })
+      // 1. Save role to Clerk metadata so it's available in the session
+      await user.update({ unsafeMetadata: { role: selected } })
 
-      // 2. Call our API to create the DB user record
+      // 2. Brief pause — lets the Clerk session propagate to the server
+      //    so that auth() on the API route returns a valid userId.
+      await wait(400)
+
+      // 3. Create / update the DB user record (upsert — safe to retry)
       const res = await fetch('/api/candidate/profile', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: selected }),
       })
 
-      if (!res.ok) throw new Error('Failed to create profile')
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({})) as { error?: string }
+        throw new Error(data.error ?? `Server error ${res.status}`)
+      }
 
-      // 3. Redirect: candidates go through the guided registration wizard,
-      //    employers go straight to their dashboard
+      // 4. Redirect: candidates → guided registration wizard
+      //             employers  → employer dashboard
       router.push(selected === 'candidate' ? '/onboarding/profile' : '/employer/dashboard')
     } catch (err) {
-      console.error(err)
+      console.error('[onboarding] handleContinue failed:', err)
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Something went wrong — please try again'
+      )
       setLoading(false)
     }
   }
@@ -68,7 +85,7 @@ export default function OnboardingPage() {
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold mb-2">How are you using Career OS?</h1>
           <p className="text-zinc-500">
-            We&apos;ll personalize your experience based on your answer.
+            We&apos;ll personalise your experience based on your answer.
           </p>
         </div>
 
@@ -76,7 +93,7 @@ export default function OnboardingPage() {
           {roles.map((role) => (
             <Card
               key={role.id}
-              onClick={() => setSelected(role.id)}
+              onClick={() => { if (!loading) setSelected(role.id) }}
               className={`p-6 cursor-pointer border-2 transition-all ${
                 selected === role.id
                   ? 'border-blue-500 bg-blue-50'
@@ -89,7 +106,6 @@ export default function OnboardingPage() {
                   <h3 className="font-semibold text-lg">{role.title}</h3>
                   <p className="text-zinc-500 text-sm mt-1">{role.description}</p>
                 </div>
-                {/* Selection indicator */}
                 <div className={`ml-auto mt-1 w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
                   selected === role.id ? 'border-blue-500 bg-blue-500' : 'border-zinc-300'
                 }`}>
@@ -102,14 +118,38 @@ export default function OnboardingPage() {
           ))}
         </div>
 
+        {/* Visible error message — no more silent failures */}
+        {error && (
+          <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700 text-center">
+            {error}
+            <button
+              onClick={handleContinue}
+              className="block mx-auto mt-1 text-xs text-red-600 underline hover:text-red-800"
+            >
+              Try again →
+            </button>
+          </div>
+        )}
+
         <Button
           onClick={handleContinue}
           disabled={!selected || loading}
           className="w-full"
           size="lg"
         >
-          {loading ? 'Setting up your account...' : 'Continue →'}
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+              Setting up your account…
+            </span>
+          ) : (
+            'Continue →'
+          )}
         </Button>
+
+        <p className="text-center text-xs text-zinc-400 mt-4">
+          You can change your account type later in settings.
+        </p>
       </div>
     </div>
   )
