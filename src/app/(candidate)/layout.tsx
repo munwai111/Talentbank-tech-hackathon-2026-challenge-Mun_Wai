@@ -15,6 +15,10 @@ const navItems = [
   { href: '/coach',      label: 'AI Coach',        icon: '🤖' },
 ]
 
+const bottomNavItems = [
+  { href: '/settings', label: 'Settings', icon: '⚙️' },
+]
+
 export default async function CandidateLayout({ children }: { children: React.ReactNode }) {
   // Server-side auth check — redirect if not logged in
   const user = await currentUser()
@@ -32,7 +36,7 @@ export default async function CandidateLayout({ children }: { children: React.Re
           <p className="text-xs text-zinc-400 mt-0.5">Skills-first hiring</p>
         </div>
 
-        {/* Nav links */}
+        {/* Main nav links */}
         <nav className="flex-1 px-3 py-4 space-y-1">
           {navItems.map((item) => (
             <Link
@@ -40,6 +44,21 @@ export default async function CandidateLayout({ children }: { children: React.Re
               href={item.href}
               className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-zinc-600
                          hover:bg-zinc-100 hover:text-zinc-900 transition-colors"
+            >
+              <span>{item.icon}</span>
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Bottom utility nav (Settings etc.) */}
+        <nav className="px-3 pb-2 border-t pt-2">
+          {bottomNavItems.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-zinc-400
+                         hover:bg-zinc-100 hover:text-zinc-700 transition-colors"
             >
               <span>{item.icon}</span>
               {item.label}

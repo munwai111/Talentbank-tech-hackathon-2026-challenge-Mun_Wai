@@ -130,6 +130,11 @@ export type Database = {
           email: string
           role: UserRole
           created_at: string
+          // Soft-delete fields
+          deleted_at: string | null
+          deletion_reason: string | null
+          deletion_feedback: string | null
+          scheduled_purge_at: string | null
         }
         Insert: {
           id?: string
@@ -137,10 +142,18 @@ export type Database = {
           email: string
           role: UserRole
           created_at?: string
+          deleted_at?: string | null
+          deletion_reason?: string | null
+          deletion_feedback?: string | null
+          scheduled_purge_at?: string | null
         }
         Update: {
           role?: UserRole
           email?: string
+          deleted_at?: string | null
+          deletion_reason?: string | null
+          deletion_feedback?: string | null
+          scheduled_purge_at?: string | null
         }
         Relationships: []
       }
