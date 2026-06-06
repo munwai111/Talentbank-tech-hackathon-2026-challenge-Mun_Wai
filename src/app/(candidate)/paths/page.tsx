@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import type { CareerPath, PathMatchType } from '@/lib/ai/path-navigator'
+import { StaggerContainer } from '@/components/animations/StaggerContainer'
+import { FadeUp } from '@/components/animations/FadeUp'
 
 // ── Pure utilities (outside component — no closure over state) ────────────────
 
@@ -209,7 +211,7 @@ export default function PathsPage() {
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
       {/* Page header */}
-      <div className="flex items-start justify-between mb-8">
+      <FadeUp className="flex items-start justify-between mb-8" scrollTrigger={false}>
         <div>
           <h1 className="text-2xl font-bold text-white">Career Path Navigator</h1>
           <p className="text-sm text-zinc-400 mt-1">
@@ -224,7 +226,7 @@ export default function PathsPage() {
         >
           {loading ? 'Generating…' : '↺ Refresh paths'}
         </button>
-      </div>
+      </FadeUp>
 
       {/* Loading skeleton */}
       {loading && (
@@ -253,9 +255,9 @@ export default function PathsPage() {
 
       {/* Paths grid */}
       {!loading && !error && paths.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <StaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-6" stagger={0.15} y={30} scrollTrigger={false}>
           {paths.map(path => <PathCard key={path.id} path={path} />)}
-        </div>
+        </StaggerContainer>
       )}
 
       {/* Empty state */}

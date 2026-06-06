@@ -11,6 +11,8 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import type { MatchResult } from '@/app/api/candidate/matches/route'
+import { FadeUp } from '@/components/animations/FadeUp'
+import { StaggerContainer } from '@/components/animations/StaggerContainer'
 
 const REMOTE_LABELS = {
   remote: '🌐 Remote',
@@ -77,12 +79,12 @@ export default function JobsPage() {
 
   return (
     <div className="p-8 max-w-3xl">
-      <div className="mb-6">
+      <FadeUp className="mb-6" scrollTrigger={false}>
         <h1 className="text-2xl font-bold text-white">Job Matches 🎯</h1>
         <p className="text-zinc-400 mt-1">
           Ranked by skill fit + career goal alignment — not keywords. Every score shows exactly why.
         </p>
-      </div>
+      </FadeUp>
 
       {/* ── Empty states ──────────────────────────────────────────────────── */}
       {reason === 'no_skills' && (
@@ -127,7 +129,7 @@ export default function JobsPage() {
       )}
 
       {/* ── Job cards ─────────────────────────────────────────────────────── */}
-      <div className="space-y-3">
+      <StaggerContainer className="space-y-3" stagger={0.07} scrollTrigger={false} childSelector=":scope > div">
         {matches.map(match => (
           <div key={match.job.id}
             className="rounded-xl border border-white/8 bg-white/3 overflow-hidden backdrop-blur-sm">
@@ -262,7 +264,7 @@ export default function JobsPage() {
             )}
           </div>
         ))}
-      </div>
+      </StaggerContainer>
 
       {matches.length > 0 && (
         <p className="text-xs text-zinc-500 text-center mt-6">

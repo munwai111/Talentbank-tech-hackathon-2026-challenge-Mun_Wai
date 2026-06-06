@@ -1,11 +1,22 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Plus_Jakarta_Sans, Syne } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
-const geist = Geist({
-  variable: "--font-geist-sans",
+// Body font — modern, consumer-facing, warm personality
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
+});
+
+// Display font — bold editorial headings, striking at large sizes
+const syne = Syne({
+  variable: "--font-syne",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -14,8 +25,6 @@ export const metadata: Metadata = {
     "Match talent on proven skills, not school names. Built for the next million graduates across Asia.",
 };
 
-// ClerkProvider wraps the entire app so every component can access auth state.
-// This is the only place it needs to be — React context flows down from here.
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -23,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${geist.variable} h-full antialiased dark`}>
+      <html lang="en" className={`${jakarta.variable} ${syne.variable} h-full antialiased dark`}>
         <body className="min-h-full flex flex-col bg-background text-foreground">
           {children}
         </body>

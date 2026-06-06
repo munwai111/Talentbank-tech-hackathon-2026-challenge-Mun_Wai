@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { StaggerContainer } from '@/components/animations/StaggerContainer'
+import { FadeUp } from '@/components/animations/FadeUp'
 
 export default async function EmployerDashboardPage() {
   const user = await currentUser()
@@ -33,15 +35,15 @@ export default async function EmployerDashboardPage() {
   return (
     <div className="p-8 max-w-4xl">
       {/* ── Greeting ─────────────────────────────────────────── */}
-      <div className="mb-8">
+      <FadeUp className="mb-8" scrollTrigger={false}>
         <h1 className="text-2xl font-bold">Hey {firstName} 👋</h1>
         <p className="text-zinc-500 mt-1">
           {company?.name ?? 'Your company'} · Employer portal
         </p>
-      </div>
+      </FadeUp>
 
       {/* ── Status cards ─────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <StaggerContainer className="grid grid-cols-3 gap-4 mb-8" stagger={0.1} scrollTrigger={false} delay={0.15}>
         <Card className="p-5">
           <p className="text-sm text-zinc-500 mb-1">Active jobs</p>
           <span className="text-3xl font-bold">{activeJobs.length}</span>
@@ -65,7 +67,7 @@ export default async function EmployerDashboardPage() {
             {activeJobs.length > 0 ? 'Candidates are being ranked' : 'Post a role to start matching'}
           </p>
         </Card>
-      </div>
+      </StaggerContainer>
 
       {/* ── CTA if no jobs yet ────────────────────────────────── */}
       {activeJobs.length === 0 && (
@@ -115,7 +117,7 @@ export default async function EmployerDashboardPage() {
 
       {/* ── Quick actions ─────────────────────────────────────── */}
       <h2 className="font-semibold mb-4 text-zinc-300">Quick actions</h2>
-      <div className="grid grid-cols-2 gap-4">
+      <StaggerContainer className="grid grid-cols-2 gap-4" stagger={0.08}>
         {[
           { href: '/employer/jobs/new',   icon: '➕', title: 'Post a new role',       desc: 'Define skills, salary, and location' },
           { href: '/employer/candidates', icon: '🎯', title: 'Browse talent pool',     desc: 'Find candidates across all your open roles' },
@@ -130,7 +132,7 @@ export default async function EmployerDashboardPage() {
             </Card>
           </Link>
         ))}
-      </div>
+      </StaggerContainer>
     </div>
   )
 }

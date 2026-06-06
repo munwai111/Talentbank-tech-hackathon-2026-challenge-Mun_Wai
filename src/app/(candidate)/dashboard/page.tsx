@@ -4,6 +4,8 @@ import { createServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { StaggerContainer } from '@/components/animations/StaggerContainer'
+import { FadeUp } from '@/components/animations/FadeUp'
 
 export default async function DashboardPage() {
   const user = await currentUser()
@@ -65,17 +67,17 @@ export default async function DashboardPage() {
     <div className="p-8 max-w-4xl">
 
       {/* ── Greeting ────────────────────────────────────────────────────── */}
-      <div className="mb-8">
+      <FadeUp className="mb-8" scrollTrigger={false} delay={0}>
         <h1 className="text-2xl font-bold text-white">Hey {firstName} 👋</h1>
         <p className="text-zinc-400 mt-1">
           {hasEmbedding
             ? "Your profile is active — employers can find you."
             : "Complete your Skills Vault to start getting matched."}
         </p>
-      </div>
+      </FadeUp>
 
       {/* ── Status cards ────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <StaggerContainer className="grid grid-cols-3 gap-4 mb-8" stagger={0.1} scrollTrigger={false} delay={0.15}>
         {/* Profile strength */}
         <div className="rounded-xl border border-white/8 bg-white/4 p-5 backdrop-blur-sm">
           <p className="text-sm text-zinc-400 mb-1">Profile strength</p>
@@ -122,7 +124,7 @@ export default async function DashboardPage() {
             {hasEmbedding ? 'Employers can match you' : 'Add skills to activate'}
           </p>
         </div>
-      </div>
+      </StaggerContainer>
 
       {/* ── Career Identity nudge ────────────────────────────────────────── */}
       {!hasCareerIdentity && (
@@ -209,7 +211,7 @@ export default async function DashboardPage() {
 
       {/* ── Quick actions ─────────────────────────────────────────────────── */}
       <h2 className="font-semibold mb-4 text-zinc-400 text-sm uppercase tracking-wide mt-8">Quick actions</h2>
-      <div className="grid grid-cols-2 gap-3">
+      <StaggerContainer className="grid grid-cols-2 gap-3" stagger={0.08}>
         {[
           { href: '/profile',        icon: '🗂️', title: 'Skills Vault',      desc: 'Add skills, projects, and import from GitHub' },
           { href: '/paths',          icon: '🗺️', title: 'Path Navigator',    desc: skillCount > 0 ? 'See 3 directions based on your skills' : 'Add skills first to unlock', disabled: skillCount === 0 },
@@ -232,7 +234,7 @@ export default async function DashboardPage() {
             </div>
           </Link>
         ))}
-      </div>
+      </StaggerContainer>
     </div>
   )
 }
