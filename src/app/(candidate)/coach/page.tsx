@@ -6,6 +6,8 @@
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import type { CoachMessage } from '@/lib/ai/coach'
 
 // ── Starter prompts shown before first message ────────────────────────────────
@@ -34,10 +36,56 @@ function TypingDots() {
   )
 }
 
+function CoachMarkdown({ content }: { content: string }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        p: ({ children }) => <p className="mb-3 last:mb-0 leading-relaxed">{children}</p>,
+        strong: ({ children }) => <strong className="font-semibold text-white">{children}</strong>,
+        em: ({ children }) => <em className="text-zinc-300 italic">{children}</em>,
+        h1: ({ children }) => <h1 className="text-base font-bold text-white mb-2 mt-3 first:mt-0">{children}</h1>,
+        h2: ({ children }) => <h2 className="text-sm font-bold text-white mb-2 mt-3 first:mt-0">{children}</h2>,
+        h3: ({ children }) => <h3 className="text-sm font-semibold text-zinc-200 mb-1.5 mt-2.5 first:mt-0">{children}</h3>,
+        ul: ({ children }) => <ul className="space-y-1 mb-3 ml-1">{children}</ul>,
+        ol: ({ children }) => <ol className="space-y-1 mb-3 ml-1 list-none counter-reset-[item]">{children}</ol>,
+        li: ({ children, ...props }) => {
+          const ordered = 'ordered' in props
+          return (
+            <li className={`flex gap-2 text-sm leading-relaxed ${ordered ? 'items-start' : 'items-start'}`}>
+              <span className="shrink-0 mt-0.5 text-indigo-400 font-medium">
+                {ordered ? '→' : '•'}
+              </span>
+              <span>{children}</span>
+            </li>
+          )
+        },
+        blockquote: ({ children }) => (
+          <blockquote className="border-l-2 border-indigo-400 pl-3 my-3 text-zinc-300 italic">
+            {children}
+          </blockquote>
+        ),
+        table: ({ children }) => (
+          <div className="overflow-x-auto my-3">
+            <table className="text-xs border-collapse w-full">{children}</table>
+          </div>
+        ),
+        thead: ({ children }) => <thead className="text-zinc-400">{children}</thead>,
+        th: ({ children }) => <th className="border border-white/10 px-2 py-1 text-left font-semibold text-zinc-300">{children}</th>,
+        td: ({ children }) => <td className="border border-white/10 px-2 py-1 text-zinc-300">{children}</td>,
+        code: ({ children }) => <code className="bg-white/10 px-1.5 py-0.5 rounded text-xs text-indigo-300 font-mono">{children}</code>,
+        hr: () => <hr className="border-white/10 my-3" />,
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  )
+}
+
 function MessageBubble({ msg }: { msg: CoachMessage & { streaming?: boolean } }) {
   const isUser = msg.role === 'user'
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4`}>
+    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-5`}>
       {!isUser && (
         <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-600 to-indigo-600
           flex items-center justify-center text-white text-sm mr-3 shrink-0 mt-0.5
@@ -46,15 +94,26 @@ function MessageBubble({ msg }: { msg: CoachMessage & { streaming?: boolean } })
         </div>
       )}
       <div
-        className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+        className={`rounded-2xl px-4 py-3 text-sm ${
           isUser
-            ? 'bg-indigo-600 text-white rounded-br-sm shadow-lg shadow-indigo-500/20'
-            : 'bg-white/8 border border-white/10 text-zinc-200 rounded-bl-sm backdrop-blur-sm'
+            ? 'max-w-[80%] bg-indigo-600 text-white rounded-br-sm shadow-lg shadow-indigo-500/20 leading-relaxed'
+            : 'max-w-[88%] bg-white/6 border border-white/10 text-zinc-300 rounded-bl-sm backdrop-blur-sm'
         }`}
       >
-        {msg.content}
-        {msg.streaming && (
-          <span className="inline-block w-0.5 h-4 bg-indigo-400 ml-0.5 animate-pulse align-middle" />
+        {isUser ? (
+          <>
+            {msg.content}
+            {msg.streaming && (
+              <span className="inline-block w-0.5 h-4 bg-white/60 ml-0.5 animate-pulse align-middle" />
+            )}
+          </>
+        ) : (
+          <>
+            <CoachMarkdown content={msg.content} />
+            {msg.streaming && (
+              <span className="inline-block w-0.5 h-4 bg-indigo-400 ml-0.5 animate-pulse align-middle" />
+            )}
+          </>
         )}
       </div>
     </div>

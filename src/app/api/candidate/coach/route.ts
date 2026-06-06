@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
     const { data: profile } = await supabase
       .from('candidate_profiles')
-      .select('id, name, location, career_data, work_experience, education')
+      .select('id, name, location, career_data, work_experience, education, saq_data')
       .eq('user_id', user.id)
       .single()
 
@@ -63,13 +63,19 @@ export async function POST(req: Request) {
       currentRole: profile?.career_data?.current_or_last_role ?? null,
       yearsExperience: profile?.career_data?.years_experience ?? null,
       situation: profile?.career_data?.current_situation ?? null,
-      goal1Year: profile?.career_data?.goal_1_year ?? null,
-      goal5Year: profile?.career_data?.goal_5_year ?? null,
-      dreamRole: profile?.career_data?.dream_role ?? null,
+      goal1Year: profile?.career_data?.goal_1_year ?? profile?.saq_data?.goal_1_year ?? null,
+      goal5Year: profile?.career_data?.goal_5_year ?? profile?.saq_data?.goal_5_year ?? null,
+      dreamRole: profile?.career_data?.dream_role ?? profile?.saq_data?.dream_role ?? null,
       preferredIndustries: profile?.career_data?.preferred_industries ?? [],
       workExperience: (profile?.work_experience ?? []) as CoachContext['workExperience'],
       education: (profile?.education ?? []) as CoachContext['education'],
       lifeChapterContext: profile?.career_data?.life_chapter_context ?? null,
+      characterResponses: profile?.saq_data?.character_responses ?? undefined,
+      platformIntention: profile?.saq_data?.platform_intention ?? null,
+      personalHobbies: profile?.saq_data?.personal_hobbies ?? [],
+      professionalInterests: profile?.saq_data?.professional_interests ?? [],
+      strengthResponse: profile?.saq_data?.strength_scenario ?? null,
+      weaknessResponse: profile?.saq_data?.weakness_scenario ?? null,
     }
 
     const stream = streamCoachResponse(messages, ctx)
