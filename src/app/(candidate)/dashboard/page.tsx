@@ -4,8 +4,6 @@ import { createServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { StaggerContainer } from '@/components/animations/StaggerContainer'
-import { FadeUp } from '@/components/animations/FadeUp'
 
 export default async function DashboardPage() {
   const user = await currentUser()
@@ -67,19 +65,19 @@ export default async function DashboardPage() {
     <div className="p-8 max-w-4xl">
 
       {/* ── Greeting ────────────────────────────────────────────────────── */}
-      <FadeUp className="mb-8" scrollTrigger={false} delay={0}>
+      <div className="mb-8 animate-fade-up">
         <h1 className="text-2xl font-bold text-white">Hey {firstName} 👋</h1>
         <p className="text-zinc-400 mt-1">
           {hasEmbedding
             ? "Your profile is active — employers can find you."
             : "Complete your Skills Vault to start getting matched."}
         </p>
-      </FadeUp>
+      </div>
 
       {/* ── Status cards ────────────────────────────────────────────────── */}
-      <StaggerContainer className="grid grid-cols-3 gap-4 mb-8" stagger={0.1} scrollTrigger={false} delay={0.15}>
+      <div className="grid grid-cols-3 gap-4 mb-8">
         {/* Profile strength */}
-        <div className="rounded-xl border border-white/8 bg-white/4 p-5 backdrop-blur-sm">
+        <div className="rounded-xl border border-white/8 bg-white/4 p-5 backdrop-blur-sm animate-fade-up animate-delay-1">
           <p className="text-sm text-zinc-400 mb-1">Profile strength</p>
           <div className="flex items-end gap-2">
             <span className="text-3xl font-bold text-white">{completeness}%</span>
@@ -96,7 +94,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Skills verified */}
-        <div className="rounded-xl border border-white/8 bg-white/4 p-5 backdrop-blur-sm">
+        <div className="rounded-xl border border-white/8 bg-white/4 p-5 backdrop-blur-sm animate-fade-up animate-delay-2">
           <p className="text-sm text-zinc-400 mb-1">Skills verified</p>
           <span className="text-3xl font-bold text-white">{skillCount}</span>
           <p className="text-xs text-zinc-500 mt-1">
@@ -105,7 +103,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Matching status */}
-        <div className="rounded-xl border border-white/8 bg-white/4 p-5 backdrop-blur-sm">
+        <div className="rounded-xl border border-white/8 bg-white/4 p-5 backdrop-blur-sm animate-fade-up animate-delay-3">
           <p className="text-sm text-zinc-400 mb-1">Matching status</p>
           <div className="mt-1">
             {hasEmbedding ? (
@@ -124,7 +122,7 @@ export default async function DashboardPage() {
             {hasEmbedding ? 'Employers can match you' : 'Add skills to activate'}
           </p>
         </div>
-      </StaggerContainer>
+      </div>
 
       {/* ── Career Identity nudge ────────────────────────────────────────── */}
       {!hasCareerIdentity && (
@@ -211,19 +209,19 @@ export default async function DashboardPage() {
 
       {/* ── Quick actions ─────────────────────────────────────────────────── */}
       <h2 className="font-semibold mb-4 text-zinc-400 text-sm uppercase tracking-wide mt-8">Quick actions</h2>
-      <StaggerContainer className="grid grid-cols-2 gap-3" stagger={0.08}>
+      <div className="grid grid-cols-2 gap-3">
         {[
-          { href: '/profile',        icon: '🗂️', title: 'Skills Vault',      desc: 'Add skills, projects, and import from GitHub' },
-          { href: '/paths',          icon: '🗺️', title: 'Path Navigator',    desc: skillCount > 0 ? 'See 3 directions based on your skills' : 'Add skills first to unlock', disabled: skillCount === 0 },
-          { href: '/jobs',           icon: '🎯', title: 'View job matches',  desc: skillCount > 0 ? 'See roles matched to your skills' : 'Add skills first to unlock',    disabled: skillCount === 0 },
-          { href: '/coach',          icon: '🤖', title: 'Talk to AI Coach',  desc: 'Get honest advice on your career path' },
-          { href: '/portfolio',      icon: '🗃️', title: 'Living Portfolio',  desc: "Show what you've built — not just what you know" },
-          { href: '/profile?tab=github', icon: '🐙', title: 'Import from GitHub', desc: 'AI extracts skills from your repos automatically' },
+          { href: '/profile',            icon: '🗂️', title: 'Skills Vault',       desc: 'Add skills, projects, and import from GitHub',           delay: 'animate-delay-1' },
+          { href: '/paths',              icon: '🗺️', title: 'Path Navigator',     desc: skillCount > 0 ? 'See 3 directions based on your skills' : 'Add skills first to unlock', disabled: skillCount === 0, delay: 'animate-delay-2' },
+          { href: '/jobs',               icon: '🎯', title: 'View job matches',   desc: skillCount > 0 ? 'See roles matched to your skills' : 'Add skills first to unlock',    disabled: skillCount === 0, delay: 'animate-delay-2' },
+          { href: '/coach',              icon: '🤖', title: 'Talk to AI Coach',   desc: 'Get honest advice on your career path',                  delay: 'animate-delay-3' },
+          { href: '/portfolio',          icon: '🗃️', title: 'Living Portfolio',   desc: "Show what you've built — not just what you know",        delay: 'animate-delay-3' },
+          { href: '/profile?tab=github', icon: '🐙', title: 'Import from GitHub', desc: 'AI extracts skills from your repos automatically',       delay: 'animate-delay-4' },
         ].map((item) => (
           <Link
             key={item.href}
             href={item.disabled ? '#' : item.href}
-            className={item.disabled ? 'pointer-events-none opacity-40' : ''}
+            className={`animate-fade-up ${item.delay ?? ''} ${item.disabled ? 'pointer-events-none opacity-40' : ''}`}
           >
             <div className="rounded-xl border border-white/7 bg-white/3 p-5
               hover:border-indigo-500/30 hover:bg-indigo-500/8 transition-all duration-200
@@ -234,7 +232,7 @@ export default async function DashboardPage() {
             </div>
           </Link>
         ))}
-      </StaggerContainer>
+      </div>
     </div>
   )
 }

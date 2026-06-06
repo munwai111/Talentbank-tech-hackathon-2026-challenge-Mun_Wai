@@ -251,12 +251,12 @@
 .animate-fade-up {
   animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.animate-fade-up-delay-1 { animation: fade-up 0.7s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.animate-fade-up-delay-2 { animation: fade-up 0.7s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.animate-fade-up-delay-3 { animation: fade-up 0.7s 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.animate-fade-up-delay-4 { animation: fade-up 0.7s 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.animate-fade-up-delay-5 { animation: fade-up 0.7s 0.65s cubic-bezier(0.22, 1, 0.36, 1) both; }
-.animate-fade-up-delay-6 { animation: fade-up 0.7s 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-fade-up-delay-1, .animate-delay-1 { animation: fade-up 0.7s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-fade-up-delay-2, .animate-delay-2 { animation: fade-up 0.7s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-fade-up-delay-3, .animate-delay-3 { animation: fade-up 0.7s 0.35s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-fade-up-delay-4, .animate-delay-4 { animation: fade-up 0.7s 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-fade-up-delay-5, .animate-delay-5 { animation: fade-up 0.7s 0.65s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.animate-fade-up-delay-6, .animate-delay-6 { animation: fade-up 0.7s 0.8s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 /* Scale in for badges and chips */
 @keyframes scale-in {

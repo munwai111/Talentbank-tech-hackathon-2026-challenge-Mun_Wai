@@ -1,58 +1,13 @@
 'use client'
 
-import { useRef } from 'react'
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { gsap, useGSAP } from '@/lib/gsap-config'
 import { AnimatedHeading } from '@/components/animations/AnimatedHeading'
 import { StaggerContainer } from '@/components/animations/StaggerContainer'
 import { MagneticButton } from '@/components/animations/MagneticButton'
 
 export function LandingPage() {
-  const heroRef = useRef<HTMLDivElement>(null)
-  const badgeRef = useRef<HTMLDivElement>(null)
-  const subRef = useRef<HTMLParagraphElement>(null)
-  const subRef2 = useRef<HTMLParagraphElement>(null)
-  const ctaRef = useRef<HTMLDivElement>(null)
-  const trustRef = useRef<HTMLDivElement>(null)
-  const navRef = useRef<HTMLElement>(null)
-
-  useGSAP(() => {
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } })
-
-    // Nav slides down
-    tl.fromTo(navRef.current, { y: -30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.6 })
-
-    // Badge pops in with bounce
-    tl.fromTo(badgeRef.current,
-      { scale: 0.7, opacity: 0, y: 10 },
-      { scale: 1, opacity: 1, y: 0, duration: 0.5, ease: 'back.out(2)' },
-      '-=0.2'
-    )
-
-    // Subtext fades up
-    tl.fromTo([subRef.current, subRef2.current],
-      { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 0.65, stagger: 0.12 },
-      '-=0.1'
-    )
-
-    // CTA buttons scale in
-    tl.fromTo(ctaRef.current?.children ?? [],
-      { opacity: 0, scale: 0.85, y: 15 },
-      { opacity: 1, scale: 1, y: 0, duration: 0.5, stagger: 0.1, ease: 'back.out(1.6)' },
-      '-=0.2'
-    )
-
-    // Trust strip slides up
-    tl.fromTo(trustRef.current?.children ?? [],
-      { opacity: 0, y: 12 },
-      { opacity: 1, y: 0, duration: 0.4, stagger: 0.07 },
-      '-=0.15'
-    )
-  }, { scope: heroRef })
-
   return (
     <div className="flex flex-col min-h-screen bg-[#070714] text-white overflow-hidden">
 
@@ -76,7 +31,7 @@ export function LandingPage() {
       </div>
 
       {/* Nav */}
-      <header ref={navRef} className="relative z-10 px-6 py-5 flex items-center justify-between max-w-6xl mx-auto w-full opacity-0">
+      <header className="relative z-10 px-6 py-5 flex items-center justify-between max-w-6xl mx-auto w-full animate-fade-up">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600
             flex items-center justify-center text-sm font-bold shadow-lg shadow-violet-500/30">
@@ -106,9 +61,10 @@ export function LandingPage() {
       </header>
 
       {/* Hero */}
-      <main ref={heroRef} className="relative z-10 flex flex-col items-center text-center px-6 pt-16 pb-24 max-w-4xl mx-auto">
-        <div ref={badgeRef} className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full
-          border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-sm opacity-0">
+      <main className="relative z-10 flex flex-col items-center text-center px-6 pt-16 pb-24 max-w-4xl mx-auto">
+        <div className="mb-6 inline-flex items-center gap-2 px-4 py-1.5 rounded-full
+          border border-indigo-500/30 bg-indigo-500/10 text-indigo-300 text-sm
+          animate-fade-up animate-delay-1">
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
           Talentbank Tech Hackathon 2026
         </div>
@@ -116,24 +72,24 @@ export function LandingPage() {
         <AnimatedHeading
           as="h1"
           className="text-6xl font-bold tracking-tight leading-tight mb-5"
-          delay={0.5}
+          delay={0.3}
           stagger={0.08}
           scrollTrigger={false}
         >
           Your career GPS — not a job board.
         </AnimatedHeading>
 
-        <p ref={subRef} className="text-xl text-zinc-400 max-w-2xl mb-4 leading-relaxed opacity-0">
+        <p className="text-xl text-zinc-400 max-w-2xl mb-4 leading-relaxed animate-fade-up animate-delay-3">
           Career OS shows you where your skills stand, where people like you
           typically go next, and exactly what to build to get there.
           No keyword games. No school-name filters.
         </p>
 
-        <p ref={subRef2} className="text-sm text-zinc-500 mb-10 opacity-0">
+        <p className="text-sm text-zinc-500 mb-10 animate-fade-up animate-delay-4">
           Designed for Malaysia &amp; Singapore — salary ranges in MYR, APAC market context.
         </p>
 
-        <div ref={ctaRef} className="flex gap-4 flex-wrap justify-center">
+        <div className="flex gap-4 flex-wrap justify-center animate-fade-up animate-delay-4">
           <MagneticButton>
             <Link href="/sign-up">
               <Button size="lg"
@@ -154,7 +110,7 @@ export function LandingPage() {
         </div>
 
         {/* Trust strip */}
-        <div ref={trustRef} className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-zinc-500">
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-zinc-500 animate-fade-up animate-delay-5">
           {['Skills-first matching', 'MYR salary intelligence', 'AI career coaching', 'Free to start'].map(t => (
             <span key={t} className="flex items-center gap-1.5">
               <span className="w-1 h-1 rounded-full bg-indigo-500" />

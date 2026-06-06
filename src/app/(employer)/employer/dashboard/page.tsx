@@ -7,8 +7,6 @@ import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { StaggerContainer } from '@/components/animations/StaggerContainer'
-import { FadeUp } from '@/components/animations/FadeUp'
 
 export default async function EmployerDashboardPage() {
   const user = await currentUser()
@@ -35,16 +33,16 @@ export default async function EmployerDashboardPage() {
   return (
     <div className="p-8 max-w-4xl">
       {/* ── Greeting ─────────────────────────────────────────── */}
-      <FadeUp className="mb-8" scrollTrigger={false}>
+      <div className="mb-8 animate-fade-up">
         <h1 className="text-2xl font-bold">Hey {firstName} 👋</h1>
         <p className="text-zinc-500 mt-1">
           {company?.name ?? 'Your company'} · Employer portal
         </p>
-      </FadeUp>
+      </div>
 
       {/* ── Status cards ─────────────────────────────────────── */}
-      <StaggerContainer className="grid grid-cols-3 gap-4 mb-8" stagger={0.1} scrollTrigger={false} delay={0.15}>
-        <Card className="p-5">
+      <div className="grid grid-cols-3 gap-4 mb-8">
+        <Card className="p-5 animate-fade-up animate-delay-1">
           <p className="text-sm text-zinc-500 mb-1">Active jobs</p>
           <span className="text-3xl font-bold">{activeJobs.length}</span>
           <p className="text-xs text-zinc-400 mt-1">
@@ -52,13 +50,13 @@ export default async function EmployerDashboardPage() {
           </p>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-5 animate-fade-up animate-delay-2">
           <p className="text-sm text-zinc-500 mb-1">Total posted</p>
           <span className="text-3xl font-bold">{jobs?.length ?? 0}</span>
           <p className="text-xs text-zinc-400 mt-1">across all time</p>
         </Card>
 
-        <Card className="p-5">
+        <Card className="p-5 animate-fade-up animate-delay-3">
           <p className="text-sm text-zinc-500 mb-1">Matching status</p>
           <Badge variant={activeJobs.length > 0 ? 'default' : 'secondary'} className="mt-1">
             {activeJobs.length > 0 ? '🟢 Active' : '⚪ No active jobs'}
@@ -67,7 +65,7 @@ export default async function EmployerDashboardPage() {
             {activeJobs.length > 0 ? 'Candidates are being ranked' : 'Post a role to start matching'}
           </p>
         </Card>
-      </StaggerContainer>
+      </div>
 
       {/* ── CTA if no jobs yet ────────────────────────────────── */}
       {activeJobs.length === 0 && (
@@ -117,14 +115,14 @@ export default async function EmployerDashboardPage() {
 
       {/* ── Quick actions ─────────────────────────────────────── */}
       <h2 className="font-semibold mb-4 text-zinc-300">Quick actions</h2>
-      <StaggerContainer className="grid grid-cols-2 gap-4" stagger={0.08}>
+      <div className="grid grid-cols-2 gap-4">
         {[
-          { href: '/employer/jobs/new',   icon: '➕', title: 'Post a new role',       desc: 'Define skills, salary, and location' },
-          { href: '/employer/candidates', icon: '🎯', title: 'Browse talent pool',     desc: 'Find candidates across all your open roles' },
-          { href: '/employer/jobs',       icon: '📋', title: 'Manage jobs',            desc: 'Edit, close, or reopen existing listings' },
-          { href: '/employer/company',    icon: '🏢', title: 'Update company profile', desc: 'Make your brand visible to candidates' },
+          { href: '/employer/jobs/new',   icon: '➕', title: 'Post a new role',       desc: 'Define skills, salary, and location',            delay: 'animate-delay-1' },
+          { href: '/employer/candidates', icon: '🎯', title: 'Browse talent pool',     desc: 'Find candidates across all your open roles',     delay: 'animate-delay-2' },
+          { href: '/employer/jobs',       icon: '📋', title: 'Manage jobs',            desc: 'Edit, close, or reopen existing listings',       delay: 'animate-delay-2' },
+          { href: '/employer/company',    icon: '🏢', title: 'Update company profile', desc: 'Make your brand visible to candidates',          delay: 'animate-delay-3' },
         ].map(item => (
-          <Link key={item.href} href={item.href}>
+          <Link key={item.href} href={item.href} className={`animate-fade-up ${item.delay}`}>
             <Card className="p-5 hover:border-indigo-500/30 hover:bg-indigo-500/8 transition-all cursor-pointer h-full group">
               <span className="text-2xl">{item.icon}</span>
               <h3 className="font-medium mt-2">{item.title}</h3>
@@ -132,7 +130,7 @@ export default async function EmployerDashboardPage() {
             </Card>
           </Link>
         ))}
-      </StaggerContainer>
+      </div>
     </div>
   )
 }
