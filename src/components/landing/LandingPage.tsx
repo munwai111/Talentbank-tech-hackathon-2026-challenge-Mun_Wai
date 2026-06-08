@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { AnimatedHeading } from '@/components/animations/AnimatedHeading'
 import { StaggerContainer } from '@/components/animations/StaggerContainer'
 import { MagneticButton } from '@/components/animations/MagneticButton'
+import { Vault, Fingerprint, Waypoints, Crosshair, BrainCircuit, FolderOpen, FileCheck2, BarChart3, ScanSearch, Building2 } from 'lucide-react'
 
 export function LandingPage() {
   return (
@@ -144,10 +145,10 @@ export function LandingPage() {
                   }`}
               >
                 <div className="flex items-center justify-between mb-4">
-                  <span className={`w-11 h-11 rounded-xl flex items-center justify-center text-2xl
+                  <span className={`w-11 h-11 rounded-xl flex items-center justify-center
                     transition-transform duration-300 group-hover:scale-110
                     ${f.highlight ? 'bg-indigo-500/20' : 'bg-white/8'}`}>
-                    {f.icon}
+                    <f.Icon size={20} className={f.highlight ? 'text-indigo-400' : 'text-zinc-400'} strokeWidth={1.75} />
                   </span>
                   <span className={`text-xs px-2.5 py-1 rounded-full font-medium border
                     ${f.highlight
@@ -194,8 +195,8 @@ export function LandingPage() {
               <div key={item.label}
                 className="flex items-center gap-3 rounded-xl p-4 border border-white/8 bg-white/4
                   backdrop-blur-sm hover:border-white/15 hover:bg-white/7 transition-all duration-200">
-                <span className="w-9 h-9 rounded-lg bg-white/8 flex items-center justify-center text-lg shrink-0">
-                  {item.icon}
+                <span className="w-9 h-9 rounded-lg bg-white/8 flex items-center justify-center shrink-0">
+                  <item.Icon size={16} className="text-zinc-400" strokeWidth={1.75} />
                 </span>
                 <span className="text-sm font-medium text-zinc-300">{item.label}</span>
               </div>
@@ -243,42 +244,42 @@ export function LandingPage() {
 
 const FEATURES = [
   {
-    icon: '🗂️',
+    Icon: Vault,
     title: 'Skills Vault',
     desc: 'Add skills with evidence. Import from GitHub — AI reads your repos and extracts your real stack. Upload your resume and Claude structures it in seconds.',
     tag: 'Foundation',
     highlight: false,
   },
   {
-    icon: '🧭',
+    Icon: Fingerprint,
     title: 'Career Identity',
     desc: "Answer 4 questions about goals, values, and work style. Claude writes a professional narrative that tells employers who you actually are — not just what you've done.",
     tag: 'AI-powered',
     highlight: false,
   },
   {
-    icon: '🗺️',
+    Icon: Waypoints,
     title: 'Path Navigator',
     desc: '3 career directions mapped from your current skills: a strong match today, an emerging path in 6–18 months, and a stretch goal. Salary ranges in MYR. Real trade-offs named.',
     tag: 'Navigation',
     highlight: true,
   },
   {
-    icon: '🎯',
+    Icon: Crosshair,
     title: 'Job Matches',
     desc: "Every open role ranked by skill overlap. Matched skills in green, gaps in red. No black-box scores — you see exactly why you match or don't.",
     tag: 'Transparent',
     highlight: false,
   },
   {
-    icon: '🤖',
+    Icon: BrainCircuit,
     title: 'AI Coach',
     desc: "Live streaming career advice from an AI that knows your skills, goals, and the APAC market. Real salary bands in MYR. Honest about what you're missing.",
     tag: 'Streaming AI',
     highlight: false,
   },
   {
-    icon: '🗃️',
+    Icon: FolderOpen,
     title: 'Living Portfolio',
     desc: "Showcase what you've built, not just what you know. Projects with tech stack, impact metrics, and AI-generated summaries that make your work legible.",
     tag: 'Evidence',
@@ -287,8 +288,8 @@ const FEATURES = [
 ]
 
 const EMPLOYER_FEATURES = [
-  { icon: '📋', label: 'Skills-first job posting' },
-  { icon: '📊', label: 'Ranked talent shortlists' },
-  { icon: '🔍', label: 'Visible skill gap analysis' },
-  { icon: '🏢', label: 'Culture identity synthesis' },
+  { Icon: FileCheck2,  label: 'Skills-first job posting' },
+  { Icon: BarChart3,   label: 'Ranked talent shortlists' },
+  { Icon: ScanSearch,  label: 'Visible skill gap analysis' },
+  { Icon: Building2,   label: 'Culture identity synthesis' },
 ]

@@ -4,6 +4,10 @@ import { createServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CircularProgress } from '@/components/ui/CircularProgress'
+import {
+  Vault, Waypoints, Crosshair, BrainCircuit, FolderOpen, GitBranch,
+  Fingerprint, type LucideIcon,
+} from 'lucide-react'
 
 export default async function DashboardPage() {
   const user = await currentUser()
@@ -49,13 +53,13 @@ export default async function DashboardPage() {
     profile?.headline, profile?.bio, profile?.location, skillCount > 0, profile?.github_url,
   ].filter(Boolean).length * 20
 
-  const QUICK_ACTIONS = [
-    { href: '/profile',            icon: '🗂️', label: 'Skills Vault',      desc: 'Add skills, import from GitHub',          gradient: 'from-amber-500/20 to-yellow-500/10',  border: 'border-amber-500/20',  glow: 'hover:shadow-amber-500/10',  disabled: false },
-    { href: '/paths',              icon: '🗺️', label: 'Path Navigator',    desc: skillCount > 0 ? 'See 3 directions mapped from your skills' : 'Add skills first', gradient: 'from-sky-500/20 to-indigo-500/10',    border: 'border-sky-500/20',    glow: 'hover:shadow-sky-500/10',    disabled: skillCount === 0 },
-    { href: '/jobs',               icon: '🎯', label: 'Job Matches',       desc: skillCount > 0 ? 'Roles ranked by skill fit' : 'Add skills first',               gradient: 'from-rose-500/20 to-pink-500/10',     border: 'border-rose-500/20',   glow: 'hover:shadow-rose-500/10',   disabled: skillCount === 0 },
-    { href: '/coach',              icon: '🤖', label: 'AI Coach',          desc: 'Honest APAC career advice',               gradient: 'from-indigo-500/20 to-blue-500/10',   border: 'border-indigo-500/20', glow: 'hover:shadow-indigo-500/10', disabled: false },
-    { href: '/portfolio',          icon: '🗃️', label: 'Portfolio',         desc: "Showcase what you've built",              gradient: 'from-teal-500/20 to-emerald-500/10',  border: 'border-teal-500/20',   glow: 'hover:shadow-teal-500/10',   disabled: false },
-    { href: '/profile?tab=github', icon: '🐙', label: 'GitHub Import',     desc: 'AI extracts your real skill stack',       gradient: 'from-violet-500/20 to-purple-500/10', border: 'border-violet-500/20', glow: 'hover:shadow-violet-500/10', disabled: false },
+  const QUICK_ACTIONS: { href: string; Icon: LucideIcon; iconColor: string; label: string; desc: string; gradient: string; border: string; glow: string; disabled: boolean }[] = [
+    { href: '/profile',            Icon: Vault,        iconColor: 'text-amber-400',  label: 'Skills Vault',      desc: 'Add skills, import from GitHub',                                        gradient: 'from-amber-500/15 to-yellow-500/8',   border: 'border-amber-500/18',  glow: 'hover:shadow-amber-500/10',  disabled: false },
+    { href: '/paths',              Icon: Waypoints,    iconColor: 'text-sky-400',    label: 'Path Navigator',    desc: skillCount > 0 ? 'See 3 directions mapped from your skills' : 'Add skills first', gradient: 'from-sky-500/15 to-indigo-500/8',    border: 'border-sky-500/18',    glow: 'hover:shadow-sky-500/10',    disabled: skillCount === 0 },
+    { href: '/jobs',               Icon: Crosshair,    iconColor: 'text-rose-400',   label: 'Job Matches',       desc: skillCount > 0 ? 'Roles ranked by skill fit' : 'Add skills first',    gradient: 'from-rose-500/15 to-pink-500/8',      border: 'border-rose-500/18',   glow: 'hover:shadow-rose-500/10',   disabled: skillCount === 0 },
+    { href: '/coach',              Icon: BrainCircuit, iconColor: 'text-indigo-400', label: 'AI Coach',          desc: 'Honest APAC career advice',                                             gradient: 'from-indigo-500/15 to-blue-500/8',    border: 'border-indigo-500/18', glow: 'hover:shadow-indigo-500/10', disabled: false },
+    { href: '/portfolio',          Icon: FolderOpen,   iconColor: 'text-teal-400',   label: 'Portfolio',         desc: "Showcase what you've built",                                            gradient: 'from-teal-500/15 to-emerald-500/8',   border: 'border-teal-500/18',   glow: 'hover:shadow-teal-500/10',   disabled: false },
+    { href: '/profile?tab=github', Icon: GitBranch,    iconColor: 'text-violet-400', label: 'GitHub Import',     desc: 'AI extracts your real skill stack',                                     gradient: 'from-violet-500/15 to-purple-500/8',  border: 'border-violet-500/18', glow: 'hover:shadow-violet-500/10', disabled: false },
   ]
 
   return (
@@ -164,16 +168,15 @@ export default async function DashboardPage() {
       <div className="space-y-3 mb-8">
         {!hasCareerIdentity && (
           <NudgeCard
-            href="/discover" color="violet"
-            icon="🧭" title="Build your Career Identity"
+            href="/discover" color="violet" Icon={Fingerprint}
+            title="Build your Career Identity"
             desc="5 minutes. Tell us what you want — values, goals, work style. Shapes every match."
             cta="Start →"
           />
         )}
         {completeness < 100 && (
           <NudgeCard
-            href="/profile" color="indigo"
-            icon={skillCount === 0 ? '🗂️' : '🎯'}
+            href="/profile" color="indigo" Icon={skillCount === 0 ? Vault : Crosshair}
             title={skillCount === 0 ? 'Build your Skills Vault first' : 'Complete your profile'}
             desc={skillCount === 0
               ? "Add skills so employers can find you on ability — not school name."
@@ -183,8 +186,8 @@ export default async function DashboardPage() {
         )}
         {skillCount > 0 && hasCareerIdentity && (
           <NudgeCard
-            href="/paths" color="blue"
-            icon="🗺️" title="See your Career Path Navigator"
+            href="/paths" color="blue" Icon={Waypoints}
+            title="See your Career Path Navigator"
             desc="3 directions from your real skills — strong match today, emerging in 6–18 months, stretch goal."
             cta="Navigate →"
           />
@@ -192,7 +195,7 @@ export default async function DashboardPage() {
         {coachNudge && (
           <NudgeCard
             href={`/coach?q=${encodeURIComponent(coachNudge.prompt)}`}
-            color="teal" icon="🤖"
+            color="teal" Icon={BrainCircuit}
             title="Your coach has something to say"
             desc={coachNudge.message}
             cta="Ask coach →"
@@ -213,8 +216,8 @@ export default async function DashboardPage() {
               <div className={`rounded-2xl p-4 border bg-gradient-to-br ${item.gradient} ${item.border}
                 hover:shadow-lg ${item.glow} transition-all duration-200 cursor-pointer h-full group`}>
                 <div className="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center mb-3
-                  group-hover:scale-110 transition-transform duration-200 text-xl">
-                  {item.icon}
+                  group-hover:scale-110 transition-transform duration-200">
+                  <item.Icon size={17} className={item.iconColor} strokeWidth={1.75} />
                 </div>
                 <p className="text-sm font-semibold text-zinc-200 mb-0.5">{item.label}</p>
                 <p className="text-xs text-zinc-500 leading-snug">{item.desc}</p>
@@ -233,7 +236,7 @@ export default async function DashboardPage() {
 type NudgeProps = {
   href: string
   color: 'violet' | 'indigo' | 'blue' | 'teal'
-  icon: string
+  Icon: LucideIcon
   title: string
   desc: string
   cta: string
@@ -270,13 +273,13 @@ const NUDGE_STYLES: Record<NudgeProps['color'], { border: string; bg: string; ti
   },
 }
 
-function NudgeCard({ href, color, icon, title, desc, cta }: NudgeProps) {
+function NudgeCard({ href, color, Icon, title, desc, cta }: NudgeProps) {
   const s = NUDGE_STYLES[color]
   return (
     <div className={`rounded-2xl border-l-[3px] border ${s.border} ${s.bg} px-5 py-4 backdrop-blur-sm`}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-start gap-3 min-w-0">
-          <span className="text-xl shrink-0 mt-0.5">{icon}</span>
+          <Icon size={16} className={`shrink-0 mt-0.5 ${s.titleColor}`} strokeWidth={1.75} />
           <div className="min-w-0">
             <h3 className={`font-semibold text-sm ${s.titleColor}`}>{title}</h3>
             <p className={`text-xs mt-0.5 leading-relaxed ${s.descColor}`}>{desc}</p>

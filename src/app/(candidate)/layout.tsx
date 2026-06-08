@@ -4,15 +4,26 @@
 import { UserButton, useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import {
+  Zap, Fingerprint, Waypoints, Vault, FolderOpen,
+  Crosshair, BrainCircuit, Settings2,
+  type LucideIcon,
+} from 'lucide-react'
 
-const NAV_ITEMS = [
-  { href: '/dashboard',  label: 'Dashboard',       icon: '⚡', color: 'from-amber-500 to-orange-500' },
-  { href: '/discover',   label: 'Career Identity', icon: '🧭', color: 'from-violet-500 to-purple-500' },
-  { href: '/paths',      label: 'Path Navigator',  icon: '🗺️', color: 'from-sky-500 to-indigo-500' },
-  { href: '/profile',    label: 'Skills Vault',    icon: '🗂️', color: 'from-amber-500 to-yellow-500' },
-  { href: '/portfolio',  label: 'Portfolio',       icon: '🗃️', color: 'from-teal-500 to-emerald-500' },
-  { href: '/jobs',       label: 'Job Matches',     icon: '🎯', color: 'from-rose-500 to-pink-500' },
-  { href: '/coach',      label: 'AI Coach',        icon: '🤖', color: 'from-indigo-500 to-blue-500' },
+type NavItem = {
+  href: string
+  label: string
+  Icon: LucideIcon
+}
+
+const NAV_ITEMS: NavItem[] = [
+  { href: '/dashboard', label: 'Dashboard',       Icon: Zap },
+  { href: '/discover',  label: 'Career Identity', Icon: Fingerprint },
+  { href: '/paths',     label: 'Path Navigator',  Icon: Waypoints },
+  { href: '/profile',   label: 'Skills Vault',    Icon: Vault },
+  { href: '/portfolio', label: 'Portfolio',       Icon: FolderOpen },
+  { href: '/jobs',      label: 'Job Matches',     Icon: Crosshair },
+  { href: '/coach',     label: 'AI Coach',        Icon: BrainCircuit },
 ]
 
 function Sidebar() {
@@ -43,26 +54,31 @@ function Sidebar() {
 
       {/* Main nav */}
       <nav className="relative flex-1 px-2.5 py-3 space-y-0.5">
-        {NAV_ITEMS.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+        {NAV_ITEMS.map(({ href, label, Icon }) => {
+          const isActive = pathname === href || pathname.startsWith(href + '/')
           return (
             <Link
-              key={item.href}
-              href={item.href}
+              key={href}
+              href={href}
               className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all duration-200 group relative ${
                 isActive
                   ? 'bg-white/8 text-white'
                   : 'text-zinc-500 hover:bg-white/5 hover:text-zinc-200'
               }`}
             >
-              {/* Active left bar */}
               {isActive && (
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 rounded-r-full bg-gradient-to-b from-violet-400 to-indigo-500" />
               )}
-              <span className={`text-base transition-transform duration-200 ${isActive ? 'scale-110' : 'group-hover:scale-105'}`}>
-                {item.icon}
-              </span>
-              <span className={`font-medium ${isActive ? 'text-white' : ''}`}>{item.label}</span>
+              <Icon
+                size={15}
+                className={`shrink-0 transition-all duration-200 ${
+                  isActive
+                    ? 'text-indigo-400'
+                    : 'text-zinc-600 group-hover:text-zinc-400'
+                }`}
+                strokeWidth={isActive ? 2 : 1.75}
+              />
+              <span className={`font-medium text-[13px] ${isActive ? 'text-white' : ''}`}>{label}</span>
             </Link>
           )
         })}
@@ -73,10 +89,10 @@ function Sidebar() {
         <Link
           href="/settings"
           className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-zinc-600
-            hover:bg-white/5 hover:text-zinc-300 transition-all duration-200"
+            hover:bg-white/5 hover:text-zinc-300 transition-all duration-200 group"
         >
-          <span>⚙️</span>
-          <span>Settings</span>
+          <Settings2 size={15} className="shrink-0 text-zinc-700 group-hover:text-zinc-400" strokeWidth={1.75} />
+          <span className="text-[13px]">Settings</span>
         </Link>
       </nav>
 
