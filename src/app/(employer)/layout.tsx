@@ -27,13 +27,15 @@ export default async function EmployerLayout({ children }: { children: React.Rea
   if (dbUser.role !== 'employer') redirect('/dashboard')
 
   return (
-    <div className="flex min-h-screen bg-[#070714]">
-      <aside className="w-56 shrink-0 bg-[#08081a] border-r border-white/6 flex flex-col relative overflow-hidden">
-        <div className="absolute -top-20 -left-10 w-48 h-48 rounded-full pointer-events-none"
+    <div className="flex min-h-screen bg-background">
+      <aside className="w-56 shrink-0 bg-sidebar border-r border-border flex flex-col relative overflow-hidden">
+        {/* Aurora glow — dark mode only */}
+        <div className="absolute -top-20 -left-10 w-48 h-48 rounded-full pointer-events-none
+          opacity-0 dark:opacity-100 transition-opacity duration-500"
           style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.12), transparent 70%)' }} aria-hidden />
 
         {/* Logo */}
-        <div className="relative px-5 py-5 border-b border-white/6">
+        <div className="relative px-5 py-5 border-b border-border">
           <Link href="/employer/dashboard" className="flex items-center gap-2.5 group">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600
               flex items-center justify-center text-xs font-bold shadow-lg shadow-violet-500/25
@@ -41,8 +43,8 @@ export default async function EmployerLayout({ children }: { children: React.Rea
               C
             </div>
             <div>
-              <p className="font-bold text-sm tracking-tight text-white leading-none">Career OS</p>
-              <p className="text-[10px] text-zinc-600 mt-0.5 tracking-wide">Employer portal</p>
+              <p className="font-bold text-sm tracking-tight text-foreground leading-none">Career OS</p>
+              <p className="text-[10px] text-muted-foreground mt-0.5 tracking-wide">Employer portal</p>
             </div>
           </Link>
         </div>
@@ -53,35 +55,35 @@ export default async function EmployerLayout({ children }: { children: React.Rea
             <Link
               key={href}
               href={href}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-zinc-500
-                hover:bg-white/5 hover:text-zinc-200 transition-all duration-200 group"
+              className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-muted-foreground
+                hover:bg-accent/60 hover:text-foreground transition-all duration-200 group"
             >
-              <Icon size={15} className="shrink-0 text-zinc-600 group-hover:text-zinc-400 transition-colors" strokeWidth={1.75} />
+              <Icon size={15} className="shrink-0 transition-colors" strokeWidth={1.75} />
               <span className="text-[13px] font-medium">{label}</span>
             </Link>
           ))}
         </nav>
 
-        <nav className="relative px-2.5 pb-2 border-t border-white/6 pt-2">
-          <Link href="/settings" className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-zinc-600
-            hover:bg-white/5 hover:text-zinc-300 transition-all duration-200 group">
-            <Settings2 size={15} className="shrink-0 text-zinc-700 group-hover:text-zinc-400" strokeWidth={1.75} />
+        <nav className="relative px-2.5 pb-2 border-t border-border pt-2">
+          <Link href="/settings" className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-muted-foreground
+            hover:bg-accent/60 hover:text-foreground transition-all duration-200 group">
+            <Settings2 size={15} className="shrink-0 transition-colors" strokeWidth={1.75} />
             <span className="text-[13px]">Settings</span>
           </Link>
         </nav>
 
-        <div className="relative px-4 py-4 border-t border-white/6 flex items-center gap-3">
+        <div className="relative px-4 py-4 border-t border-border flex items-center gap-3">
           <UserButton />
           <div className="min-w-0">
-            <p className="text-xs font-medium truncate text-zinc-300">
+            <p className="text-xs font-medium truncate text-foreground">
               {user.firstName ?? user.emailAddresses[0]?.emailAddress}
             </p>
-            <p className="text-[10px] text-zinc-600 mt-0.5">Employer</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Employer</p>
           </div>
         </div>
       </aside>
 
-      <main className="flex-1 overflow-auto bg-[#070714] text-zinc-100">
+      <main className="flex-1 overflow-auto bg-background text-foreground">
         {children}
       </main>
     </div>

@@ -1,4 +1,4 @@
-// Candidate shell layout — premium dark sidebar
+// Candidate shell layout
 'use client'
 
 import { UserButton, useUser } from '@clerk/nextjs'
@@ -9,6 +9,7 @@ import {
   Crosshair, BrainCircuit, Settings2,
   type LucideIcon,
 } from 'lucide-react'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 type NavItem = {
   href: string
@@ -32,23 +33,25 @@ function Sidebar() {
   const displayName = user?.firstName ?? user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] ?? '—'
 
   return (
-    <aside className="w-56 shrink-0 flex flex-col border-r border-white/6 bg-[#08081a] relative overflow-hidden">
-      {/* Aurora glows */}
-      <div className="absolute -top-20 -left-10 w-52 h-52 rounded-full pointer-events-none"
+    <aside className="w-56 shrink-0 flex flex-col border-r border-border bg-sidebar relative overflow-hidden">
+      {/* Aurora glows — only show in dark mode */}
+      <div className="absolute -top-20 -left-10 w-52 h-52 rounded-full pointer-events-none
+        opacity-0 dark:opacity-100 transition-opacity duration-500"
         style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.12), transparent 70%)' }} aria-hidden />
-      <div className="absolute bottom-10 -right-10 w-44 h-44 rounded-full pointer-events-none"
+      <div className="absolute bottom-10 -right-10 w-44 h-44 rounded-full pointer-events-none
+        opacity-0 dark:opacity-100 transition-opacity duration-500"
         style={{ background: 'radial-gradient(circle, rgba(79,70,229,0.1), transparent 70%)' }} aria-hidden />
 
       {/* Logo */}
-      <Link href="/dashboard" className="relative px-5 py-5 border-b border-white/6 flex items-center gap-2.5 group">
+      <Link href="/dashboard" className="relative px-5 py-5 border-b border-border flex items-center gap-2.5 group">
         <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600
           flex items-center justify-center text-xs font-bold shadow-lg shadow-violet-500/25
-          group-hover:shadow-violet-500/45 transition-all duration-300">
+          group-hover:shadow-violet-500/45 transition-all duration-300 text-white">
           C
         </div>
         <div>
-          <p className="font-bold text-sm tracking-tight text-white leading-none">Career OS</p>
-          <p className="text-[10px] text-zinc-600 mt-0.5 tracking-wide">Skills-first hiring</p>
+          <p className="font-bold text-sm tracking-tight text-foreground leading-none">Career OS</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5 tracking-wide">Skills-first hiring</p>
         </div>
       </Link>
 
@@ -62,8 +65,8 @@ function Sidebar() {
               href={href}
               className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all duration-200 group relative ${
                 isActive
-                  ? 'bg-white/8 text-white'
-                  : 'text-zinc-500 hover:bg-white/5 hover:text-zinc-200'
+                  ? 'bg-accent text-foreground'
+                  : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
               }`}
             >
               {isActive && (
@@ -72,36 +75,39 @@ function Sidebar() {
               <Icon
                 size={15}
                 className={`shrink-0 transition-all duration-200 ${
-                  isActive
-                    ? 'text-indigo-400'
-                    : 'text-zinc-600 group-hover:text-zinc-400'
+                  isActive ? 'text-indigo-400' : 'text-muted-foreground group-hover:text-foreground'
                 }`}
                 strokeWidth={isActive ? 2 : 1.75}
               />
-              <span className={`font-medium text-[13px] ${isActive ? 'text-white' : ''}`}>{label}</span>
+              <span className={`font-medium text-[13px] ${isActive ? 'text-foreground' : ''}`}>{label}</span>
             </Link>
           )
         })}
       </nav>
 
-      {/* Settings */}
-      <nav className="relative px-2.5 pb-2 border-t border-white/6 pt-2">
+      {/* Settings + theme toggle */}
+      <nav className="relative px-2.5 pb-2 border-t border-border pt-2 space-y-0.5">
         <Link
           href="/settings"
-          className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-zinc-600
-            hover:bg-white/5 hover:text-zinc-300 transition-all duration-200 group"
+          className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-muted-foreground
+            hover:bg-accent/60 hover:text-foreground transition-all duration-200 group"
         >
-          <Settings2 size={15} className="shrink-0 text-zinc-700 group-hover:text-zinc-400" strokeWidth={1.75} />
+          <Settings2 size={15} className="shrink-0 transition-colors" strokeWidth={1.75} />
           <span className="text-[13px]">Settings</span>
         </Link>
+
+        <div className="flex items-center gap-3 px-3 py-1.5">
+          <ThemeToggle size="sm" />
+          <span className="text-[13px] text-muted-foreground">Theme</span>
+        </div>
       </nav>
 
       {/* User */}
-      <div className="relative px-4 py-4 border-t border-white/6 flex items-center gap-3">
+      <div className="relative px-4 py-4 border-t border-border flex items-center gap-3">
         <UserButton />
         <div className="min-w-0">
-          <p className="text-xs font-medium truncate text-zinc-300">{displayName}</p>
-          <p className="text-[10px] text-zinc-600 mt-0.5">Candidate</p>
+          <p className="text-xs font-medium truncate text-foreground">{displayName}</p>
+          <p className="text-[10px] text-muted-foreground mt-0.5">Candidate</p>
         </div>
       </div>
     </aside>
@@ -110,9 +116,9 @@ function Sidebar() {
 
 export default function CandidateLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-[#070714]">
+    <div className="flex min-h-screen bg-background">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto bg-[#070714] text-zinc-100">
+      <main className="flex-1 overflow-y-auto bg-background text-foreground">
         {children}
       </main>
     </div>
