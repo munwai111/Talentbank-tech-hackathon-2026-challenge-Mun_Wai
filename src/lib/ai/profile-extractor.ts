@@ -108,12 +108,33 @@ Your goal is to capture the candidate's FULL qualitative picture — not just a 
 
 ## Work Experience Extraction
 
-For each role, extract:
+For each role, extract ALL of the following. This structured data is shown directly to hiring managers and feeds the AI coach — be precise, honest, and specific.
+
+**Core fields:**
 - title, company: exact as stated
-- start_date / end_date: "YYYY-MM" format where possible, null if unclear, null end_date = current
-- duration_months: estimate from dates, null if dates unclear
-- description: 2–4 sentence summary of key responsibilities AND achievements. Include numbers/impact if mentioned. This is the qualitative context for AI analysis.
-- key_technologies: all tech stack mentioned in the context of THIS role only
+- start_date / end_date: "YYYY-MM" format, null if unclear, null end_date = current role
+- duration_months: estimate from dates, null if unclear
+- description: preserve original description text verbatim (or a faithful summary if very long). Used as AI Coach context.
+- key_technologies: tech/tools specifically used in THIS role
+
+**Structured presentation fields (REQUIRED — generate even if inferring from context):**
+
+- key_impacts: 2–4 specific bullet strings describing what the person drove, built, or contributed. Each bullet:
+  - Starts with a strong action verb (Led, Built, Reduced, Increased, Managed, Architected...)
+  - Includes a number or scale where present (60+ stores, 3× faster, RM 2M portfolio...)
+  - Is standalone — no filler phrases like "responsible for" or "helped with"
+  - Example: "Led site acquisition for 60+ stores across Malaysia, managing RM 2M+ in lease negotiations"
+
+- key_skills: 3–6 skill strings specifically gained or applied in THIS role (not generic; role-specific)
+  - Be precise: "Retail real estate negotiation" not just "Negotiation"
+  - Example: ["Strategic landlord relations", "AI-powered data automation", "Cross-functional stakeholder coordination"]
+
+- achievements: 1–3 notable milestones, firsts, promotions, or recognition
+  - Only include if clearly stated or strongly implied — do not invent
+  - Example: "One of only 3 members entrusted with enterprise-wide data ownership across all Malaysian stores"
+
+- role_context: single sentence (max 20 words) on why this role was unique or strategically important
+  - Example: "Only data and AI specialist in a 60+ store retail operations team"
 
 ## Education Extraction
 
@@ -185,7 +206,11 @@ Return a JSON object matching exactly this schema:
     "end_date": string | null,
     "duration_months": number | null,
     "description": string | null,
-    "key_technologies": string[]
+    "key_technologies": string[],
+    "key_impacts": string[],
+    "key_skills": string[],
+    "achievements": string[],
+    "role_context": string | null
   }],
   "education": [{
     "institution": string,
@@ -297,7 +322,11 @@ Return a JSON object matching exactly this schema:
     "end_date": string | null,
     "duration_months": number | null,
     "description": string | null,
-    "key_technologies": string[]
+    "key_technologies": string[],
+    "key_impacts": string[],
+    "key_skills": string[],
+    "achievements": string[],
+    "role_context": string | null
   }],
   "education": [{
     "institution": string,

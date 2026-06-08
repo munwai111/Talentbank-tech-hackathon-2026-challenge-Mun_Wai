@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { TrendingUp, Wrench, Trophy, Sparkles, ChevronDown, ChevronUp } from 'lucide-react'
 import type { CandidateProfile, Skill, PortfolioItem, WorkExperienceEntry, EducationEntry } from '@/types/database'
 import type { ExtractedProfile } from '@/lib/ai/profile-extractor'
 
@@ -45,6 +46,208 @@ const SOURCE_BADGES: Record<string, { label: string; color: string }> = {
   import:     { label: '📄 Resume',      color: 'bg-amber-500/10 text-amber-400 border-amber-500/15' },
   github:     { label: '🐙 GitHub',      color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/15' },
   assessment: { label: '✅ Assessed',    color: 'bg-blue-500/10 text-blue-400 border-blue-500/15' },
+}
+
+// ── RestructureButton ─────────────────────────────────────────────────────────
+
+function RestructureButton({
+  onDone,
+  workExperience,
+}: {
+  onDone: (updated: number) => void
+  workExperience: WorkExperienceEntry[]
+}) {
+  const [loading, setLoading] = useState(false)
+  const [done, setDone] = useState(false)
+
+  const allStructured = workExperience.every(e => (e.key_impacts?.length ?? 0) > 0)
+  if (allStructured) return null
+
+  async function run() {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/candidate/work-experience/restructure', { method: 'POST' })
+      const data = await res.json() as { updated?: number }
+      onDone(data.updated ?? 0)
+      setDone(true)
+    } catch { /* silently fail */ }
+    setLoading(false)
+  }
+
+  if (done) return (
+    <span className="text-[11px] text-emerald-400 flex items-center gap-1">
+      <Sparkles size={11} /> Done
+    </span>
+  )
+
+  return (
+    <button
+      onClick={run}
+      disabled={loading}
+      className="flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-lg
+        bg-indigo-500/10 text-indigo-400 border border-indigo-500/20
+        hover:bg-indigo-500/20 disabled:opacity-50 transition-all whitespace-nowrap"
+    >
+      {loading ? (
+        <><span className="w-3 h-3 border border-indigo-400 border-t-transparent rounded-full animate-spin" />Analyzing…</>
+      ) : (
+        <><Sparkles size={11} />Analyze with AI</>
+      )}
+    </button>
+  )
+}
+
+// ── WorkExperienceCard ────────────────────────────────────────────────────────
+
+function WorkExperienceCard({ job }: { job: WorkExperienceEntry }) {
+  const [expanded, setExpanded] = useState(false)
+  const hasStructured = (job.key_impacts?.length ?? 0) > 0 || (job.key_skills?.length ?? 0) > 0
+
+  const empLabel: Record<string, string> = {
+    full_time: 'Full-time', part_time: 'Part-time',
+    freelance: 'Freelance', contract: 'Contract', internship: 'Internship',
+  }
+
+  return (
+    <div className="rounded-2xl border border-white/7 bg-white/3 overflow-hidden
+      hover:border-white/12 transition-all duration-200">
+
+      {/* Header */}
+      <div className="px-5 pt-4 pb-3">
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-bold text-sm text-white leading-snug">{job.title}</p>
+            <p className="text-xs text-zinc-500 mt-0.5">{job.company}</p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            {job.employment_type && (
+              <span className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-white/6 text-zinc-500 border border-white/8">
+                {empLabel[job.employment_type] ?? job.employment_type}
+              </span>
+            )}
+            <span className="text-[11px] text-zinc-600 whitespace-nowrap">
+              {job.start_date ?? '?'} – {job.end_date ?? 'Present'}
+            </span>
+          </div>
+        </div>
+
+        {/* Role context — the "why this matters" one-liner */}
+        {job.role_context && (
+          <p className="text-xs text-indigo-400/80 mt-2 italic">{job.role_context}</p>
+        )}
+      </div>
+
+      {/* Structured sections */}
+      {hasStructured ? (
+        <div className="px-5 pb-4 space-y-4">
+
+          {/* Impact bullets */}
+          {(job.key_impacts?.length ?? 0) > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <TrendingUp size={11} className="text-emerald-500" strokeWidth={2} />
+                <p className="text-[10px] font-semibold tracking-widest uppercase text-zinc-600">Impact</p>
+              </div>
+              <ul className="space-y-1.5">
+                {job.key_impacts!.map((point, i) => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-zinc-300 leading-relaxed">
+                    <span className="mt-1.5 shrink-0 w-1 h-1 rounded-full bg-emerald-500" />
+                    {point}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Achievements */}
+          {(job.achievements?.length ?? 0) > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <Trophy size={11} className="text-amber-500" strokeWidth={2} />
+                <p className="text-[10px] font-semibold tracking-widest uppercase text-zinc-600">Achievements</p>
+              </div>
+              <ul className="space-y-1.5">
+                {job.achievements!.map((a, i) => (
+                  <li key={i} className="flex items-start gap-2 text-xs text-zinc-300 leading-relaxed">
+                    <span className="mt-1.5 shrink-0 w-1 h-1 rounded-full bg-amber-500" />
+                    {a}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Skills from this role */}
+          {(job.key_skills?.length ?? 0) > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <Wrench size={11} className="text-violet-400" strokeWidth={2} />
+                <p className="text-[10px] font-semibold tracking-widest uppercase text-zinc-600">Skills applied</p>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {job.key_skills!.map(s => (
+                  <span key={s} className="text-[11px] px-2.5 py-1 rounded-lg bg-violet-500/10 text-violet-300 border border-violet-500/20 font-medium">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Tech stack */}
+          {job.key_technologies.length > 0 && (
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <Sparkles size={11} className="text-sky-400" strokeWidth={2} />
+                <p className="text-[10px] font-semibold tracking-widest uppercase text-zinc-600">Tech stack</p>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {job.key_technologies.map(t => (
+                  <span key={t} className="text-[11px] px-2.5 py-1 rounded-lg bg-sky-500/8 text-sky-400 border border-sky-500/15">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Full description toggle */}
+          {job.description && (
+            <div>
+              <button
+                onClick={() => setExpanded(e => !e)}
+                className="flex items-center gap-1 text-[11px] text-zinc-600 hover:text-zinc-400 transition-colors"
+              >
+                {expanded ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                {expanded ? 'Hide full description' : 'Show full description'}
+              </button>
+              {expanded && (
+                <p className="text-xs text-zinc-500 leading-relaxed mt-2 border-t border-white/6 pt-3">
+                  {job.description}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        /* Legacy format — for entries without AI-structured data */
+        <div className="px-5 pb-4">
+          {job.description && (
+            <p className="text-xs text-zinc-400 leading-relaxed mb-3">{job.description}</p>
+          )}
+          {job.key_technologies.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {job.key_technologies.map(t => (
+                <span key={t} className="text-[11px] px-2.5 py-1 rounded-lg bg-white/6 text-zinc-500 border border-white/8">
+                  {t}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
 }
 
 function ProfilePageInner() {
@@ -435,30 +638,18 @@ function ProfilePageInner() {
           {/* Work experience — imported from resume */}
           {(profile?.work_experience ?? []).length > 0 && (
             <div>
-              <h3 className="font-semibold text-zinc-300 mb-3 mt-6">💼 Work Experience</h3>
-              <div className="space-y-3">
+              <div className="flex items-center gap-2 mt-8 mb-4">
+                <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-zinc-600">Work Experience</p>
+                <div className="flex-1 h-px bg-white/6" />
+                <RestructureButton onDone={(updated) => {
+                  fetch('/api/candidate/profile')
+                    .then(r => r.json())
+                    .then(({ profile: p }) => { if (p) setProfile(p) })
+                }} workExperience={profile!.work_experience ?? []} />
+              </div>
+              <div className="space-y-4">
                 {(profile!.work_experience!).map((job, i) => (
-                  <Card key={i} className="p-4">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <div>
-                        <p className="font-semibold text-white">{job.title}</p>
-                        <p className="text-sm text-zinc-500">{job.company}</p>
-                      </div>
-                      <p className="text-xs text-zinc-400 whitespace-nowrap mt-0.5">
-                        {job.start_date ?? '?'} – {job.end_date ?? 'Present'}
-                      </p>
-                    </div>
-                    {job.description && (
-                      <p className="text-sm text-zinc-400 mt-2 leading-relaxed">{job.description}</p>
-                    )}
-                    {job.key_technologies.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {job.key_technologies.map(t => (
-                          <span key={t} className="text-xs bg-white/8 text-zinc-400 px-2 py-0.5 rounded">{t}</span>
-                        ))}
-                      </div>
-                    )}
-                  </Card>
+                  <WorkExperienceCard key={i} job={job} />
                 ))}
               </div>
             </div>
@@ -467,18 +658,21 @@ function ProfilePageInner() {
           {/* Education — imported from resume */}
           {(profile?.education ?? []).length > 0 && (
             <div>
-              <h3 className="font-semibold text-zinc-300 mb-3 mt-2">🎓 Education</h3>
+              <div className="flex items-center gap-2 mt-8 mb-4">
+                <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-zinc-600">Education</p>
+                <div className="flex-1 h-px bg-white/6" />
+              </div>
               <div className="space-y-2">
                 {(profile!.education!).map((edu, i) => (
-                  <div key={i} className="flex items-start justify-between p-3 bg-white/4 border border-white/8 rounded-lg">
+                  <div key={i} className="flex items-start justify-between px-4 py-3.5 bg-white/3 border border-white/7 rounded-xl">
                     <div>
-                      <p className="font-medium text-white">{edu.institution}</p>
-                      <p className="text-sm text-zinc-500">
+                      <p className="font-semibold text-sm text-white">{edu.institution}</p>
+                      <p className="text-xs text-zinc-500 mt-0.5">
                         {[edu.degree, edu.field].filter(Boolean).join(' · ')}
                       </p>
                     </div>
                     {edu.graduation_year && (
-                      <span className="text-xs text-zinc-400 mt-0.5">{edu.graduation_year}</span>
+                      <span className="text-xs text-zinc-600 mt-0.5 shrink-0">{edu.graduation_year}</span>
                     )}
                   </div>
                 ))}

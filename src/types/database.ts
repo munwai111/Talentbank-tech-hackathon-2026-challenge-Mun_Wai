@@ -24,8 +24,13 @@ export type WorkExperienceEntry = {
   start_date: string | null        // "2021-03" format where possible
   end_date: string | null          // null = current role
   duration_months: number | null   // AI-estimated from dates
-  description: string | null       // Key achievements / responsibilities
+  description: string | null       // Full raw description (kept for coach/navigator context)
   key_technologies: string[]       // Tech stack mentioned in this role
+  // ── AI-structured presentation fields (auto-populated on CV upload) ─────────
+  key_impacts?: string[]           // 2–4 bullets: what they drove/contributed (with numbers where present)
+  key_skills?: string[]            // Skills specifically gained or applied in this role
+  achievements?: string[]          // Notable milestones, promotions, awards, firsts
+  role_context?: string            // One sentence: why this role was unique/important
   // Guided registration additions
   employment_type?: 'full_time' | 'part_time' | 'freelance' | 'contract' | 'internship' | null
   verification_status?: 'unverified' | 'email_sent' | 'document_uploaded' | 'verified'
