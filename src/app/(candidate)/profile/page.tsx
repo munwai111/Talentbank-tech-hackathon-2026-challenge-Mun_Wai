@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -32,23 +32,22 @@ const LEVEL_LABELS: Record<number, string> = {
   5: 'Expert',
 }
 
-const LEVEL_COLORS: Record<number, string> = {
-  1: 'bg-white/8 text-zinc-400',
-  2: 'bg-blue-500/15 text-blue-400',
-  3: 'bg-emerald-500/15 text-emerald-400',
-  4: 'bg-purple-500/15 text-purple-400',
-  5: 'bg-orange-500/15 text-orange-400',
+const LEVEL_COLORS: Record<number, { badge: string; bar: string; accent: string }> = {
+  1: { badge: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/20',   bar: 'bg-zinc-500',   accent: '#71717a' },
+  2: { badge: 'bg-blue-500/15 text-blue-400 border-blue-500/20',   bar: 'bg-blue-500',   accent: '#60a5fa' },
+  3: { badge: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/20', bar: 'bg-emerald-500', accent: '#34d399' },
+  4: { badge: 'bg-violet-500/15 text-violet-400 border-violet-500/20', bar: 'bg-violet-500', accent: '#a78bfa' },
+  5: { badge: 'bg-amber-500/15 text-amber-400 border-amber-500/20', bar: 'bg-gradient-to-r from-amber-400 to-orange-400', accent: '#fbbf24' },
 }
 
-// Source badge — shows HOW a skill was verified (this is the key trust signal)
 const SOURCE_BADGES: Record<string, { label: string; color: string }> = {
-  manual:     { label: 'Self-reported',  color: 'bg-white/8 text-zinc-400' },
-  import:     { label: '📄 Resume',      color: 'bg-amber-500/15 text-amber-400' },
-  github:     { label: '🐙 GitHub',      color: 'bg-emerald-500/15 text-emerald-400' },
-  assessment: { label: '✅ Assessed',    color: 'bg-blue-500/15 text-blue-400' },
+  manual:     { label: 'Self-reported',  color: 'bg-white/6 text-zinc-500 border-white/8' },
+  import:     { label: '📄 Resume',      color: 'bg-amber-500/10 text-amber-400 border-amber-500/15' },
+  github:     { label: '🐙 GitHub',      color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/15' },
+  assessment: { label: '✅ Assessed',    color: 'bg-blue-500/10 text-blue-400 border-blue-500/15' },
 }
 
-export default function ProfilePage() {
+function ProfilePageInner() {
   const searchParams = useSearchParams()
   const tab = searchParams.get('tab')
   const defaultTab = tab === 'github' ? 'github' : tab === 'import' ? 'import' : 'skills'
@@ -397,25 +396,39 @@ export default function ProfilePage() {
                 <p className="text-sm mt-1">Add skills above or import from GitHub</p>
               </div>
             ) : (
-              (profile?.skills ?? []).map(skill => (
-                <div key={skill.id} className="flex items-center gap-3 p-3 bg-white/4 border border-white/8 rounded-lg">
-                  <div className="flex-1">
-                    <span className="font-medium">{skill.name}</span>
+              (profile?.skills ?? []).map(skill => {
+                const lvl = LEVEL_COLORS[skill.level] ?? LEVEL_COLORS[3]
+                const src = SOURCE_BADGES[skill.source] ?? SOURCE_BADGES.manual
+                return (
+                  <div key={skill.id}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/7 bg-white/3
+                      hover:bg-white/5 hover:border-white/12 transition-all duration-150 group"
+                    style={{ borderLeft: `3px solid ${lvl.accent}33` }}>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-semibold text-zinc-200">{skill.name}</span>
+                      {/* Mini level bar */}
+                      <div className="flex gap-0.5 mt-1.5">
+                        {[1,2,3,4,5].map(n => (
+                          <div key={n} className={`h-1 w-4 rounded-full ${n <= skill.level ? lvl.bar : 'bg-white/6'}`} />
+                        ))}
+                      </div>
+                    </div>
+                    <span className={`text-[11px] px-2.5 py-1 rounded-lg font-semibold border ${lvl.badge}`}>
+                      {LEVEL_LABELS[skill.level]}
+                    </span>
+                    <span className={`text-[11px] px-2.5 py-1 rounded-lg border ${src.color}`}>
+                      {src.label}
+                    </span>
+                    <button
+                      onClick={() => deleteSkill(skill.id)}
+                      className="text-zinc-700 hover:text-red-400 transition-colors text-lg leading-none
+                        opacity-0 group-hover:opacity-100 shrink-0"
+                    >
+                      ×
+                    </button>
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${LEVEL_COLORS[skill.level]}`}>
-                    {LEVEL_LABELS[skill.level]}
-                  </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${SOURCE_BADGES[skill.source]?.color ?? SOURCE_BADGES.manual.color}`}>
-                    {SOURCE_BADGES[skill.source]?.label ?? SOURCE_BADGES.manual.label}
-                  </span>
-                  <button
-                    onClick={() => deleteSkill(skill.id)}
-                    className="text-zinc-300 hover:text-red-400 transition-colors text-lg leading-none"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))
+                )
+              })
             )}
           </div>
 
@@ -757,7 +770,7 @@ export default function ProfilePage() {
                     {extractedProfile.skills.map((skill, i) => (
                       <div key={i} className="flex items-center gap-3">
                         <span className="flex-1 text-sm font-medium">{skill.name}</span>
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${LEVEL_COLORS[skill.level]}`}>
+                        <span className={`text-[11px] px-2.5 py-1 rounded-lg font-semibold border shrink-0 ${(LEVEL_COLORS[skill.level] ?? LEVEL_COLORS[3]).badge}`}>
                           {LEVEL_LABELS[skill.level]}
                         </span>
                         <span className="text-xs text-zinc-400 shrink-0 w-20 text-right">
@@ -971,5 +984,13 @@ export default function ProfilePage() {
         </TabsContent>
       </Tabs>
     </div>
+  )
+}
+
+export default function ProfilePage() {
+  return (
+    <Suspense fallback={<div className="p-8 flex items-center gap-3 text-zinc-500"><div className="w-5 h-5 border-2 border-white/20 border-t-indigo-400 rounded-full animate-spin" />Loading vault…</div>}>
+      <ProfilePageInner />
+    </Suspense>
   )
 }

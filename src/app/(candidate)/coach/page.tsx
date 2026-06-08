@@ -4,7 +4,7 @@
 // Live streaming chat with a career advisor that knows your actual profile.
 // Messages are session-local (no persistence needed for demo).
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -134,7 +134,7 @@ function StarterButton({ text, onClick }: { text: string; onClick: () => void })
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-export default function CoachPage() {
+function CoachPageInner() {
   const searchParams = useSearchParams()
   const [messages, setMessages] = useState<CoachMessage[]>([])
   const [input, setInput] = useState('')
@@ -347,5 +347,13 @@ export default function CoachPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function CoachPage() {
+  return (
+    <Suspense fallback={<div className="flex-1 flex items-center justify-center"><div className="w-6 h-6 border-2 border-white/20 border-t-indigo-400 rounded-full animate-spin" /></div>}>
+      <CoachPageInner />
+    </Suspense>
   )
 }

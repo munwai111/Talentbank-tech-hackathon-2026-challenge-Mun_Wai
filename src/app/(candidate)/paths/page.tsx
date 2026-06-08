@@ -35,114 +35,156 @@ async function readStreamedPaths(): Promise<{ paths?: CareerPath[]; error?: stri
 
 type MatchConfig = {
   label: string
-  border: string
+  accent: string
   badge: string
-  dot: string
+  badgeDot: string
+  cardBg: string
+  cardBorder: string
+  glow: string
+  salaryBg: string
+  salaryText: string
+  ctaGradient: string
+  tradeoffBorder: string
 }
 
 const MATCH_CONFIG: Record<PathMatchType, MatchConfig> = {
-  strong:   { label: 'Strong Match',   border: 'border-t-emerald-500', badge: 'bg-emerald-500/15 text-emerald-400', dot: 'bg-emerald-500' },
-  emerging: { label: 'Emerging Path',  border: 'border-t-amber-400',   badge: 'bg-amber-500/15 text-amber-400',    dot: 'bg-amber-400'   },
-  stretch:  { label: 'Stretch Goal',   border: 'border-t-indigo-500',  badge: 'bg-indigo-500/15 text-indigo-400',  dot: 'bg-indigo-500'  },
+  strong: {
+    label: 'Strong Match',
+    accent: 'from-emerald-500 to-teal-500',
+    badge: 'bg-emerald-500/12 text-emerald-300 border-emerald-500/20',
+    badgeDot: 'bg-emerald-400',
+    cardBg: 'linear-gradient(160deg, rgba(16,185,129,0.08) 0%, rgba(20,184,166,0.04) 100%)',
+    cardBorder: 'rgba(16,185,129,0.25)',
+    glow: '0 0 40px rgba(16,185,129,0.1)',
+    salaryBg: 'rgba(16,185,129,0.1)',
+    salaryText: '#34d399',
+    ctaGradient: 'from-emerald-600 to-teal-600',
+    tradeoffBorder: 'border-l-emerald-500/40',
+  },
+  emerging: {
+    label: 'Emerging Path',
+    accent: 'from-amber-400 to-orange-500',
+    badge: 'bg-amber-500/12 text-amber-300 border-amber-500/20',
+    badgeDot: 'bg-amber-400',
+    cardBg: 'linear-gradient(160deg, rgba(245,158,11,0.08) 0%, rgba(249,115,22,0.04) 100%)',
+    cardBorder: 'rgba(245,158,11,0.25)',
+    glow: '0 0 40px rgba(245,158,11,0.1)',
+    salaryBg: 'rgba(245,158,11,0.1)',
+    salaryText: '#fbbf24',
+    ctaGradient: 'from-amber-600 to-orange-600',
+    tradeoffBorder: 'border-l-amber-500/40',
+  },
+  stretch: {
+    label: 'Stretch Goal',
+    accent: 'from-violet-500 to-indigo-600',
+    badge: 'bg-violet-500/12 text-violet-300 border-violet-500/20',
+    badgeDot: 'bg-violet-400',
+    cardBg: 'linear-gradient(160deg, rgba(124,58,237,0.08) 0%, rgba(99,102,241,0.04) 100%)',
+    cardBorder: 'rgba(124,58,237,0.25)',
+    glow: '0 0 40px rgba(124,58,237,0.1)',
+    salaryBg: 'rgba(124,58,237,0.1)',
+    salaryText: '#a78bfa',
+    ctaGradient: 'from-violet-600 to-indigo-600',
+    tradeoffBorder: 'border-l-violet-500/40',
+  },
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
 function SkillChip({ name, variant }: { name: string; variant: 'have' | 'develop' }) {
-  const cls = variant === 'have'
-    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/25'
-    : 'bg-amber-500/15 text-amber-400 border border-amber-500/25'
   return (
-    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${cls}`}>
-      {name}
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium border ${
+      variant === 'have'
+        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+        : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+    }`}>
+      {variant === 'have' ? '✓' : '+'} {name}
     </span>
-  )
-}
-
-function PathStats({ path }: { path: CareerPath }) {
-  const salary = `RM ${path.salary_min_myr.toLocaleString()} – ${path.salary_max_myr.toLocaleString()}/mo`
-  const timeline = `${path.timeline_months_min}–${path.timeline_months_max} months`
-  return (
-    <div className="space-y-3">
-      {/* Fair Pay signal — prominent salary display (C-04) */}
-      <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-4 py-3">
-        <p className="text-xs text-emerald-400 font-medium mb-0.5">💰 Market salary for this move</p>
-        <p className="text-base font-bold text-emerald-300">{salary}</p>
-        <p className="text-xs text-emerald-400/70 mt-0.5">
-          Professionals in Malaysia with a similar profile typically earn in this range.
-        </p>
-      </div>
-      <div className="text-sm">
-        <p className="text-xs text-zinc-500 mb-0.5">Typical timeline to reach this role</p>
-        <p className="font-semibold text-zinc-200">{timeline}</p>
-      </div>
-    </div>
-  )
-}
-
-function SkillSection({ path }: { path: CareerPath }) {
-  return (
-    <div className="space-y-2">
-      {path.skills_you_have.length > 0 && (
-        <div>
-          <p className="text-xs text-zinc-400 mb-1">Skills you have</p>
-          <div className="flex flex-wrap gap-1">
-            {path.skills_you_have.map(s => <SkillChip key={s} name={s} variant="have" />)}
-          </div>
-        </div>
-      )}
-      {path.skills_to_develop.length > 0 && (
-        <div>
-          <p className="text-xs text-zinc-400 mb-1">Skills to develop</p>
-          <div className="flex flex-wrap gap-1">
-            {path.skills_to_develop.map(s => <SkillChip key={s} name={s} variant="develop" />)}
-          </div>
-        </div>
-      )}
-    </div>
   )
 }
 
 function PathCard({ path }: { path: CareerPath }) {
   const cfg = MATCH_CONFIG[path.id] ?? MATCH_CONFIG.emerging
+  const salary = path.salary_min_myr > 0
+    ? `RM ${path.salary_min_myr.toLocaleString()} – ${path.salary_max_myr.toLocaleString()}/mo`
+    : 'Variable / equity-based'
+  const timeline = `${path.timeline_months_min}–${path.timeline_months_max} months`
+
   return (
-    <div className={`bg-white/4 rounded-xl border border-white/8 border-t-4 ${cfg.border}
-      backdrop-blur-sm flex flex-col gap-5 p-6 hover:border-white/15 transition-all`}>
-      {/* Header */}
-      <div>
-        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${cfg.badge} mb-3`}
-          style={{ borderColor: 'transparent' }}>
-          <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
-          {cfg.label}
-        </span>
-        <h3 className="text-lg font-bold text-white">{path.title}</h3>
-        <p className="text-xs text-zinc-400 mt-1">{path.match_label}</p>
-        <p className="text-xs text-zinc-500 mt-1">
-          {path.company_types.join(' · ')}
-        </p>
+    <div className="relative rounded-2xl flex flex-col overflow-hidden backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5"
+      style={{
+        background: cfg.cardBg,
+        border: `1px solid ${cfg.cardBorder}`,
+        boxShadow: cfg.glow,
+      }}>
+
+      {/* Top gradient bar */}
+      <div className={`h-0.5 w-full bg-gradient-to-r ${cfg.accent}`} />
+
+      <div className="flex flex-col gap-4 p-5">
+
+        {/* Badge + title */}
+        <div>
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${cfg.badge} mb-2.5`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${cfg.badgeDot}`} />
+            {cfg.label}
+          </span>
+          <h3 className="text-base font-bold text-white leading-snug">{path.title}</h3>
+          <p className="text-xs text-zinc-500 mt-1 leading-relaxed">{path.match_label}</p>
+          {path.company_types.length > 0 && (
+            <p className="text-[11px] text-zinc-600 mt-1.5">{path.company_types.slice(0, 3).join(' · ')}</p>
+          )}
+        </div>
+
+        {/* Salary highlight */}
+        <div className="rounded-xl px-4 py-3" style={{ background: cfg.salaryBg, border: `1px solid ${cfg.cardBorder}` }}>
+          <p className="text-[10px] font-semibold tracking-wider uppercase text-zinc-500 mb-0.5">Market Salary</p>
+          <p className="text-lg font-bold tracking-tight" style={{ color: cfg.salaryText }}>{salary}</p>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-[10px] text-zinc-600">Timeline:</span>
+            <span className="text-[10px] font-semibold text-zinc-400">{timeline}</span>
+          </div>
+        </div>
+
+        {/* Skills */}
+        <div className="space-y-2">
+          {path.skills_you_have.length > 0 && (
+            <div>
+              <p className="text-[10px] font-semibold tracking-wider uppercase text-zinc-600 mb-1.5">You have</p>
+              <div className="flex flex-wrap gap-1">
+                {path.skills_you_have.map(s => <SkillChip key={s} name={s} variant="have" />)}
+              </div>
+            </div>
+          )}
+          {path.skills_to_develop.length > 0 && (
+            <div>
+              <p className="text-[10px] font-semibold tracking-wider uppercase text-zinc-600 mb-1.5">To develop</p>
+              <div className="flex flex-wrap gap-1">
+                {path.skills_to_develop.map(s => <SkillChip key={s} name={s} variant="develop" />)}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Trade-off */}
+        <div className={`rounded-xl px-3.5 py-3 border-l-2 ${cfg.tradeoffBorder} bg-white/3 border border-white/6`}>
+          <p className="text-[10px] font-semibold tracking-wider uppercase text-zinc-600 mb-1">Trade-off</p>
+          <p className="text-xs text-zinc-400 leading-relaxed">{path.trade_off}</p>
+        </div>
+
+        {/* Navigation note */}
+        {path.navigation_note && (
+          <p className="text-xs text-zinc-600 italic leading-relaxed">{path.navigation_note}</p>
+        )}
+
+        {/* CTA */}
+        <a href="/jobs"
+          className={`mt-auto flex items-center justify-center gap-1.5 text-sm font-semibold text-white
+            bg-gradient-to-r ${cfg.ctaGradient} rounded-xl px-4 py-2.5 transition-all
+            hover:opacity-90 hover:shadow-lg`}>
+          Explore matching jobs →
+        </a>
       </div>
-
-      <PathStats path={path} />
-      <SkillSection path={path} />
-
-      {/* Trade-off */}
-      <div className="bg-white/4 rounded-lg px-4 py-3 text-xs text-zinc-400 border-l-2 border-white/20">
-        <span className="font-semibold text-zinc-300">Trade-off: </span>
-        {path.trade_off}
-      </div>
-
-      {/* Navigation note */}
-      <p className="text-xs text-zinc-500 italic">{path.navigation_note}</p>
-
-      {/* CTA */}
-      <a
-        href="/jobs"
-        className="mt-auto inline-block text-center text-sm font-medium text-white
-          bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500
-          rounded-lg px-4 py-2 transition-all shadow-lg shadow-indigo-500/20"
-      >
-        Explore matching jobs →
-      </a>
     </div>
   )
 }
@@ -213,31 +255,40 @@ export default function PathsPage() {
       {/* Page header */}
       <FadeUp className="flex items-start justify-between mb-8" scrollTrigger={false}>
         <div>
-          <h1 className="text-2xl font-bold text-white">Career Path Navigator</h1>
-          <p className="text-sm text-zinc-400 mt-1">
+          <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-zinc-600 mb-1">Navigation</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Career Path Navigator</h1>
+          <p className="text-sm text-zinc-500 mt-1">
             3 directions mapped from your skills — not predictions, navigation.
           </p>
         </div>
         <button
           onClick={fetchPaths}
           disabled={loading}
-          className="text-sm font-medium text-zinc-400 border border-white/10 bg-white/4
-            rounded-lg px-4 py-2 hover:bg-white/8 hover:text-zinc-200 disabled:opacity-50 transition-colors"
+          className="flex items-center gap-2 text-sm font-medium text-zinc-400 border border-white/8 bg-white/3
+            rounded-xl px-4 py-2.5 hover:bg-white/6 hover:border-white/15 hover:text-zinc-200 disabled:opacity-40 transition-all"
         >
-          {loading ? 'Generating…' : '↺ Refresh paths'}
+          <span className={loading ? 'animate-spin' : ''}>↺</span>
+          {loading ? 'Generating…' : 'Refresh paths'}
         </button>
       </FadeUp>
 
       {/* Loading skeleton */}
       {loading && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[0, 1, 2].map(i => (
-            <div key={i} className="bg-white/4 rounded-xl border border-white/8 border-t-4 border-t-white/15 p-6 animate-pulse space-y-4">
-              <div className="h-4 bg-white/8 rounded w-24" />
-              <div className="h-6 bg-white/8 rounded w-3/4" />
-              <div className="h-4 bg-white/8 rounded w-1/2" />
-              <div className="h-12 bg-white/8 rounded" />
-              <div className="h-16 bg-white/8 rounded" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          {[
+            { color: 'rgba(16,185,129,0.15)' },
+            { color: 'rgba(245,158,11,0.15)' },
+            { color: 'rgba(124,58,237,0.15)' },
+          ].map((sk, i) => (
+            <div key={i} className="rounded-2xl p-5 animate-pulse space-y-4 overflow-hidden"
+              style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+              <div className="h-0.5 w-full rounded-full mb-4" style={{ background: sk.color }} />
+              <div className="h-5 bg-white/6 rounded-lg w-28" />
+              <div className="h-6 bg-white/6 rounded-lg w-4/5" />
+              <div className="h-4 bg-white/4 rounded-lg w-3/5" />
+              <div className="h-16 bg-white/4 rounded-xl" />
+              <div className="h-20 bg-white/4 rounded-xl" />
+              <div className="h-10 bg-white/4 rounded-xl" />
             </div>
           ))}
         </div>
