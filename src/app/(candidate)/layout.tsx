@@ -135,7 +135,7 @@ export default function CandidateLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen bg-background">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto bg-background text-foreground">
+      <main className="flex-1 overflow-y-auto bg-background text-foreground relative">
         {children}
       </main>
     </div>

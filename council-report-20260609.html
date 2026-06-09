@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Career OS — LLM Council Report · 9 June 2026</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --border: #e5e7eb;
+    --muted: #6b7280;
+    --text: #111827;
+    --heading: #030712;
+    --accent-violet: #7c3aed;
+    --accent-indigo: #4f46e5;
+    --agree: #065f46;
+    --agree-bg: #d1fae5;
+    --clash: #92400e;
+    --clash-bg: #fef3c7;
+    --blind: #1e3a5f;
+    --blind-bg: #dbeafe;
+    --rec: #3b0764;
+    --rec-bg: #f3e8ff;
+    --one: #1c1917;
+    --one-bg: #f5f5f4;
+    --advisor-contrarian: #dc2626;
+    --advisor-fp: #7c3aed;
+    --advisor-expansionist: #059669;
+    --advisor-outsider: #d97706;
+    --advisor-executor: #2563eb;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+
+  body {
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  .page {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 48px 24px 96px;
+  }
+
+  /* Header */
+  .header {
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 32px;
+    margin-bottom: 40px;
+  }
+  .header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, var(--accent-violet), var(--accent-indigo));
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+  .header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--heading);
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+  .header .subtitle {
+    font-size: 14px;
+    color: var(--muted);
+  }
+  .header .meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+  .meta-item {
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .meta-item strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  /* Question block */
+  .question-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent-violet);
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 40px;
+  }
+  .question-block .label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-violet);
+    margin-bottom: 8px;
+  }
+  .question-block p {
+    font-size: 15px;
+    color: var(--heading);
+    font-weight: 500;
+  }
+
+  /* Verdict — main sections */
+  .verdict-section {
+    margin-bottom: 32px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .section-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 999px;
+  }
+  .badge-agree { background: var(--agree-bg); color: var(--agree); }
+  .badge-clash  { background: var(--clash-bg);  color: var(--clash); }
+  .badge-blind  { background: var(--blind-bg);  color: var(--blind); }
+  .badge-rec    { background: var(--rec-bg);    color: var(--rec); }
+  .badge-one    { background: var(--one-bg);    color: var(--one); }
+
+  .section-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+  }
+  .section-card.agree { border-left: 4px solid #10b981; }
+  .section-card.clash { border-left: 4px solid #f59e0b; }
+  .section-card.blind { border-left: 4px solid #3b82f6; }
+  .section-card.rec   { border-left: 4px solid var(--accent-violet); }
+  .section-card.one   {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+    border: none;
+    color: #fff;
+  }
+  .section-card.one h3 { color: #e0e7ff; }
+
+  .section-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--heading);
+    margin-bottom: 12px;
+  }
+  .section-card p {
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+  .section-card p:last-child { margin-bottom: 0; }
+  .section-card ul {
+    margin: 8px 0 10px 18px;
+  }
+  .section-card li {
+    margin-bottom: 6px;
+  }
+  .section-card strong { font-weight: 600; }
+
+  .one-text {
+    font-size: 17px;
+    font-weight: 700;
+    color: #e0e7ff;
+    line-height: 1.5;
+  }
+  .one-sub {
+    font-size: 13px;
+    color: #a5b4fc;
+    margin-top: 8px;
+  }
+
+  /* Agreement grid */
+  .agreement-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin: 20px 0 32px;
+  }
+  .advisor-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .advisor-name {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+  }
+  .advisor-stance {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .stance-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .dot-fix    { background: #ef4444; }
+  .dot-finish { background: #7c3aed; }
+  .dot-build  { background: #f59e0b; }
+
+  /* Collapsible advisor responses */
+  .advisors-section {
+    margin-top: 48px;
+    border-top: 1px solid var(--border);
+    padding-top: 32px;
+  }
+  .advisors-section h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--heading);
+    margin-bottom: 16px;
+  }
+
+  details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  summary {
+    padding: 14px 18px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    list-style: none;
+    user-select: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: '▸';
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  details[open] summary::after { content: '▾'; }
+  details[open] summary { border-bottom: 1px solid var(--border); }
+  .details-body {
+    padding: 16px 18px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text);
+  }
+  .details-body p { margin-bottom: 8px; }
+
+  /* Peer review section */
+  .reviews-section {
+    margin-top: 40px;
+    border-top: 1px solid var(--border);
+    padding-top: 32px;
+  }
+  .reviews-section h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--heading);
+    margin-bottom: 16px;
+  }
+  .review-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .review-card .reviewer-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .review-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 6px 12px;
+    margin-bottom: 6px;
+  }
+  .review-row .key {
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 12px;
+    padding-top: 1px;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 64px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-badge">LLM Council · Career OS E2E Audit</div>
+    <h1>Career OS — Platform Readiness &amp; Pre-Submission Strategy</h1>
+    <p class="subtitle">Talentbank Tech Hackathon 2026 · 5-Advisor Council + Peer Review + Chairman Synthesis</p>
+    <div class="meta">
+      <div class="meta-item"><strong>Date</strong> · 9 June 2026</div>
+      <div class="meta-item"><strong>Platform</strong> · career-os-dusky.vercel.app</div>
+      <div class="meta-item"><strong>Intent form deadline</strong> · 15 June 2026</div>
+      <div class="meta-item"><strong>Final submission</strong> · 26 July 2026</div>
+      <div class="meta-item"><strong>Method</strong> · 5 advisors → 5 peer reviews → chairman synthesis</div>
+    </div>
+  </div>
+
+  <!-- Question -->
+  <div class="question-block">
+    <div class="label">The Question</div>
+    <p>What is the honest assessment of Career OS's readiness and highest-leverage move before final submission? Evaluated across 4 user personas: Fresh Grad (22yo IT/CS), High School Grad (18yo, unfamiliar with workforce), Experienced Pro (28yo job-switching), Employer SME HR. Judging weights: Product &amp; UX 30%, System Design 25%, Completeness 20%, AI Craft 15%, Code Quality 10%.</p>
+  </div>
+
+  <!-- Advisor alignment visual -->
+  <h2 style="font-size:18px;font-weight:700;color:#030712;margin-bottom:14px;">Advisor Positions at a Glance</h2>
+  <div class="agreement-grid">
+    <div class="advisor-card">
+      <div class="advisor-name" style="color:var(--advisor-contrarian)">The Contrarian</div>
+      <div class="advisor-stance"><span class="stance-dot dot-fix"></span>3 fatal flaws. Platform operationally unready. 3 of 4 personas broken within 5 min.</div>
+    </div>
+    <div class="advisor-card">
+      <div class="advisor-name" style="color:var(--advisor-fp)">First Principles</div>
+      <div class="advisor-stance"><span class="stance-dot dot-finish"></span>Wrong question: stop building, start finishing. One flawless persona beats 10 half-working ones.</div>
+    </div>
+    <div class="advisor-card">
+      <div class="advisor-name" style="color:var(--advisor-expansionist)">The Expansionist</div>
+      <div class="advisor-stance"><span class="stance-dot dot-build"></span>12M+ B40/M40 opportunity. Position as national skills infrastructure. Pitch narrative over bug fixes.</div>
+    </div>
+    <div class="advisor-card">
+      <div class="advisor-name" style="color:var(--advisor-outsider)">The Outsider</div>
+      <div class="advisor-stance"><span class="stance-dot dot-fix"></span>MQF jargon breaks the promise. 30-50 question wizard kills conversion. Collapse to 5 questions max.</div>
+    </div>
+    <div class="advisor-card">
+      <div class="advisor-name" style="color:var(--advisor-executor)">The Executor</div>
+      <div class="advisor-stance"><span class="stance-dot dot-finish"></span>SQL migrations = only actual blocker (30 min). Intent form June 15. Stop building, start finishing.</div>
+    </div>
+  </div>
+
+  <!-- Council Verdict -->
+  <h2 style="font-size:22px;font-weight:700;color:#030712;margin-bottom:20px;">Council Verdict</h2>
+
+  <!-- Where the council agrees -->
+  <div class="verdict-section">
+    <div class="section-header">
+      <span class="section-badge badge-agree">Where the Council Agrees</span>
+    </div>
+    <div class="section-card agree">
+      <h3>High-Confidence Signals — 4 of 5 Advisors Converged</h3>
+      <p><strong>Fix the SQL migrations first.</strong> Every advisor converged on this independently. The Executor called it the only actual blocker. The Contrarian called it Fatal Flaw #1. The First Principles Thinker called it a credibility-killer. A judge who cannot register has seen nothing. All other work is irrelevant if this isn't done.</p>
+      <p><strong>Stop building, start finishing.</strong> The First Principles Thinker and the Executor said it explicitly. The Contrarian implied it. Even the Expansionist's pitch-first strategy implicitly requires the core journey to work. The platform has enough features. More features make the problem worse, not better.</p>
+      <p><strong>The skill-gate onboarding is a product design mistake.</strong> The Contrarian named it. The Outsider diagnosed the root cause: a 30-50 question wizard that punishes the exact users the platform claims to serve. A user who registers and immediately hits a wall of disabled features experiences betrayal, not a product.</p>
+      <p><strong>The Expansionist's strategy is premature.</strong> All five peer reviewers independently identified this as the biggest blind spot in the council. Vision-pitching while registration is broken is not a strategy. It is a distraction.</p>
+    </div>
+  </div>
+
+  <!-- Where the council clashes -->
+  <div class="verdict-section">
+    <div class="section-header">
+      <span class="section-badge badge-clash">Where the Council Clashes</span>
+    </div>
+    <div class="section-card clash">
+      <h3>Genuine Disagreements — These Are Real Trade-offs</h3>
+      <p><strong>Demo path: Persona A (fresh grad) vs. employer-side.</strong> The First Principles Thinker and the Executor anchor the demo on Persona A — the fresh grad journey. This is coherent and clean. But Reviewers 2 and 4 push back hard: Talentbank is a recruitment company. Their judges likely evaluate employer-side utility first. They want to know if this platform finds them better candidates faster. Both sides are right about different things. The fresh grad journey is easier to make flawless and more emotionally compelling. The employer dashboard speaks directly to the judges' business interests. The council tilts toward employer-side being underweighted.</p>
+      <p><strong>Fix the product vs. control the demo surface.</strong> The Executor says fix the bugs. Reviewers 1 and 5 independently say the highest-leverage move is a pre-seeded demo account with a completed journey — bypassing all broken flows entirely. These are not mutually exclusive, but they represent different theories of judge behavior. If judges try to register live: fix the migrations. If judges watch a walkthrough video first: the seeded account may be enough. The council cannot resolve this without knowing Talentbank's judging format.</p>
+    </div>
+  </div>
+
+  <!-- Blind spots -->
+  <div class="verdict-section">
+    <div class="section-header">
+      <span class="section-badge badge-blind">Blind Spots the Council Caught</span>
+    </div>
+    <div class="section-card blind">
+      <h3>Things That Only Emerged Through Peer Review</h3>
+      <p><strong>The intent form deadline is the only hard constraint before July 26.</strong> Not one advisor flagged June 15 proactively. Reviewer 2 elevated it correctly: if the intent form is not filed, everything else is moot. This is the single highest-risk item on a calendar basis and was nearly invisible in the original advisory round.</p>
+      <p><strong>A pre-seeded demo account may be more valuable than bug-fixing.</strong> No advisor suggested this. Both Reviewers 1 and 5 caught it independently. A locked, pre-completed Persona A journey — where the judge signs into a pre-loaded account and experiences the product at its peak — sidesteps every broken flow without requiring a single migration fix to feel right in a demo context.</p>
+      <p><strong>The judge panel composition changes the optimal demo path.</strong> Reviewers 2 and 4 flagged this independently. The original advisors treated the judge as a generic evaluator. Talentbank's core business is employer-side recruitment. At least one judge almost certainly evaluates whether this makes their business better. A demo that shows only the candidate journey leaves the most powerful stakeholder unaddressed.</p>
+      <p><strong>Competitive context is unknown.</strong> Reviewer 3 raised this. None of the advisors asked what else is in this hackathon. Career OS may be the only dual-sided marketplace, or three teams may have built something similar. This affects how much the social mission narrative matters versus technical differentiation.</p>
+    </div>
+  </div>
+
+  <!-- The Recommendation -->
+  <div class="verdict-section">
+    <div class="section-header">
+      <span class="section-badge badge-rec">The Recommendation</span>
+    </div>
+    <div class="section-card rec">
+      <h3>Clear Direction from the Chairman</h3>
+      <p>Career OS has a real product and a genuine insight — skills-first matching for APAC's non-LinkedIn demographic is a legitimate gap. The platform is not too ambitious. It is too broken to be evaluated fairly, and the team is at risk of pitching vision while judges cannot complete step one.</p>
+      <p>The priority stack before July 26:</p>
+      <ul>
+        <li><strong>File the intent form before June 15.</strong> This is the only thing with an irreversible deadline in the next week.</li>
+        <li><strong>Run the 3 SQL migrations.</strong> 30 minutes of work. Unlocks the entire platform for every judge who tries it live.</li>
+        <li><strong>Build a pre-seeded demo account.</strong> A completed Persona A journey (fresh grad, skills filled, job matches visible, portfolio populated) and a completed Employer journey (job posted, ranked candidates visible with skill scores). This is your controlled demo surface.</li>
+        <li><strong>Collapse the onboarding wizard to 5 questions maximum.</strong> Get the user into the product in under 90 seconds, then ask for more detail progressively. The current wizard is a conversion killer.</li>
+        <li><strong>Push the dark/light theme.</strong> Already built. Already committed. It's a git push. Not pushing it is leaving a free point on the table for Product &amp; UX (30% of judging).</li>
+      </ul>
+      <p>Do not build new features. Do not expand scope. Do not write the national infrastructure pitch until the registration wizard works.</p>
+      <p>On the employer vs. candidate demo path: <strong>weight the employer dashboard equally with Persona A.</strong> Talentbank's judges are recruiters. Show them ranked candidates with skill match scores and a clear time-to-hire story. This is the demo moment most likely to make a Talentbank judge say "I want this."</p>
+    </div>
+  </div>
+
+  <!-- The One Thing -->
+  <div class="verdict-section">
+    <div class="section-header">
+      <span class="section-badge badge-one">The One Thing to Do First</span>
+    </div>
+    <div class="section-card one">
+      <div class="one-text">File the hackathon intent form before June 15.</div>
+      <div class="one-sub">Everything else — migrations, demo accounts, UI polish — requires you to still be in the competition. The intent form deadline is June 15. Today is June 9. You have 6 days. Miss it and the rest of this council's work is academic.</div>
+    </div>
+  </div>
+
+  <!-- Advisor Full Responses -->
+  <div class="advisors-section">
+    <h2>Full Advisor Responses</h2>
+
+    <details>
+      <summary>
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--advisor-contrarian);display:inline-block;flex-shrink:0;"></span>
+        The Contrarian
+      </summary>
+      <div class="details-body">
+        <p><strong>Fatal flaw #1:</strong> SQL migrations not run in production. New user registration is broken. A judge who tries to sign up hits a broken wizard immediately.</p>
+        <p><strong>Fatal flaw #2:</strong> The dashboard's skill-gate pattern (features disabled until skills added) punishes users who just registered with zero skills — exactly the vulnerable users the platform claims to serve.</p>
+        <p><strong>Fatal flaw #3:</strong> AI Coach has no session persistence. A judge exploring the platform starts a meaningful conversation, refreshes, and loses everything.</p>
+        <p>Three of four personas hit a broken or severely degraded experience within 5 minutes of first use. The platform is technically ambitious but operationally unready.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--advisor-fp);display:inline-block;flex-shrink:0;"></span>
+        The First Principles Thinker
+      </summary>
+      <div class="details-body">
+        <p>Strip everything away. What does a hackathon judge actually evaluate? Not code quality. Not feature completeness. They evaluate whether they can see themselves using this. The broken registration wizard isn't a bug — it's a credibility-killer.</p>
+        <p><strong>The wrong assumption:</strong> building more features increases score. Each unfinished feature is a liability. A platform with 4 working features beats one with 10 half-working ones.</p>
+        <p>What Talentbank actually wants: a demo they can put in front of their board and say "this is what skills-first hiring looks like in Malaysia." They don't need production-ready. They need convincingly real for a 10-minute demo.</p>
+        <p>Fix migrations first. Then identify one persona journey (Persona A, fresh grad) and make it flawless. Remove or hide everything that doesn't serve that demo path.</p>
+        <p><strong>The uncomfortable truth:</strong> the question isn't "what should we build?" It's "what should we stop building and instead finish?"</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--advisor-expansionist);display:inline-block;flex-shrink:0;"></span>
+        The Expansionist
+      </summary>
+      <div class="details-body">
+        <p>The platform addresses 12M+ B40/M40 Malaysians abandoned by LinkedIn and traditional job boards. The real play isn't winning the hackathon — it's positioning Career OS as national skills infrastructure.</p>
+        <p>The SAQ psychometric data becomes a national skills taxonomy moat if Talentbank licenses it to HRDC/MOHR/MQF bodies. The matching algorithm (70% skills + 30% goal alignment) is genuinely differentiated. The employer side gives you a complete marketplace network effect story.</p>
+        <p>Stop competing with job boards. Start positioning as national skills infrastructure. The highest-leverage move isn't fixing bugs — it's writing the pitch narrative that makes judges see this as an R&D acquisition target, not just a hackathon project.</p>
+        <p><em>Note: All 5 peer reviewers identified this response as having the biggest blind spot — strategic vision without fixing the broken registration flow is not actionable.</em></p>
+      </div>
+    </details>
+
+    <details>
+      <summary>
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--advisor-outsider);display:inline-block;flex-shrink:0;"></span>
+        The Outsider
+      </summary>
+      <div class="details-body">
+        <p>The landing page promises "no keyword games" then immediately confronts users with MQF Level jargon — a Malaysian government qualification framework that 90% of young users won't recognize.</p>
+        <p>The 30-50 question registration wizard is the product's biggest UX liability. A high school grad or fresh grad who sees "50 questions" will close the tab before reaching the actual product. "Living Portfolio" and "Career Identity" are brand terms with no plain-language explanation anywhere.</p>
+        <p>The gap between landing page promise and actual first experience is wide enough to lose almost everyone. Recommendation: collapse wizard to 3-5 questions to get users into the product fast, show them value first, ask for detail later.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--advisor-executor);display:inline-block;flex-shrink:0;"></span>
+        The Executor
+      </summary>
+      <div class="details-body">
+        <p>The only actual blocker is the SQL migrations — 30 minutes of work that unlocks the entire platform. After that: git push to deploy ThemeProvider (dark/light mode). Create a throwaway Gmail, walk the full registration wizard as Persona A, document every broken step. Fix bugs in order of appearance.</p>
+        <p>Delete the half-built status/vet route that violates architectural rules. Fill the hackathon intent form before June 15 — that's the only hard deadline before July 26. Everything else is polish.</p>
+        <p>The platform has enough features to win. The AI matching algorithm and dual-sided marketplace are genuinely rare for a hackathon. Stop building, start finishing.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- Peer Reviews -->
+  <div class="reviews-section">
+    <h2>Peer Review Highlights</h2>
+
+    <div class="review-card">
+      <div class="reviewer-label">Reviewer 1</div>
+      <div class="review-row"><span class="key">Strongest</span><span>First Principles — correctly reframes what judges actually evaluate. "Stop building, start finishing" is the clearest strategic directive.</span></div>
+      <div class="review-row"><span class="key">Blind spot</span><span>Expansionist — pitches national infrastructure while registration is broken. Narrative leverage cannot substitute for product functionality.</span></div>
+      <div class="review-row"><span class="key">Missed</span><span>The demo environment. A recorded walkthrough video of a pre-seeded account bypasses all broken flows. Judges likely watch a video before touching a live URL.</span></div>
+    </div>
+
+    <div class="review-card">
+      <div class="reviewer-label">Reviewer 2</div>
+      <div class="review-row"><span class="key">Strongest</span><span>First Principles — optimizes for believability, not completeness. The 10-minute demo reframe is the right lens.</span></div>
+      <div class="review-row"><span class="key">Blind spot</span><span>Expansionist — national infrastructure pitch without a working demo is fantasy.</span></div>
+      <div class="review-row"><span class="key">Missed</span><span>Intent form sequencing risk (June 15 is moot if not filed). Talentbank judges are recruiters — they likely evaluate employer-side utility first, not fresh grad experience.</span></div>
+    </div>
+
+    <div class="review-card">
+      <div class="reviewer-label">Reviewer 3</div>
+      <div class="review-row"><span class="key">Strongest</span><span>First Principles — correctly balances urgency with judgment. One persona, flawless end-to-end.</span></div>
+      <div class="review-row"><span class="key">Blind spot</span><span>Expansionist — pitching national infrastructure to judges who can't sign up is delusional.</span></div>
+      <div class="review-row"><span class="key">Missed</span><span>Competitive context. No one asked who else is in this hackathon. Career OS may be differentiated or table stakes. Knowing Talentbank's actual rubric beats inferring it.</span></div>
+    </div>
+
+    <div class="review-card">
+      <div class="reviewer-label">Reviewer 4</div>
+      <div class="review-row"><span class="key">Strongest</span><span>First Principles — hackathon judges evaluate believability. Feature sprawl is the enemy.</span></div>
+      <div class="review-row"><span class="key">Blind spot</span><span>Expansionist — strategy without working demo is a fantasy.</span></div>
+      <div class="review-row"><span class="key">Missed</span><span>The judge persona. Talentbank is a recruitment company. Their judges care most about employer-side value: candidate quality signals, time-to-hire reduction. The B40 social mission narrative doesn't close deals with recruiters.</span></div>
+    </div>
+
+    <div class="review-card">
+      <div class="reviewer-label">Reviewer 5</div>
+      <div class="review-row"><span class="key">Strongest</span><span>Executor — names the concrete blocker, sequences next steps, references the only hard deadline.</span></div>
+      <div class="review-row"><span class="key">Blind spot</span><span>Expansionist — you cannot reframe narrative around a platform where registration fails.</span></div>
+      <div class="review-row"><span class="key">Missed</span><span>Pre-seeded locked demo account. Controlled demo path beats fixing all bugs. Experience the product at its ceiling, not its floor.</span></div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <span>Career OS · LLM Council · 9 June 2026</span>
+    <span>5 advisors · 5 peer reviewers · 1 chairman</span>
+    <span>Methodology: Karpathy LLM Council, adapted for Claude Code</span>
+  </div>
+
+</div>
+</body>
+</html>

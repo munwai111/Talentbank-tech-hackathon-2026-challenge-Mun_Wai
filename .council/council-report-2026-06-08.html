@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LLM Council Report — Career OS Readiness · June 8, 2026</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f8f9fa;
+      color: #1a1a2e;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+    .header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 40px 48px;
+    }
+    .header-label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #8892b0;
+      margin-bottom: 12px;
+    }
+    .header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .header-meta {
+      font-size: 13px;
+      color: #8892b0;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    /* Question box */
+    .question-box {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid #4f46e5;
+      border-radius: 8px;
+      padding: 24px 28px;
+      margin-bottom: 32px;
+    }
+    .question-box h2 {
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #4f46e5;
+      margin-bottom: 10px;
+    }
+    .question-box p {
+      font-size: 15px;
+      color: #334155;
+      line-height: 1.7;
+    }
+
+    /* Verdict card */
+    .verdict-card {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 32px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .verdict-header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 20px 28px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .verdict-header h2 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+    .verdict-badge {
+      background: #4f46e5;
+      color: #fff;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+    .verdict-section {
+      padding: 24px 28px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .verdict-section:last-child { border-bottom: none; }
+    .verdict-section h3 {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .agrees h3 { color: #16a34a; }
+    .clashes h3 { color: #ea580c; }
+    .blindspots h3 { color: #7c3aed; }
+    .recommendation h3 { color: #0369a1; }
+    .onething h3 { color: #dc2626; }
+
+    .verdict-section p, .verdict-section li {
+      color: #374151;
+      line-height: 1.75;
+      font-size: 14.5px;
+    }
+    .verdict-section ol, .verdict-section ul {
+      padding-left: 20px;
+    }
+    .verdict-section li { margin-bottom: 8px; }
+
+    .one-thing-box {
+      background: #fef2f2;
+      border: 1px solid #fca5a5;
+      border-left: 4px solid #dc2626;
+      border-radius: 8px;
+      padding: 20px 24px;
+    }
+    .one-thing-box p {
+      font-size: 15px;
+      color: #1e293b;
+      font-weight: 500;
+      line-height: 1.7;
+    }
+
+    /* Alignment grid */
+    .alignment-section {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 28px;
+      margin-bottom: 32px;
+    }
+    .alignment-section h2 {
+      font-size: 13px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #64748b;
+      margin-bottom: 20px;
+    }
+    .alignment-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+    .advisor-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px 12px;
+      text-align: center;
+    }
+    .advisor-name {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .advisor-stance {
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+    .stance-critical { color: #dc2626; font-weight: 600; }
+    .stance-strategic { color: #4f46e5; font-weight: 600; }
+    .stance-optimistic { color: #16a34a; font-weight: 600; }
+    .stance-practical { color: #ea580c; font-weight: 600; }
+    .stance-action { color: #0369a1; font-weight: 600; }
+
+    /* Peer review votes */
+    .votes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 16px;
+    }
+    .vote-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .vote-label {
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+    .vote-winner {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1a1a2e;
+    }
+    .vote-reason {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    /* Collapsible sections */
+    details {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 10px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+    summary {
+      padding: 16px 20px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      list-style: none;
+      user-select: none;
+    }
+    summary::-webkit-details-marker { display: none; }
+    summary::before {
+      content: '▶';
+      font-size: 10px;
+      color: #94a3b8;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    details[open] summary::before {
+      transform: rotate(90deg);
+    }
+    .advisor-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .dot-contrarian { background: #dc2626; }
+    .dot-firstprinciples { background: #4f46e5; }
+    .dot-expansionist { background: #16a34a; }
+    .dot-outsider { background: #ea580c; }
+    .dot-executor { background: #0369a1; }
+
+    .details-content {
+      padding: 0 20px 20px;
+      color: #374151;
+      font-size: 14px;
+      line-height: 1.75;
+      border-top: 1px solid #f1f5f9;
+      margin-top: 0;
+    }
+    .details-content p { margin-top: 12px; }
+
+    .section-label {
+      font-size: 12px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #94a3b8;
+      font-weight: 600;
+      margin: 32px 0 12px;
+    }
+
+    .footer {
+      text-align: center;
+      color: #94a3b8;
+      font-size: 12px;
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid #e2e8f0;
+    }
+
+    @media (max-width: 640px) {
+      .alignment-grid { grid-template-columns: repeat(2, 1fr); }
+      .votes-grid { grid-template-columns: 1fr 1fr; }
+      .header { padding: 28px 20px; }
+      .container { padding: 24px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-label">LLM Council · Career OS</div>
+  <h1>Honest Readiness Assessment &amp;<br>Highest-Leverage Move Before Final Submission</h1>
+  <div class="header-meta">June 8, 2026 &nbsp;·&nbsp; 5 advisors &nbsp;·&nbsp; 5 peer reviews &nbsp;·&nbsp; Chairman synthesis</div>
+</div>
+
+<div class="container">
+
+  <div class="question-box">
+    <h2>The Question</h2>
+    <p>Career OS is a dual-sided AI-powered skills-first hiring platform for APAC/Malaysia (Talentbank Tech Hackathon 2026). With 7 days to the Intent Form deadline (June 15) and 7 weeks to final submission (July 26), what is the platform's honest readiness state? What is the highest-leverage move? Is the platform solving the right problem?</p>
+  </div>
+
+  <!-- CHAIRMAN VERDICT -->
+  <div class="verdict-card">
+    <div class="verdict-header">
+      <h2>Chairman's Verdict</h2>
+      <span class="verdict-badge">Final Synthesis</span>
+    </div>
+
+    <div class="verdict-section agrees">
+      <h3>Where the Council Agrees</h3>
+      <ol>
+        <li><strong>Run the SQL migrations immediately.</strong> Every advisor, every reviewer — unanimous. This is a 15-minute task. Until it's done, no one knows what state the platform is actually in. The registration wizard is broken for all new users in production.</li>
+        <li><strong>The demo must work as a complete loop before any new features are added.</strong> Three-question gate: (1) Does the wizard work end-to-end? (2) Can a real 22-year-old complete onboarding without help? (3) Can an employer post a job and see ranked candidates?</li>
+        <li><strong>Coach session persistence is the highest-leverage AI improvement.</strong> The coach already loads full profile context. What's missing is conversation history only — scoped, solvable, ~2 days of work. Without it, "AI as the core" is marketing copy.</li>
+        <li><strong>The employer side is too thin.</strong> Candidate experience: wizard, vault, navigator, coach, portfolio. Employer experience: a form and a list. Every advisor flagged this. Judges will notice the asymmetry.</li>
+      </ol>
+    </div>
+
+    <div class="verdict-section clashes">
+      <h3>Where the Council Clashes</h3>
+      <p><strong>Demo-ability vs. Adoption-readiness.</strong> First Principles raises this as the central strategic question. Expansionist argues for adoption-readiness (pgvector semantic matching, SAQ-fed engine). Executor and Contrarian argue for demo-ability first. Chairman's read: <em>optimize for demo-ability</em> — it's a hackathon, the rubric rewards it (Product &amp; UX 30%, Completeness 20%). Use the Intent Form to frame adoption-readiness as the vision.</p>
+      <p style="margin-top:12px"><strong>Scope of platform.</strong> Contrarian says 4 personas and 6 modules is scope creep. Expansionist says it's a domain moat. Both are right. Resolution: don't build more modules. Make what exists work deeply for ONE persona in the demo. The scope lives in the README and intent form.</p>
+      <p style="margin-top:12px"><strong>Coach persistence severity.</strong> Contrarian calls it "architectural failure." Reviewer 4 correctly pushes back — the coach loads full profile context; only conversation history is missing. It's a UX gap, not an architecture failure. Fix it in Week 1–2, not today.</p>
+    </div>
+
+    <div class="verdict-section blindspots">
+      <h3>Blind Spots the Council Caught</h3>
+      <ol>
+        <li><strong>Demo seeding</strong> (Reviewer 2) — Nobody asked: are there any employer accounts? Any seeded jobs? Seed 3 realistic Malaysian job postings and 20 candidate profiles. Takes 2 hours. Makes the platform look production-ready instantly. Highest-ROI non-code task in the sprint.</li>
+        <li><strong>Cold start risk</strong> (Reviewer 3) — 1.66s TTFB on Vercel Hobby. If judges click the demo link cold during a panel presentation, this is the first impression. Fix: warm the platform before demo day, or upgrade to Vercel Pro.</li>
+        <li><strong>Intent Form ≠ Final submission</strong> (Reviewer 5) — These are different optimization targets. The next 7 days are a persuasion problem, not a code problem. Zero new code until June 16. Use this week for the Intent Form narrative: MYSkills/MQF/HRDC references, integration story, platform-as-adoption-layer framing.</li>
+        <li><strong>Wizard length as concrete UX fix</strong> (Reviewer 1) — The GPS metaphor is broken by 50 questions. Fix: cut to 10 core questions at registration, offer progressive depth after first login. Direct impact on Product &amp; UX score (30% of rubric).</li>
+        <li><strong>Edge function timeout stress test</strong> (Reviewer 4) — Vercel Hobby has a 25-second limit. Complex coach queries with full context + conversation history may approach this. Stress-test before recording the demo video. A timeout during recording would be catastrophic.</li>
+      </ol>
+    </div>
+
+    <div class="verdict-section recommendation">
+      <h3>The Recommendation</h3>
+      <p>Career OS is feature-complete in ways most hackathon submissions are not. The architecture is sound. The AI integration is real, not simulated. The Malaysian context — MQF education mapping, MYR salary bands — is more thoughtful than anything a generic team produces in a week. The platform is solving the right problem. Skills mismatch in APAC is real, large, and unsolved.</p>
+      <p style="margin-top:12px">But the platform has a credibility gap: the registration wizard is broken in production, the coach doesn't remember conversations, and the employer side is thin. Together these create the impression of a feature list, not a working product.</p>
+      <p style="margin-top:12px">The highest-leverage moves are <em>not more features</em>. They are closing three gaps: (1) production-functional registration, (2) coach persistence, (3) employer side depth. Then seed the demo. Then write the best Intent Form of any submission in this hackathon.</p>
+    </div>
+
+    <div class="verdict-section onething">
+      <h3>The One Thing to Do First</h3>
+      <div class="one-thing-box">
+        <p>Run the SQL migrations. Right now. Go to supabase.com → SQL Editor. Paste <code>supabase/add-registration-columns.sql</code> and <code>supabase/add-deletion-columns.sql</code>. Execute both. Then create a fresh account on career-os-dusky.vercel.app and complete the wizard. Until you do this, you do not actually know what state the platform is in. Everything else — the Intent Form, the sprint plan, the coach persistence work, the demo seeding — depends on knowing the answer to: does the core loop work?</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ALIGNMENT VISUAL -->
+  <div class="alignment-section">
+    <h2>Advisor Positions at a Glance</h2>
+    <div class="alignment-grid">
+      <div class="advisor-card">
+        <div class="advisor-name">The Contrarian</div>
+        <div class="advisor-stance"><span class="stance-critical">Critical</span><br>Broken wizard = disqualifier. 50 questions = interrogation. Coach reset = architecture failure.</div>
+      </div>
+      <div class="advisor-card">
+        <div class="advisor-name">First Principles</div>
+        <div class="advisor-stance"><span class="stance-strategic">Strategic</span><br>Skills-first means TRUST, not capture. Employer is the real customer. Demo-ability vs adoption-readiness?</div>
+      </div>
+      <div class="advisor-card">
+        <div class="advisor-name">The Expansionist</div>
+        <div class="advisor-stance"><span class="stance-optimistic">Optimistic</span><br>pgvector unused. SAQ = behavioral differentiator. This is an acquisition signal, not just a prize.</div>
+      </div>
+      <div class="advisor-card">
+        <div class="advisor-name">The Outsider</div>
+        <div class="advisor-stance"><span class="stance-practical">Observational</span><br>GPS metaphor contradicts 50 questions. Skill-gated dashboard looks broken. Employer UX asymmetry visible immediately.</div>
+      </div>
+      <div class="advisor-card">
+        <div class="advisor-name">The Executor</div>
+        <div class="advisor-stance"><span class="stance-action">Action</span><br>SQL migrations: 15 mins. Coach persistence: 2 days. One demo flow: week 3–4. Demo seeding: 2 hours.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PEER REVIEW VOTES -->
+  <div class="alignment-section">
+    <h2>Peer Review — Strongest Response Votes</h2>
+    <div class="votes-grid">
+      <div class="vote-card">
+        <div class="vote-label">Reviewer 1</div>
+        <div class="vote-winner">The Executor</div>
+        <div class="vote-reason">Only response that converts abstract into concrete time-boxed actions.</div>
+      </div>
+      <div class="vote-card">
+        <div class="vote-label">Reviewer 2</div>
+        <div class="vote-winner">The Outsider</div>
+        <div class="vote-reason">"A GPS doesn't ask 50 questions" — sharpest single insight in the council.</div>
+      </div>
+      <div class="vote-card">
+        <div class="vote-label">Reviewer 3</div>
+        <div class="vote-winner">The Contrarian</div>
+        <div class="vote-reason">Three-question binary gate is the cleanest readiness test.</div>
+      </div>
+      <div class="vote-card">
+        <div class="vote-label">Reviewer 4</div>
+        <div class="vote-winner">First Principles</div>
+        <div class="vote-reason">"Skills-first means TRUST, not capture" reframes the entire platform thesis.</div>
+      </div>
+      <div class="vote-card">
+        <div class="vote-label">Reviewer 5</div>
+        <div class="vote-winner">The Executor</div>
+        <div class="vote-reason">Operational specificity separates analysis from action.</div>
+      </div>
+    </div>
+    <p style="margin-top:16px; font-size:13px; color:#64748b;">Vote distribution: Executor 2, Contrarian 1, First Principles 1, Outsider 1</p>
+  </div>
+
+  <!-- FULL ADVISOR RESPONSES -->
+  <div class="section-label">Full Advisor Responses</div>
+
+  <details>
+    <summary>
+      <span class="advisor-dot dot-contrarian"></span>
+      The Contrarian
+    </summary>
+    <div class="details-content">
+      <p>The registration wizard being broken in production is not a "known issue" — it's a disqualifier. Seven weeks to final submission sounds comfortable until you realize the first 2 weeks will be consumed by: (1) figuring out why the SQL migrations weren't run, (2) running them, (3) testing the end-to-end flow, and (4) discovering the three other things that break once you do. This always happens.</p>
+      <p>The deeper problem: this platform is trying to serve FOUR personas (fresh grad, high school leaver, experienced switcher, SME HR) across SIX candidate modules. That's not focus — it's scope creep dressed up as ambition. Each additional persona and module adds surface area for things to break. The platform's thesis is "skills-first hiring," but look at what exists: a 5-phase wizard with 30–50 questions. Fifty questions. For an 18-year-old with no workforce experience. That's not a career GPS. That's an interrogation.</p>
+      <p>The coach has no session persistence. That means the "senior mentor" feature — Talentbank's stated vision — resets to zero after every conversation. For a platform where AI is supposed to be the core, not a feature added on top, this is a fundamental architectural failure, not a polish issue.</p>
+      <p>Highest-leverage move: stop building features and answer three questions honestly: (1) Does the registration wizard work end-to-end right now? (2) Can a real 22-year-old complete onboarding without help? (3) Can an employer post a job and see ranked candidates in one session? If any answer is no, that's your only job for the next two weeks.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>
+      <span class="advisor-dot dot-firstprinciples"></span>
+      The First Principles Thinker
+    </summary>
+    <div class="details-content">
+      <p>Strip everything away. What is Talentbank actually trying to solve? Malaysia has a structural skills mismatch problem. Graduates have credentials but employers can't assess capability. Job boards match titles to titles. Talentbank's thesis: match skills to needs. This is the right problem. It's real, it's large, it's unsolved in APAC.</p>
+      <p>Now ask: is Career OS solving it? Partially. But here's what needs challenging:</p>
+      <p><strong>Assumption 1:</strong> "Skills-first" means the platform captures skills. Wrong. Skills-first means the platform helps employers TRUST those skills. A self-reported skills vault is no different from a LinkedIn endorsement — which nobody trusts. GitHub import is a start. But for an 18-year-old high school leaver, GitHub doesn't exist. What's their proof of skill?</p>
+      <p><strong>Assumption 2:</strong> The wizard creates profiles that drive matches. With 30–50 questions and no session persistence on the coach, the platform is building rich profiles that inform a static matching algorithm. That's a database with a chat interface, not an AI-native system.</p>
+      <p><strong>Assumption 3:</strong> This is a candidate problem. Wrong frame. The employer side is thin — one job post, ranked candidates. But Talentbank's actual customer is the employer. Employers pay. Employers have hiring authority. A hiring platform that doesn't give employers tools to evaluate, communicate, and move candidates through a pipeline isn't a hiring platform — it's a discovery layer.</p>
+      <p>What are we actually solving for? Demo-ability or adoption-readiness? Be honest about which one.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>
+      <span class="advisor-dot dot-expansionist"></span>
+      The Expansionist
+    </summary>
+    <div class="details-content">
+      <p>Everyone is going to focus on the bugs. I want to focus on what this platform could become if it works.</p>
+      <p>Talentbank's true objective is explicitly stated: accelerated R&D + talent pipeline. They want a working demo they can ADOPT. This is not a prize competition — it's a recruitment and acquisition signal. The winner doesn't just get a trophy. They get pulled into Talentbank's orbit. That changes the calculus entirely.</p>
+      <p>What Career OS has that nobody else in this hackathon has: a complete dual-sided platform with streaming AI, pgvector semantic matching, MQF-aware education data, and a 5-phase onboarding wizard that maps to how Malaysians actually think about careers. That's a domain moat. It takes months to build something this contextually grounded.</p>
+      <p>The undervalued opportunity: pgvector is sitting there unused at scale. Right now matching is skill-overlap scoring. But with a rich enough profile — career goals, life chapters, work history, education path — you can compute semantic similarity between "where this person is heading" and "what this role needs." That's E-01 done properly.</p>
+      <p>Second undervalued opportunity: the SAQ (Situational Assessment Questions) in phase 5. Nobody else is doing structured behavioral assessment at registration. If those answers feed the coach AND the matching engine, Career OS becomes the only platform in the room where the AI knows not just what you've done, but how you think under pressure.</p>
+      <p>Highest-leverage move: fix the production bug, then build one demo flow so tight that a judge watching a 3-minute video feels what it's like to be Persona A — and wants it for their 22-year-old kid.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>
+      <span class="advisor-dot dot-outsider"></span>
+      The Outsider
+    </summary>
+    <div class="details-content">
+      <p>I looked at this platform without knowing anything about hackathons or hiring platforms. Here's what I see:</p>
+      <p>The tagline "Your career GPS — not a job board" is actually good. GPS is a concept everyone understands. But then the registration asks 30–50 questions. A GPS doesn't ask you 50 questions before giving you directions. It asks for a destination. The experience contradicts the metaphor.</p>
+      <p>"Skill-gated features" means new users land on a broken-looking dashboard. The first 60 seconds of using anything determines whether someone continues. If my first experience is grey, disabled features, I assume the product doesn't work.</p>
+      <p>The AI Coach resets every session. If I had a coach at work who forgot everything we discussed every single morning, I would fire them. The metaphor of a "senior mentor" sets an expectation of continuity. Violating that expectation is worse than having no coach at all.</p>
+      <p>I don't understand the employer side. The candidate experience has a wizard, vault, navigator, coach, and portfolio. The employer side has "post a job, see ranked candidates." If I'm an SME HR manager, why would I trust this ranking? The asymmetry is obvious to anyone fresh-eyed.</p>
+      <p>What a fresh-eyes user wants: a clear "start here" path, one feature that visibly works in 30 seconds, and a reason to come back tomorrow.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>
+      <span class="advisor-dot dot-executor"></span>
+      The Executor
+    </summary>
+    <div class="details-content">
+      <p>Seven days to Intent Form. Seven weeks to final submission. Here's the only thing that matters: what gets done vs. what gets said.</p>
+      <p><strong>This week (before June 15):</strong></p>
+      <p>1. Run the SQL migrations TODAY. Open Supabase SQL Editor, paste the two migration files, execute. This is a 15-minute task that unlocks everything else.<br>
+      2. Verify end-to-end new user flow on Vercel. Create a fresh account. Complete the wizard. Land on a working dashboard.<br>
+      3. Lock the Intent Form. Modules: Compulsory + C-01 + C-02 + C-03 + C-05 + partial E-01. Submit and stop thinking about it.</p>
+      <p><strong>7 weeks to July 26:</strong></p>
+      <p>Week 1–2: Fix coach session persistence. Store conversation in Supabase, load on session start. Two days of work, maximum.<br>
+      Week 3–4: Build the one demo flow. Persona A signs up, completes 10-minute onboarding, sees three career paths with MYR salaries, asks coach one question, views matched jobs. Record this. This is your submission.<br>
+      Week 5–6: Improve employer side — add match score explanation to ranked candidates ("matched on: Python, SQL, problem-solving"). One sentence of reasoning per candidate.<br>
+      Week 7: Break the demo deliberately. Fix what breaks. Submit.</p>
+      <p>The SQL migrations are the only blocker. Run them now.</p>
+    </div>
+  </details>
+
+  <!-- PEER REVIEWS -->
+  <div class="section-label" style="margin-top:32px;">Peer Review Highlights</div>
+
+  <details>
+    <summary>Reviewer 1 — Strongest: Executor · Blind spot: First Principles</summary>
+    <div class="details-content">
+      <p><strong>Strongest (Executor):</strong> Only response that converts abstract into concrete time-boxed actions. "SQL migration is 15 minutes" and "coach persistence is 2 days" prevents paralysis.</p>
+      <p><strong>Biggest blind spot (First Principles):</strong> Asks "demo-ability or adoption-readiness?" and doesn't answer it. Most important strategic question in the council, left open.</p>
+      <p><strong>What all five missed:</strong> Nobody said to reduce the wizard from 30–50 questions to 10 core questions. Progressive profiling is the industry-standard fix. The Outsider flagged the contradiction but stopped short of the solution.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Reviewer 2 — Strongest: Outsider · Blind spot: Expansionist</summary>
+    <div class="details-content">
+      <p><strong>Strongest (Outsider):</strong> "A GPS doesn't ask 50 questions before giving directions" is a single sentence that diagnoses the core UX problem more precisely than paragraphs from other advisors.</p>
+      <p><strong>Biggest blind spot (Expansionist):</strong> Describing the penthouse while the foundation is cracked. You cannot reach the SAQ phase if the SQL migrations haven't been run.</p>
+      <p><strong>What all five missed:</strong> Demo seeding. Nobody asked: are there any employer accounts? Any jobs posted? Seeding 3 realistic job postings and 20 candidate profiles takes 2 hours and makes the platform look production-ready instantly. This is the highest-ROI non-code task in the next 7 weeks.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Reviewer 3 — Strongest: Contrarian · Blind spot: Executor</summary>
+    <div class="details-content">
+      <p><strong>Strongest (Contrarian):</strong> Three diagnostic questions are the cleanest readiness gate. If you can't answer yes to all three, no amount of feature building matters.</p>
+      <p><strong>Biggest blind spot (Executor):</strong> Tells you to "Lock the Intent Form" without telling you what to write. The Intent Form is the first piece of persuasion, not admin.</p>
+      <p><strong>What all five missed:</strong> TTFB 1.66s cold start on Vercel Hobby. If judges click the demo link from a cold state during a panel, the platform takes over a second to even begin loading. Fix: warm the platform before demo day.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Reviewer 4 — Strongest: First Principles · Blind spot: Contrarian</summary>
+    <div class="details-content">
+      <p><strong>Strongest (First Principles):</strong> "Skills-first means TRUST, not capture" is the most important insight in this council. Reframes the entire platform thesis.</p>
+      <p><strong>Biggest blind spot (Contrarian):</strong> Overstates coach no-persistence as "architectural failure." The coach loads full profile context every session. What's missing is conversation history only. That's a UX gap, not an architecture failure. Overstating wastes attention on the actual critical path.</p>
+      <p><strong>What all five missed:</strong> Vercel Hobby's 25-second Edge function limit. Complex coach queries with full context + conversation history may approach this limit. A timeout during a live demo or recording would be catastrophic. Stress-test before recording.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Reviewer 5 — Strongest: Executor · Blind spot: Outsider</summary>
+    <div class="details-content">
+      <p><strong>Strongest (Executor):</strong> "Supabase SQL Editor, paste, execute" separates analysis from action. Most operationally specific response.</p>
+      <p><strong>Biggest blind spot (Outsider):</strong> Sees skill-gated dashboard looks broken but misses the obvious fix — show pre-populated demo state with sample data and a banner: "This is demo data, complete your profile to see your real results." Standard SaaS onboarding pattern.</p>
+      <p><strong>What all five missed:</strong> Intent Form and final submission are different optimization targets. Next 7 days = persuasion problem, not code problem. Stop writing code until June 16. Use this week for the Intent Form narrative: MYSkills/MQF/HRDC references, integration story, platform-as-adoption-layer framing.</p>
+    </div>
+  </details>
+
+  <div class="footer">
+    Council generated June 8, 2026 · Career OS · Talentbank Tech Hackathon 2026<br>
+    Transcript: <code>.council/council-transcript-2026-06-08.md</code>
+  </div>
+
+</div>
+</body>
+</html>

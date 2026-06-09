@@ -428,7 +428,7 @@ function CoachPageInner() {
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto px-6 py-6">
         {!hasMessages && (
-          <div className="max-w-xl mx-auto">
+          <div className="max-w-3xl mx-auto">
             <div className="text-center mb-8">
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-600 to-indigo-600
                 flex items-center justify-center text-3xl mx-auto mb-4 shadow-xl shadow-indigo-500/30">
@@ -457,7 +457,7 @@ function CoachPageInner() {
         )}
 
         {hasMessages && (
-          <div className="max-w-2xl mx-auto">
+          <div className="max-w-3xl mx-auto">
             {messages.map((msg, i) => (
               <MessageBubble key={i} msg={msg as CoachMessage & { streaming?: boolean }} />
             ))}
@@ -479,7 +479,7 @@ function CoachPageInner() {
 
       {/* Input area */}
       <div className="px-6 py-4 border-t border-white/7 bg-[#08081a]/80 backdrop-blur-sm shrink-0">
-        <div className="max-w-2xl mx-auto flex gap-3 items-end">
+        <div className="max-w-3xl mx-auto flex gap-3 items-end">
           <textarea
             ref={inputRef}
             value={input}
@@ -511,7 +511,7 @@ function CoachPageInner() {
             )}
           </button>
         </div>
-        <p className="text-center text-xs text-zinc-600 mt-2 max-w-2xl mx-auto">
+        <p className="text-center text-xs text-zinc-600 mt-2 max-w-3xl mx-auto">
           Shift+Enter for newline · Advice is personalised to your profile
         </p>
       </div>

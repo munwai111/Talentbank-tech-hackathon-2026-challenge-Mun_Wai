@@ -26,6 +26,8 @@ type FullProfile = CandidateProfile & {
 }
 
 type BubblePhysics = { x: number; y: number; vx: number; vy: number }
+type VaultView = 'vault' | 'expanding' | 'list' | 'collapsing'
+type BubbleOrigin = { cx: number; cy: number; cr: number; color: string }
 
 // ─────────────────────────────────────────────────────────────
 // Constants
@@ -472,33 +474,197 @@ function SkillDetailCard({ skill, accentColor }: { skill: Skill; accentColor: st
 }
 
 // ─────────────────────────────────────────────────────────────
-// SkillLevelDrillDown
+// SkillHotBar — sticky level nav within the full-screen overlay
 // ─────────────────────────────────────────────────────────────
-function SkillLevelDrillDown({ skills, level, onBack }: { skills: Skill[]; level: number; onBack: () => void }) {
-  const levelSkills = skills.filter(s => s.level === level)
-  const accentColor = LEVEL_COLORS[level]?.accent ?? '#71717a'
+function SkillHotBar({
+  selectedLevel, skills, show, onSelect,
+}: {
+  selectedLevel: number; skills: Skill[]; show: boolean; onSelect: (l: number) => void
+}) {
+  const [opacity, setOpacity] = useState(1)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // After 2s of entering, fade to 35%
+  useEffect(() => {
+    if (!show) return
+    timerRef.current = setTimeout(() => setOpacity(0.35), 2000)
+    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
+  }, [show, selectedLevel])
+
+  function resetTimer() {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    setOpacity(1)
+    timerRef.current = setTimeout(() => setOpacity(0.35), 2000)
+  }
 
   return (
-    <div className="space-y-3 animate-in fade-in duration-200">
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1.5 text-sm text-zinc-400 hover:text-white transition-colors"
-        >
-          ← Back
-        </button>
-        <div className="flex-1 h-px bg-white/8" />
-        <span className={`text-xs px-2.5 py-1 rounded-lg font-semibold border ${LEVEL_COLORS[level]?.badge ?? ''}`}>
-          {LEVEL_LABELS[level]} · {levelSkills.length} skills
-        </span>
+    <div
+      className="sticky top-0 z-20 flex justify-center pt-5 pb-3 pointer-events-auto"
+      style={{
+        opacity: show ? opacity : 0,
+        transition: 'opacity 0.7s ease',
+        animation: show ? 'hotbar-appear 0.35s cubic-bezier(0.22,1,0.36,1) forwards' : undefined,
+      }}
+      onMouseEnter={() => { if (timerRef.current) clearTimeout(timerRef.current); setOpacity(1) }}
+      onMouseLeave={resetTimer}
+    >
+      <div className="flex gap-1.5 px-4 py-2.5 rounded-2xl backdrop-blur-xl bg-black/40 border border-white/10 shadow-2xl">
+        {LEVELS.map((level, i) => {
+          const count = skills.filter(s => s.level === level).length
+          const accent = LEVEL_COLORS[level].accent
+          const isActive = level === selectedLevel
+          return (
+            <button
+              key={level}
+              onClick={() => onSelect(level)}
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 whitespace-nowrap"
+              style={{
+                color: isActive ? accent : 'rgba(255,255,255,0.45)',
+                backgroundColor: isActive ? accent + '1a' : 'transparent',
+                boxShadow: isActive ? `0 0 0 1.5px ${accent}90, 0 0 14px ${accent}35` : 'none',
+                animation: show ? `level-btn-pop 0.4s cubic-bezier(0.22,1,0.36,1) ${i * 60 + 280}ms both` : undefined,
+              }}
+            >
+              {LEVEL_LABELS[level]}{count > 0 ? ` ${count}` : ''}
+            </button>
+          )
+        })}
       </div>
-      {levelSkills.length === 0 ? (
-        <p className="text-sm text-zinc-500 text-center py-6">No skills at this level yet.</p>
-      ) : (
-        <div className="space-y-2">
-          {levelSkills.map(skill => (
-            <SkillDetailCard key={skill.id} skill={skill} accentColor={accentColor} />
-          ))}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// SkillListPanel — animated list for a given level
+// ─────────────────────────────────────────────────────────────
+function SkillListPanel({
+  skills, level, slideDir,
+}: {
+  skills: Skill[]; level: number; slideDir: 'left' | 'right' | null
+}) {
+  const levelSkills = skills.filter(s => s.level === level)
+  const accent = LEVEL_COLORS[level]?.accent ?? '#71717a'
+
+  const itemStyle = (i: number): React.CSSProperties => ({
+    animation: `skill-item-rise 0.42s cubic-bezier(0.22,1,0.36,1) ${400 + i * 55}ms both`,
+  })
+
+  return (
+    <div className="px-6 pb-12 max-w-2xl mx-auto w-full">
+      <div className="flex items-center gap-3 mb-5" style={{ animation: 'skill-item-rise 0.4s cubic-bezier(0.22,1,0.36,1) 350ms both' }}>
+        <span className="text-2xl font-bold" style={{ color: accent }}>{levelSkills.length}</span>
+        <span className="text-lg font-semibold text-white/80">{LEVEL_LABELS[level]} Skills</span>
+        {levelSkills.length === 0 && <span className="text-sm text-white/40 ml-2">— nothing here yet</span>}
+      </div>
+      <div className="space-y-2">
+        {levelSkills.map((skill, i) => (
+          <div key={skill.id} style={itemStyle(i)}>
+            <SkillDetailCard skill={skill} accentColor={accent} />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
+// FullScreenLevelOverlay — covers the main content area
+// ─────────────────────────────────────────────────────────────
+type OverlayProps = {
+  vaultView: VaultView
+  origin: BubbleOrigin
+  selectedLevel: number
+  skills: Skill[]
+  onBack: () => void
+  onLevelSelect: (l: number) => void
+}
+
+function FullScreenLevelOverlay({ vaultView, origin, selectedLevel, skills, onBack, onLevelSelect }: OverlayProps) {
+  const [clipPath, setClipPath] = useState(`circle(${origin.cr}px at ${origin.cx}px ${origin.cy}px)`)
+  const [slideDir, setSlideDir] = useState<'left' | 'right' | null>(null)
+  const [displayLevel, setDisplayLevel] = useState(selectedLevel)
+  const [listKey, setListKey] = useState(0)
+  const showContent = vaultView === 'list'
+
+  // Expanding: next frame trigger the CSS transition to full screen
+  useEffect(() => {
+    if (vaultView === 'expanding') {
+      const id = requestAnimationFrame(() =>
+        requestAnimationFrame(() =>
+          setClipPath(`circle(200% at ${origin.cx}px ${origin.cy}px)`)
+        )
+      )
+      return () => cancelAnimationFrame(id)
+    }
+    if (vaultView === 'collapsing') {
+      setClipPath(`circle(${origin.cr}px at ${origin.cx}px ${origin.cy}px)`)
+    }
+  }, [vaultView, origin])
+
+  // Level switch: animate out then in
+  function handleLevelSelect(level: number) {
+    if (level === displayLevel) return
+    const dir = level > displayLevel ? 'left' : 'right'
+    setSlideDir(dir)
+    setTimeout(() => {
+      setDisplayLevel(level)
+      setListKey(k => k + 1)
+      setSlideDir(null)
+      onLevelSelect(level)
+    }, 220)
+  }
+
+  return (
+    <div
+      className="absolute inset-0 z-10 overflow-y-auto overflow-x-hidden"
+      style={{
+        clipPath,
+        transition: vaultView === 'expanding'
+          ? 'clip-path 0.48s cubic-bezier(0.25,0.46,0.45,0.94)'
+          : vaultView === 'collapsing'
+          ? 'clip-path 0.42s cubic-bezier(0.55,0,1,0.45)'
+          : undefined,
+        backgroundColor: 'var(--background)',
+      }}
+    >
+      {/* Background particle/space feel */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 rounded-full opacity-10"
+          style={{ background: `radial-gradient(circle, ${origin.color}40, transparent 70%)` }} />
+        <div className="absolute bottom-1/4 right-1/4 w-48 h-48 rounded-full opacity-8"
+          style={{ background: `radial-gradient(circle, ${origin.color}25, transparent 70%)` }} />
+      </div>
+
+      {/* Back button — top left of overlay, not overlapping sidebar */}
+      <button
+        onClick={onBack}
+        className="absolute top-6 left-6 flex items-center gap-2 text-sm text-white/50
+          hover:text-white/90 transition-colors z-30 group"
+        style={{ animation: showContent ? 'skill-item-rise 0.4s cubic-bezier(0.22,1,0.36,1) 200ms both' : undefined }}
+      >
+        <span className="text-lg leading-none group-hover:-translate-x-1 transition-transform duration-150">←</span>
+        <span className="font-medium">Skills Vault</span>
+      </button>
+
+      {/* Hot bar */}
+      <SkillHotBar
+        selectedLevel={displayLevel}
+        skills={skills}
+        show={showContent}
+        onSelect={handleLevelSelect}
+      />
+
+      {/* Skill list */}
+      {showContent && (
+        <div
+          key={listKey}
+          style={{
+            transform: slideDir === 'left' ? 'translateX(-60px)' : slideDir === 'right' ? 'translateX(60px)' : 'none',
+            opacity: slideDir ? 0 : 1,
+            transition: slideDir ? 'transform 0.22s ease, opacity 0.18s ease' : undefined,
+          }}
+        >
+          <SkillListPanel skills={skills} level={displayLevel} slideDir={slideDir} />
         </div>
       )}
     </div>
@@ -506,93 +672,90 @@ function SkillLevelDrillDown({ skills, level, onBack }: { skills: Skill[]; level
 }
 
 // ─────────────────────────────────────────────────────────────
-// SkillBubbleBank — physics simulation
+// SkillBubbleBank — glassmorphic physics bubbles
 // ─────────────────────────────────────────────────────────────
-function SkillBubbleBank({ skills, onLevelSelect }: { skills: Skill[]; onLevelSelect: (level: number) => void }) {
+type BubbleClickInfo = { level: number; cx: number; cy: number; cr: number }
+
+function SkillBubbleBank({
+  skills, isExiting, onBubbleClick,
+}: {
+  skills: Skill[]
+  isExiting: boolean
+  onBubbleClick: (info: BubbleClickInfo) => void
+}) {
   const containerRef = useRef<HTMLDivElement>(null)
   const rafRef = useRef<number | null>(null)
   const statesRef = useRef<BubblePhysics[]>([])
+  const btnRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [positions, setPositions] = useState<BubblePhysics[]>([])
-  const [poppingLevel, setPoppingLevel] = useState<number | null>(null)
+  const [mounted, setMounted] = useState(false)
 
   const countByLevel = LEVELS.reduce<Record<number, number>>((acc, l) => {
     acc[l] = skills.filter(s => s.level === l).length
     return acc
   }, {})
 
-  const radiusFor = (level: number) => Math.min(Math.max(35, 35 + countByLevel[level] * 5), 88)
+  const radiusFor = (level: number) => Math.min(Math.max(38, 38 + countByLevel[level] * 5.5), 92)
 
-  // Initialise bubble positions spread across the container
+  // Pentagon initial positions
   useEffect(() => {
-    const W = containerRef.current?.clientWidth ?? 400
-    const H = 360
-    const initial: BubblePhysics[] = LEVELS.map((level, i) => {
-      const r = radiusFor(level)
-      const cols = 3
-      const row = Math.floor(i / cols)
-      const col = i % cols
+    const W = containerRef.current?.clientWidth ?? 500
+    const H = 320
+    const cx = W / 2, cy = H / 2, spread = Math.min(W, H) * 0.32
+    const init: BubblePhysics[] = LEVELS.map((_, i) => {
+      const angle = (i * 2 * Math.PI) / LEVELS.length - Math.PI / 2
       return {
-        x: (col + 0.7) * (W / (cols + 0.4)) + (Math.random() - 0.5) * 20,
-        y: r + row * (H / 2.2) + (Math.random() - 0.5) * 20,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
+        x: cx + spread * Math.cos(angle) + (Math.random() - 0.5) * 12,
+        y: cy + spread * Math.sin(angle) * 0.72 + (Math.random() - 0.5) * 12,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
       }
     })
-    statesRef.current = initial
-    setPositions([...initial])
+    statesRef.current = init
+    setPositions([...init])
+    setTimeout(() => setMounted(true), 50)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Physics loop
+  // Soft-wall + spring-collision physics
   useEffect(() => {
-    const W = () => containerRef.current?.clientWidth ?? 400
-    const H = 360
-    const DAMP = 0.995
-    const SPEED_CAP = 1.2
-    const DRIFT = 0.04
+    const H = 320
+    const getW = () => containerRef.current?.clientWidth ?? 500
+    const DAMP = 0.992, SPEED = 0.6, DRIFT = 0.025, WALL_R = 20
 
     function step() {
-      const w = W()
-      const states = statesRef.current
+      const W = getW(), states = statesRef.current
       if (!states.length) { rafRef.current = requestAnimationFrame(step); return }
 
-      // Apply drift + damping + clamp
       for (let i = 0; i < states.length; i++) {
-        const b = states[i]
+        const b = states[i], r = radiusFor(LEVELS[i])
         b.vx = (b.vx + (Math.random() - 0.5) * DRIFT) * DAMP
         b.vy = (b.vy + (Math.random() - 0.5) * DRIFT) * DAMP
-        const speed = Math.sqrt(b.vx * b.vx + b.vy * b.vy)
-        if (speed > SPEED_CAP) { b.vx *= SPEED_CAP / speed; b.vy *= SPEED_CAP / speed }
-        b.x += b.vx
-        b.y += b.vy
-
-        // Wall bounce
-        const r = radiusFor(LEVELS[i])
-        if (b.x - r < 0) { b.x = r; b.vx = Math.abs(b.vx) }
-        if (b.x + r > w) { b.x = w - r; b.vx = -Math.abs(b.vx) }
-        if (b.y - r < 0) { b.y = r; b.vy = Math.abs(b.vy) }
-        if (b.y + r > H) { b.y = H - r; b.vy = -Math.abs(b.vy) }
+        const sp = Math.sqrt(b.vx * b.vx + b.vy * b.vy)
+        if (sp > SPEED) { b.vx *= SPEED / sp; b.vy *= SPEED / sp }
+        b.x += b.vx; b.y += b.vy
+        // Soft wall repulsion
+        if (b.x - r < WALL_R) b.vx += (WALL_R - (b.x - r)) * 0.04
+        if (b.x + r > W - WALL_R) b.vx -= (b.x + r - (W - WALL_R)) * 0.04
+        if (b.y - r < WALL_R) b.vy += (WALL_R - (b.y - r)) * 0.04
+        if (b.y + r > H - WALL_R) b.vy -= (b.y + r - (H - WALL_R)) * 0.04
+        b.x = Math.max(r, Math.min(W - r, b.x))
+        b.y = Math.max(r, Math.min(H - r, b.y))
       }
 
-      // Bubble-bubble overlap resolution
+      // Spring separation
       for (let i = 0; i < states.length; i++) {
         for (let j = i + 1; j < states.length; j++) {
           const a = states[i], b = states[j]
           const ri = radiusFor(LEVELS[i]), rj = radiusFor(LEVELS[j])
-          const minDist = ri + rj + 4
           const dx = b.x - a.x, dy = b.y - a.y
           const dist = Math.sqrt(dx * dx + dy * dy) || 0.001
-          if (dist < minDist) {
+          const minD = ri + rj + 6
+          if (dist < minD) {
             const nx = dx / dist, ny = dy / dist
-            const overlap = (minDist - dist) / 2
-            a.x -= nx * overlap; a.y -= ny * overlap
-            b.x += nx * overlap; b.y += ny * overlap
-            const dvx = b.vx - a.vx, dvy = b.vy - a.vy
-            const dot = dvx * nx + dvy * ny
-            if (dot < 0) {
-              a.vx += dot * nx * 0.5; a.vy += dot * ny * 0.5
-              b.vx -= dot * nx * 0.5; b.vy -= dot * ny * 0.5
-            }
+            const f = (minD - dist) * 0.15
+            a.vx -= nx * f; a.vy -= ny * f
+            b.vx += nx * f; b.vy += ny * f
           }
         }
       }
@@ -600,29 +763,42 @@ function SkillBubbleBank({ skills, onLevelSelect }: { skills: Skill[]; onLevelSe
       setPositions([...states])
       rafRef.current = requestAnimationFrame(step)
     }
-
     rafRef.current = requestAnimationFrame(step)
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [skills])
 
-  function handleBubbleClick(level: number) {
-    setPoppingLevel(level)
-    setTimeout(() => {
-      setPoppingLevel(null)
-      onLevelSelect(level)
-    }, 350)
+  function handleClick(level: number, idx: number) {
+    const el = btnRefs.current[idx]
+    const containerEl = containerRef.current
+    if (!el || !containerEl) return
+    const br = el.getBoundingClientRect()
+    const cr = containerEl.closest('[data-vault-root]')?.getBoundingClientRect()
+      ?? containerEl.getBoundingClientRect()
+    onBubbleClick({
+      level,
+      cx: br.left + br.width / 2 - cr.left,
+      cy: br.top + br.height / 2 - cr.top,
+      cr: br.width / 2,
+    })
   }
 
+  const breatheDurations = [3.8, 4.4, 3.2, 4.8, 3.5]
+  const breatheDelays = [0, 0.6, 1.2, 0.3, 1.8]
+
   return (
-    <div ref={containerRef} className="h-[360px] w-full relative overflow-hidden rounded-2xl border border-white/7 bg-gradient-to-br from-white/2 to-transparent">
+    <div
+      ref={containerRef}
+      className="h-[320px] w-full relative overflow-hidden rounded-2xl"
+      style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.005) 100%)', border: '1px solid rgba(255,255,255,0.06)' }}
+    >
       {LEVELS.map((level, i) => {
         const r = radiusFor(level)
         const pos = positions[i]
         if (!pos) return null
         const count = countByLevel[level]
         const accent = LEVEL_COLORS[level].accent
-        const isPopping = poppingLevel === level
+        const popClass = isExiting ? 'bubble-pop-out' : mounted ? 'bubble-pop-in' : ''
 
         return (
           <div
@@ -633,29 +809,58 @@ function SkillBubbleBank({ skills, onLevelSelect }: { skills: Skill[]; onLevelSe
               top: pos.y - r,
               width: r * 2,
               height: r * 2,
-              transition: isPopping ? 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1)' : undefined,
-              transform: isPopping ? 'scale(1.3)' : undefined,
+              ['--pop-delay' as string]: `${i * 80}ms`,
             }}
+            className={popClass}
           >
             <button
-              onClick={() => handleBubbleClick(level)}
-              className="w-full h-full rounded-full flex flex-col items-center justify-center cursor-pointer
-                hover:brightness-110 transition-all duration-200 active:scale-95"
+              ref={el => { btnRefs.current[i] = el }}
+              onClick={() => handleClick(level, i)}
+              className="w-full h-full rounded-full flex flex-col items-center justify-center cursor-pointer focus:outline-none group"
               style={{
+                ['--breathe-dur' as string]: `${breatheDurations[i]}s`,
+                ['--breathe-delay' as string]: `${breatheDelays[i]}s`,
+                animation: `bubble-breathe ${breatheDurations[i]}s ease-in-out ${breatheDelays[i]}s infinite`,
                 background: count > 0
-                  ? `radial-gradient(circle at 35% 35%, ${accent}55, ${accent}22)`
-                  : 'radial-gradient(circle at 35% 35%, rgba(113,113,122,0.15), rgba(113,113,122,0.05))',
-                border: `1.5px solid ${count > 0 ? accent + '60' : 'rgba(113,113,122,0.2)'}`,
-                boxShadow: count > 0 ? `0 0 20px ${accent}22` : 'none',
+                  ? `radial-gradient(circle at 32% 28%, ${accent}38, ${accent}12 60%, transparent)`
+                  : 'radial-gradient(circle at 32% 28%, rgba(255,255,255,0.04), transparent)',
+                border: `1.5px solid ${count > 0 ? accent + '55' : 'rgba(255,255,255,0.08)'}`,
+                boxShadow: count > 0
+                  ? `0 4px 28px ${accent}1a, inset 0 1px 0 rgba(255,255,255,0.12), 0 0 0 0 ${accent}00`
+                  : 'inset 0 1px 0 rgba(255,255,255,0.06)',
+                backdropFilter: 'blur(6px)',
+                transition: 'transform 0.18s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s ease',
+              }}
+              onMouseEnter={e => {
+                const t = e.currentTarget as HTMLButtonElement
+                t.style.transform = 'scale(1.1)'
+                t.style.boxShadow = count > 0
+                  ? `0 8px 36px ${accent}30, inset 0 1px 0 rgba(255,255,255,0.18), 0 0 0 1.5px ${accent}60`
+                  : 'inset 0 1px 0 rgba(255,255,255,0.1), 0 0 0 1px rgba(255,255,255,0.15)'
+              }}
+              onMouseLeave={e => {
+                const t = e.currentTarget as HTMLButtonElement
+                t.style.transform = ''
+                t.style.boxShadow = count > 0
+                  ? `0 4px 28px ${accent}1a, inset 0 1px 0 rgba(255,255,255,0.12)`
+                  : 'inset 0 1px 0 rgba(255,255,255,0.06)'
               }}
             >
-              <span className="text-[10px] text-white/60 leading-none mb-1">{LEVEL_LABELS[level]}</span>
-              <span className="text-lg font-bold leading-none" style={{ color: count > 0 ? accent : '#52525b' }}>{count}</span>
+              <span className="text-[10px] font-medium leading-none mb-1.5 tracking-wide"
+                style={{ color: count > 0 ? accent + 'bb' : 'rgba(255,255,255,0.3)' }}>
+                {LEVEL_LABELS[level]}
+              </span>
+              <span className="text-2xl font-bold leading-none"
+                style={{ color: count > 0 ? accent : 'rgba(255,255,255,0.2)' }}>
+                {count}
+              </span>
             </button>
           </div>
         )
       })}
-      <div className="absolute bottom-2 right-3 text-[10px] text-zinc-700">Click a bubble to explore</div>
+      <span className="absolute bottom-2.5 right-3 text-[10px] text-white/20 pointer-events-none select-none">
+        click a bubble
+      </span>
     </div>
   )
 }
@@ -996,7 +1201,10 @@ function ProfilePageInner() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
-  const [selectedBubbleLevel, setSelectedBubbleLevel] = useState<number | null>(null)
+  // Bubble overlay state machine
+  const [vaultView, setVaultView] = useState<VaultView>('vault')
+  const [selectedLevel, setSelectedLevel] = useState<number>(4)
+  const [bubbleOrigin, setBubbleOrigin] = useState<BubbleOrigin | null>(null)
 
   const [bio, setBio] = useState<BioState>({ name: '', headline: '', location: '', bio: '', github_url: '', salary_min: '', salary_max: '' })
   const [newSkill, setNewSkill] = useState({ name: '', level: '3' })
@@ -1186,8 +1394,24 @@ function ProfilePageInner() {
 
   const allSkills = profile?.skills ?? []
 
+  function handleBubbleClick(info: BubbleClickInfo) {
+    setSelectedLevel(info.level)
+    setBubbleOrigin({ cx: info.cx, cy: info.cy, cr: info.cr, color: LEVEL_COLORS[info.level]?.accent ?? '#71717a' })
+    setVaultView('expanding')
+    // After expansion animation, switch to list view
+    setTimeout(() => setVaultView('list'), 520)
+  }
+
+  function handleBack() {
+    setVaultView('collapsing')
+    setTimeout(() => {
+      setVaultView('vault')
+      setBubbleOrigin(null)
+    }, 460)
+  }
+
   return (
-    <div className="p-8 max-w-3xl">
+    <div className="px-8 py-6 relative" data-vault-root>
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Skills Vault 🗂️</h1>
         <p className="text-zinc-500 mt-1">Your evidence base. Employers see skills, not school names.</p>
@@ -1212,7 +1436,11 @@ function ProfilePageInner() {
           <TopSkillsSection />
 
           {/* 4. Bubble bank */}
-          <SkillBubbleBank skills={allSkills} onLevelSelect={setSelectedBubbleLevel} />
+          <SkillBubbleBank
+            skills={allSkills}
+            isExiting={vaultView === 'collapsing'}
+            onBubbleClick={handleBubbleClick}
+          />
 
           {/* 5. Add skill form */}
           <Card className="p-5">
@@ -1238,14 +1466,8 @@ function ProfilePageInner() {
             <p className="text-xs text-zinc-400 mt-2">💡 Import from GitHub to get skills auto-extracted and verified from real code.</p>
           </Card>
 
-          {/* 6. Drilldown or skill list */}
-          {selectedBubbleLevel !== null ? (
-            <SkillLevelDrillDown
-              skills={allSkills}
-              level={selectedBubbleLevel}
-              onBack={() => setSelectedBubbleLevel(null)}
-            />
-          ) : (
+          {/* 6. All-skills list (full list shown below bubble bank) */}
+          {(
             <div className="space-y-2">
               {allSkills.length === 0 ? (
                 <div className="text-center py-12 text-zinc-400 border-2 border-dashed rounded-xl">
@@ -1384,6 +1606,18 @@ function ProfilePageInner() {
           />
         </TabsContent>
       </Tabs>
+
+      {/* ── Full-screen level overlay (clip-path bubble expansion) ── */}
+      {vaultView !== 'vault' && bubbleOrigin && (
+        <FullScreenLevelOverlay
+          vaultView={vaultView}
+          origin={bubbleOrigin}
+          selectedLevel={selectedLevel}
+          skills={allSkills}
+          onBack={handleBack}
+          onLevelSelect={setSelectedLevel}
+        />
+      )}
     </div>
   )
 }

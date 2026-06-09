@@ -355,3 +355,56 @@
   pointer-events: none;
   border-radius: inherit;
 }
+/* ── Skills Vault animation system ─────────────────────────────── */
+
+@keyframes skill-item-rise {
+  from { opacity: 0; transform: translateY(28px); filter: blur(5px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+}
+
+@keyframes hotbar-appear {
+  from { opacity: 0; filter: blur(16px); transform: translateY(-10px) scale(0.94); }
+  to   { opacity: 1; filter: blur(0);    transform: translateY(0)     scale(1);    }
+}
+
+@keyframes level-btn-pop {
+  0%   { opacity: 0; transform: scale(0.45) translateY(10px); }
+  62%  { transform: scale(1.12) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1)    translateY(0);     }
+}
+
+@keyframes bubble-breathe {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.038); }
+}
+
+@keyframes bubble-pop-in {
+  0%   { opacity: 0; transform: scale(0); filter: blur(8px); }
+  60%  { transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); filter: blur(0);  }
+}
+
+@keyframes bubble-pop-out {
+  0%   { opacity: 1; transform: scale(1);   filter: blur(0);  }
+  35%  { transform: scale(1.15) translateY(-4px); }
+  100% { opacity: 0; transform: scale(0);   filter: blur(8px); }
+}
+
+.skill-item-animate {
+  animation: skill-item-rise 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.bubble-breathe {
+  animation: bubble-breathe var(--breathe-dur, 3.8s) ease-in-out infinite;
+  animation-delay: var(--breathe-delay, 0s);
+}
+
+.bubble-pop-in {
+  animation: bubble-pop-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--pop-delay, 0s);
+}
+
+.bubble-pop-out {
+  animation: bubble-pop-out 0.38s cubic-bezier(0.55, 0, 1, 0.45) both;
+  animation-delay: var(--pop-delay, 0s);
+}

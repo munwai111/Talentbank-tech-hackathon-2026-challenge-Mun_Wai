@@ -70,9 +70,24 @@ export type SaqData = {
   intention_why: string | null                  // free-text "why" context
 }
 
+export type ProfileStatusType =
+  | 'open_to_work'
+  | 'open_to_opportunities'
+  | 'currently_studying'
+  | 'graduated_bachelor'
+  | 'graduated_master'
+  | 'graduated_phd'
+  | 'career_break'
+  | 'hiring'
+  | 'custom'
+  | 'none'
+
 export type CareerData = {
   // Current situation
   current_situation: 'student' | 'fresh_grad' | 'employed' | 'career_changer' | null
+  // Profile status badge (displayed on public profile)
+  status_type?: ProfileStatusType
+  status_custom_text?: string   // AI-vetted custom text, only set when status_type === 'custom'
   // Education
   education_level: 'high_school' | 'diploma' | 'degree' | 'masters' | 'phd' | 'self_taught' | null
   education_field: string | null

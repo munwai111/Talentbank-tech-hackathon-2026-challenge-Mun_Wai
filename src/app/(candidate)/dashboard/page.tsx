@@ -63,7 +63,7 @@ export default async function DashboardPage() {
   ]
 
   return (
-    <div className="p-8 max-w-4xl">
+    <div className="px-8 py-6 max-w-5xl">
 
       {/* ── Greeting ─────────────────────────────────────────────────────── */}
       <div className="mb-8 animate-fade-up">
