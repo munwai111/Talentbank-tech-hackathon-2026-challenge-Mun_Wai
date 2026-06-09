@@ -144,81 +144,10 @@ function buildPathPrompt(input: PathInput): string {
   return context
 }
 
-// ── Compact prompt (retry fallback) ──────────────────────────────────────────
-// Strips verbose work history to reduce input size, giving Claude more
-// output headroom on retry. Used when the full prompt produces truncated JSON.
-
-function buildPathPromptCompact(input: PathInput): string {
-  const { skills, career_data: cd, location } = input
-
-  const skillList = skills.length > 0
-    ? skills.map(s => `  • ${s.name} (level ${s.level}/5)`).join('\n')
-    : '  (no skills listed yet)'
-
-  const lifeContext = cd?.life_chapter_context
-    ? `\nLIFE CONTEXT: ${cd.life_chapter_context}`
-    : ''
-
-  return [
-    `CANDIDATE SNAPSHOT`,
-    `Location: ${location ?? 'not specified'}`,
-    `Experience: ${cd?.years_experience ?? 0} years | Role: ${cd?.current_or_last_role ?? 'not specified'}`,
-    ``,
-    `CURRENT SKILLS`,
-    skillList,
-    ``,
-    `GOALS`,
-    `1-year: ${cd?.goal_1_year ?? 'not specified'}`,
-    `5-year: ${cd?.goal_5_year ?? 'not specified'}`,
-    `Dream role: ${cd?.dream_role ?? 'not specified'}`,
-    lifeContext,
-    ``,
-    `Map out the 3 career navigation paths now.`,
-  ].join('\n')
-}
-
-// ── Core generation (blocking, with retry) ───────────────────────────────────
-// Uses messages.create() (not streaming) so we receive the full response before
-// sending anything to the client. This lets us validate JSON completeness and
-// retry with a compact prompt if the first attempt produces truncated output.
-//
-// We still wrap this in a ReadableStream so the route handler returns a streaming
-// Response — which keeps the 25s Vercel Hobby timeout (vs 10s for blocking routes).
-
-async function generatePaths(input: PathInput, attempt = 1): Promise<string> {
-  const prompt = attempt === 1 ? buildPathPrompt(input) : buildPathPromptCompact(input)
-
-  const msg = await anthropic.messages.create({
-    model: 'claude-haiku-4-5',
-    max_tokens: 3000,
-    system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
-    messages: [{ role: 'user', content: prompt }],
-  })
-
-  const raw = (msg.content[0] as { type: 'text'; text: string }).text.trim()
-  // Strip markdown code fences if Claude wrapped the JSON
-  const cleaned = raw.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim()
-
-  let parsed: { paths?: CareerPath[] }
-  try {
-    parsed = JSON.parse(cleaned) as { paths?: CareerPath[] }
-  } catch {
-    if (attempt < 2) return generatePaths(input, 2)
-    throw new Error('Career path generation failed — please try again')
-  }
-
-  // Validate we got all 3 paths
-  if (!parsed.paths || parsed.paths.length < 3) {
-    if (attempt < 2) return generatePaths(input, 2)
-    throw new Error('Incomplete paths generated — please try again')
-  }
-
-  return cleaned
-}
-
 // ── Public export ─────────────────────────────────────────────────────────────
-// Returns a ReadableStream so the route handler stays unchanged.
-// The streaming wrapper keeps the 25s Vercel Hobby timeout.
+// Streams tokens directly as they arrive — same pattern as the AI Coach.
+// True streaming keeps bytes flowing to Vercel so the 25s Hobby timeout
+// is never triggered. The client accumulates chunks and parses JSON at the end.
 
 export function streamCareerPaths(input: PathInput): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder()
@@ -226,8 +155,21 @@ export function streamCareerPaths(input: PathInput): ReadableStream<Uint8Array> 
   return new ReadableStream({
     async start(controller) {
       try {
-        const json = await generatePaths(input)
-        controller.enqueue(encoder.encode(json))
+        const stream = anthropic.messages.stream({
+          model: 'claude-haiku-4-5',
+          max_tokens: 2000,
+          system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+          messages: [{ role: 'user', content: buildPathPrompt(input) }],
+        })
+
+        for await (const event of stream) {
+          if (
+            event.type === 'content_block_delta' &&
+            event.delta.type === 'text_delta'
+          ) {
+            controller.enqueue(encoder.encode(event.delta.text))
+          }
+        }
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Path generation failed'
         controller.enqueue(encoder.encode(JSON.stringify({ error: msg })))
