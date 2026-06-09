@@ -8,7 +8,12 @@ import { useState, useRef, useEffect, useCallback, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
 import type { CoachMessage } from '@/lib/ai/coach'
+import type { CoachCalibration } from '@/app/api/candidate/coach-calibration/route'
 
 // ── Starter prompts shown before first message ────────────────────────────────
 
@@ -19,6 +24,154 @@ const STARTERS = [
   'What skills are most in-demand right now in KL tech companies?',
   'How do I negotiate a raise without risking my job?',
 ]
+
+const DEFAULT_CALIBRATION: CoachCalibration = {
+  communication_style: 'Balanced',
+  technical_depth: 'Mixed',
+  career_stage: 'Fresh grad',
+  primary_goal: '',
+  coaching_tone: 'Honest',
+}
+
+// ── CalibrationPanel ──────────────────────────────────────────────────────────
+
+function CalibrationPanel({
+  open,
+  onClose,
+  onCalibrated,
+}: {
+  open: boolean
+  onClose: () => void
+  onCalibrated: () => void
+}) {
+  const [form, setForm] = useState<CoachCalibration>(DEFAULT_CALIBRATION)
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  // Load existing calibration on open
+  useEffect(() => {
+    if (!open) return
+    fetch('/api/candidate/coach-calibration')
+      .then(r => r.json())
+      .then(({ calibration }: { calibration: CoachCalibration | null }) => {
+        if (calibration) setForm(calibration)
+      })
+      .catch(() => { /* use defaults */ })
+  }, [open])
+
+  async function save() {
+    setSaving(true)
+    try {
+      const res = await fetch('/api/candidate/coach-calibration', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(form),
+      })
+      if (res.ok) {
+        setSaved(true)
+        onCalibrated()
+        setTimeout(onClose, 800)
+      }
+    } catch { /* silently fail */ }
+    finally { setSaving(false) }
+  }
+
+  function setField<K extends keyof CoachCalibration>(key: K, value: CoachCalibration[K]) {
+    setForm(f => ({ ...f, [key]: value }))
+    setSaved(false)
+  }
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className={`fixed inset-0 bg-black/40 z-40 transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        onClick={onClose}
+      />
+
+      {/* Panel */}
+      <div className={`fixed top-0 right-0 h-full w-[360px] z-50 flex flex-col
+        bg-[#0f0f1f] border-l border-white/10 shadow-2xl
+        transition-transform duration-300 ease-in-out
+        ${open ? 'translate-x-0' : 'translate-x-full'}`}
+      >
+        {/* Header */}
+        <div className="px-5 py-4 border-b border-white/10 flex items-start justify-between shrink-0">
+          <div>
+            <h2 className="font-semibold text-white">🎛 Coach Calibration</h2>
+            <p className="text-xs text-zinc-500 mt-0.5">How should your coach communicate?</p>
+          </div>
+          <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors text-xl leading-none mt-0.5">×</button>
+        </div>
+
+        {/* Form */}
+        <div className="flex-1 overflow-y-auto px-5 py-5 space-y-5">
+          <div>
+            <Label className="text-xs text-zinc-400 mb-1.5 block">Communication style</Label>
+            <Select value={form.communication_style} onValueChange={v => setField('communication_style', v as CoachCalibration['communication_style'])}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {(['Formal', 'Balanced', 'Casual'] as const).map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label className="text-xs text-zinc-400 mb-1.5 block">Technical depth</Label>
+            <Select value={form.technical_depth} onValueChange={v => setField('technical_depth', v as CoachCalibration['technical_depth'])}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {(['Non-technical', 'Mixed', 'Technical'] as const).map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label className="text-xs text-zinc-400 mb-1.5 block">Career stage</Label>
+            <Select value={form.career_stage} onValueChange={v => setField('career_stage', v as CoachCalibration['career_stage'])}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {(['Student', 'Fresh grad', 'Mid-career', 'Senior'] as const).map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div>
+            <Label className="text-xs text-zinc-400 mb-1.5 block">Primary goal</Label>
+            <Input
+              placeholder="e.g. Land a product manager role by 2027"
+              value={form.primary_goal}
+              onChange={e => setField('primary_goal', e.target.value)}
+            />
+          </div>
+
+          <div>
+            <Label className="text-xs text-zinc-400 mb-1.5 block">Coaching tone</Label>
+            <Select value={form.coaching_tone} onValueChange={v => setField('coaching_tone', v as CoachCalibration['coaching_tone'])}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {(['Motivating', 'Honest', 'Strategic', 'Analytical'] as const).map(o => <SelectItem key={o} value={o}>{o}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Save */}
+        <div className="px-5 py-4 border-t border-white/10 shrink-0">
+          <Button onClick={save} disabled={saving} className="w-full">
+            {saving ? (
+              <span className="flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Saving...
+              </span>
+            ) : saved ? '✓ Saved!' : 'Save calibration'}
+          </Button>
+          <p className="text-xs text-zinc-600 text-center mt-2">Settings apply to your next message</p>
+        </div>
+      </div>
+    </>
+  )
+}
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -53,22 +206,16 @@ function CoachMarkdown({ content }: { content: string }) {
           const ordered = 'ordered' in props
           return (
             <li className={`flex gap-2 text-sm leading-relaxed ${ordered ? 'items-start' : 'items-start'}`}>
-              <span className="shrink-0 mt-0.5 text-indigo-400 font-medium">
-                {ordered ? '→' : '•'}
-              </span>
+              <span className="shrink-0 mt-0.5 text-indigo-400 font-medium">{ordered ? '→' : '•'}</span>
               <span>{children}</span>
             </li>
           )
         },
         blockquote: ({ children }) => (
-          <blockquote className="border-l-2 border-indigo-400 pl-3 my-3 text-zinc-300 italic">
-            {children}
-          </blockquote>
+          <blockquote className="border-l-2 border-indigo-400 pl-3 my-3 text-zinc-300 italic">{children}</blockquote>
         ),
         table: ({ children }) => (
-          <div className="overflow-x-auto my-3">
-            <table className="text-xs border-collapse w-full">{children}</table>
-          </div>
+          <div className="overflow-x-auto my-3"><table className="text-xs border-collapse w-full">{children}</table></div>
         ),
         thead: ({ children }) => <thead className="text-zinc-400">{children}</thead>,
         th: ({ children }) => <th className="border border-white/10 px-2 py-1 text-left font-semibold text-zinc-300">{children}</th>,
@@ -93,26 +240,20 @@ function MessageBubble({ msg }: { msg: CoachMessage & { streaming?: boolean } })
           🤖
         </div>
       )}
-      <div
-        className={`rounded-2xl px-4 py-3 text-sm ${
-          isUser
-            ? 'max-w-[80%] bg-indigo-600 text-white rounded-br-sm shadow-lg shadow-indigo-500/20 leading-relaxed'
-            : 'max-w-[88%] bg-white/6 border border-white/10 text-zinc-300 rounded-bl-sm backdrop-blur-sm'
-        }`}
-      >
+      <div className={`rounded-2xl px-4 py-3 text-sm ${
+        isUser
+          ? 'max-w-[80%] bg-indigo-600 text-white rounded-br-sm shadow-lg shadow-indigo-500/20 leading-relaxed'
+          : 'max-w-[88%] bg-white/6 border border-white/10 text-zinc-300 rounded-bl-sm backdrop-blur-sm'
+      }`}>
         {isUser ? (
           <>
             {msg.content}
-            {msg.streaming && (
-              <span className="inline-block w-0.5 h-4 bg-white/60 ml-0.5 animate-pulse align-middle" />
-            )}
+            {msg.streaming && <span className="inline-block w-0.5 h-4 bg-white/60 ml-0.5 animate-pulse align-middle" />}
           </>
         ) : (
           <>
             <CoachMarkdown content={msg.content} />
-            {msg.streaming && (
-              <span className="inline-block w-0.5 h-4 bg-indigo-400 ml-0.5 animate-pulse align-middle" />
-            )}
+            {msg.streaming && <span className="inline-block w-0.5 h-4 bg-indigo-400 ml-0.5 animate-pulse align-middle" />}
           </>
         )}
       </div>
@@ -139,9 +280,10 @@ function CoachPageInner() {
   const [messages, setMessages] = useState<CoachMessage[]>([])
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
+  const [calibrationOpen, setCalibrationOpen] = useState(false)
+  const [isCalibrated, setIsCalibrated] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
-  // Track whether we've already fired the ?q= nudge so it doesn't re-fire
   const nudgeFiredRef = useRef(false)
 
   // Auto-scroll to latest message
@@ -149,8 +291,21 @@ function CoachPageInner() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // sendMessage is defined below; we use a ref so the nudge effect can call it
-  // without creating a circular dependency.
+  // Check if already calibrated on mount
+  useEffect(() => {
+    fetch('/api/candidate/coach-calibration')
+      .then(r => r.json())
+      .then(({ calibration }: { calibration: CoachCalibration | null }) => {
+        if (calibration) setIsCalibrated(true)
+      })
+      .catch(() => { /* ignore */ })
+  }, [])
+
+  // Open calibration panel if ?calibrate=1
+  useEffect(() => {
+    if (searchParams.get('calibrate') === '1') setCalibrationOpen(true)
+  }, [searchParams])
+
   const sendMessageRef = useRef<(text: string) => void>(() => undefined)
 
   const sendMessage = useCallback(async (text: string) => {
@@ -162,7 +317,6 @@ function CoachPageInner() {
     setInput('')
     setStreaming(true)
 
-    // Placeholder so the cursor appears immediately
     setMessages(prev => [
       ...prev,
       { role: 'assistant', content: '', streaming: true } as CoachMessage & { streaming: boolean },
@@ -185,19 +339,13 @@ function CoachPageInner() {
         const { done, value } = await reader.read()
         if (done) break
         accumulated += decoder.decode(value, { stream: true })
-
         setMessages(prev => {
           const updated = [...prev]
-          updated[updated.length - 1] = {
-            role: 'assistant',
-            content: accumulated,
-            streaming: true,
-          } as CoachMessage & { streaming: boolean }
+          updated[updated.length - 1] = { role: 'assistant', content: accumulated, streaming: true } as CoachMessage & { streaming: boolean }
           return updated
         })
       }
 
-      // Finalise — remove streaming cursor
       setMessages(prev => {
         const updated = [...prev]
         updated[updated.length - 1] = { role: 'assistant', content: accumulated }
@@ -216,31 +364,32 @@ function CoachPageInner() {
     }
   }, [messages, streaming])
 
-  // Keep the ref current so the nudge effect can call the latest version
   useEffect(() => { sendMessageRef.current = sendMessage }, [sendMessage])
 
-  // If the user arrived via the proactive nudge (?q=...), auto-send the question
   useEffect(() => {
     if (nudgeFiredRef.current) return
     const q = searchParams.get('q')
     if (!q) return
     nudgeFiredRef.current = true
-    // Small delay so the page paint completes before the first message fires
     const timer = setTimeout(() => sendMessageRef.current(q), 300)
     return () => clearTimeout(timer)
   }, [searchParams])
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault()
-      sendMessage(input)
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(input) }
   }
 
   const hasMessages = messages.length > 0
 
   return (
     <div className="flex flex-col h-screen">
+      {/* Calibration panel */}
+      <CalibrationPanel
+        open={calibrationOpen}
+        onClose={() => setCalibrationOpen(false)}
+        onCalibrated={() => setIsCalibrated(true)}
+      />
+
       {/* Header */}
       <div className="px-6 py-4 border-b border-white/7 bg-[#08081a]/80 backdrop-blur-sm shrink-0">
         <div className="flex items-center gap-3">
@@ -249,19 +398,35 @@ function CoachPageInner() {
             🤖
           </div>
           <div>
-            <h1 className="font-semibold text-white">AI Career Coach</h1>
+            <h1 className="font-semibold text-white flex items-center gap-2">
+              AI Career Coach
+              {isCalibrated && (
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/20 font-medium">
+                  🎛 Calibrated ✓
+                </span>
+              )}
+            </h1>
             <p className="text-xs text-zinc-500">Knows your skills · APAC market · Honest advice</p>
           </div>
-          <div className="ml-auto flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            Online
+          <div className="ml-auto flex items-center gap-3">
+            <button
+              onClick={() => setCalibrationOpen(true)}
+              className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg
+                bg-white/6 text-zinc-400 border border-white/10
+                hover:bg-white/10 hover:text-white transition-all"
+            >
+              🎛 Calibrate
+            </button>
+            <div className="flex items-center gap-1.5 text-xs text-emerald-400 font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              Online
+            </div>
           </div>
         </div>
       </div>
 
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto px-6 py-6">
-        {/* Welcome state */}
         {!hasMessages && (
           <div className="max-w-xl mx-auto">
             <div className="text-center mb-8">
@@ -274,6 +439,14 @@ function CoachPageInner() {
                 Ask anything about your career path, salary, skill gaps, or what moves to make next.
                 I know your profile — no need to re-explain yourself.
               </p>
+              {!isCalibrated && (
+                <button
+                  onClick={() => setCalibrationOpen(true)}
+                  className="mt-4 text-xs text-indigo-400 hover:text-indigo-300 underline transition-colors"
+                >
+                  🎛 Calibrate my coach for better advice →
+                </button>
+              )}
             </div>
             <div className="grid grid-cols-1 gap-2">
               {STARTERS.map(s => (
@@ -283,14 +456,10 @@ function CoachPageInner() {
           </div>
         )}
 
-        {/* Conversation */}
         {hasMessages && (
           <div className="max-w-2xl mx-auto">
             {messages.map((msg, i) => (
-              <MessageBubble
-                key={i}
-                msg={msg as CoachMessage & { streaming?: boolean }}
-              />
+              <MessageBubble key={i} msg={msg as CoachMessage & { streaming?: boolean }} />
             ))}
             {streaming && messages[messages.length - 1]?.role !== 'assistant' && (
               <div className="flex justify-start mb-4">

@@ -577,6 +577,17 @@ export default function DiscoverPage() {
 
   return (
     <div className="p-8 max-w-2xl">
+      {/* Coach redirect banner */}
+      <div className="mb-5 flex items-start gap-3 p-4 rounded-xl bg-indigo-500/10 border border-indigo-500/25 text-sm">
+        <span className="shrink-0 text-base">💡</span>
+        <div>
+          <span className="text-zinc-300">Career Identity is now part of your AI Coach. Complete it there for a more personalised experience. </span>
+          <a href="/coach?calibrate=1" className="text-indigo-400 hover:text-indigo-300 underline font-medium transition-colors">
+            Go to AI Coach →
+          </a>
+        </div>
+      </div>
+
       <div className="mb-6">
         <h1 className="text-2xl font-bold">Career Identity Builder 🧭</h1>
         <p className="text-zinc-500 mt-1">
