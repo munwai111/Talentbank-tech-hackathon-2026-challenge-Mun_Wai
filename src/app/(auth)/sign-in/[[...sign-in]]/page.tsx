@@ -72,7 +72,23 @@ export default function SignInPage() {
 
         <SignIn
           forceRedirectUrl="/dashboard"
-          appearance={{ variables: isDark ? DARK_VARS : LIGHT_VARS }}
+          appearance={{
+            variables: isDark ? DARK_VARS : LIGHT_VARS,
+            layout: { socialButtonsVariant: 'blockButton', socialButtonsPlacement: 'top' },
+            elements: {
+              // Full-width social buttons with visible text
+              socialButtonsBlockButton: {
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                padding: '0.625rem 1rem',
+                borderRadius: '0.625rem',
+                border: isDark ? '1px solid rgba(255,255,255,0.10)' : '1px solid rgba(0,0,0,0.10)',
+              },
+              socialButtonsBlockButtonText: {
+                fontWeight: '500',
+              },
+            },
+          }}
         />
       </div>
     </div>
