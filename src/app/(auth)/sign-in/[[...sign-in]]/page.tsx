@@ -66,8 +66,8 @@ export default function SignInPage() {
             bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/30 mb-4">
             <span className="text-sm font-bold text-white">C</span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Sign in to Career OS</p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white/90">Welcome back</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">Sign in to Career OS</p>
         </div>
 
         <SignIn

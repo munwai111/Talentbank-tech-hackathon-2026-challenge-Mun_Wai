@@ -5,8 +5,8 @@ import { UserButton, useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Zap, Fingerprint, Waypoints, Vault, FolderOpen,
-  Crosshair, BrainCircuit, Settings2,
+  Zap, Waypoints, Crosshair, BrainCircuit,
+  Vault, FolderOpen, Settings2, ChevronRight,
   type LucideIcon,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -17,20 +17,29 @@ type NavItem = {
   Icon: LucideIcon
 }
 
+// Main nav — Career Identity is now inside Coach
 const NAV_ITEMS: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard',       Icon: Zap },
-  { href: '/discover',  label: 'Career Identity', Icon: Fingerprint },
-  { href: '/paths',     label: 'Path Navigator',  Icon: Waypoints },
-  { href: '/profile',   label: 'Skills Vault',    Icon: Vault },
-  { href: '/portfolio', label: 'Portfolio',       Icon: FolderOpen },
-  { href: '/jobs',      label: 'Job Matches',     Icon: Crosshair },
   { href: '/coach',     label: 'AI Coach',        Icon: BrainCircuit },
+  { href: '/paths',     label: 'Path Navigator',  Icon: Waypoints },
+  { href: '/jobs',      label: 'Job Matches',     Icon: Crosshair },
+]
+
+// Profile sub-links — appear under the profile header
+const PROFILE_ITEMS: { href: string; label: string; Icon: LucideIcon }[] = [
+  { href: '/profile?tab=vault',     label: 'Skills Vault', Icon: Vault },
+  { href: '/profile?tab=portfolio', label: 'Portfolio',    Icon: FolderOpen },
+  { href: '/profile?tab=settings',  label: 'Settings',     Icon: Settings2 },
 ]
 
 function Sidebar() {
   const pathname = usePathname()
   const { user } = useUser()
-  const displayName = user?.firstName ?? user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] ?? '—'
+  const displayName = user?.firstName
+    ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}`
+    : user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] ?? '—'
+
+  const isProfileActive = pathname === '/profile' || pathname.startsWith('/profile/')
 
   return (
     <aside className="w-56 shrink-0 flex flex-col border-r border-border bg-sidebar relative overflow-hidden">
@@ -42,20 +51,44 @@ function Sidebar() {
         opacity-0 dark:opacity-100 transition-opacity duration-500"
         style={{ background: 'radial-gradient(circle, rgba(79,70,229,0.1), transparent 70%)' }} aria-hidden />
 
-      {/* Logo */}
-      <Link href="/dashboard" className="relative px-5 py-5 border-b border-border flex items-center gap-2.5 group">
-        <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600
-          flex items-center justify-center text-xs font-bold shadow-lg shadow-violet-500/25
-          group-hover:shadow-violet-500/45 transition-all duration-300 text-white">
-          C
+      {/* ── Profile header (replaces old Career OS logo) ─────────────────── */}
+      <div className={`relative px-4 py-4 border-b border-border transition-colors duration-200 ${
+        isProfileActive ? 'bg-accent/40' : ''
+      }`}>
+        <div className="flex items-center gap-3">
+          <UserButton />
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-semibold truncate text-slate-900 dark:text-white/85 leading-tight">{displayName}</p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Candidate</p>
+          </div>
+          <Link
+            href="/profile"
+            className="shrink-0 p-1 rounded-lg hover:bg-accent/60 transition-colors"
+            title="View profile"
+          >
+            <ChevronRight size={13} className="text-slate-400 dark:text-slate-500" />
+          </Link>
         </div>
-        <div>
-          <p className="font-bold text-sm tracking-tight text-foreground leading-none">Career OS</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5 tracking-wide">Skills-first hiring</p>
-        </div>
-      </Link>
 
-      {/* Main nav */}
+        {/* Profile sub-items */}
+        <div className="mt-2.5 space-y-0.5 pl-0.5">
+          {PROFILE_ITEMS.map(({ href, label, Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px]
+                text-slate-600 dark:text-slate-400
+                hover:bg-accent/60 hover:text-slate-900 dark:hover:text-white/90
+                transition-all duration-150 group"
+            >
+              <Icon size={12} className="shrink-0 text-slate-500 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors" strokeWidth={1.75} />
+              <span>{label}</span>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* ── Main nav ────────────────────────────────────────────────────── */}
       <nav className="relative flex-1 px-2.5 py-3 space-y-0.5">
         {NAV_ITEMS.map(({ href, label, Icon }) => {
           const isActive = pathname === href || pathname.startsWith(href + '/')
@@ -65,8 +98,8 @@ function Sidebar() {
               href={href}
               className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all duration-200 group relative ${
                 isActive
-                  ? 'bg-accent text-foreground'
-                  : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+                  ? 'bg-accent text-slate-900 dark:text-white/90'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-accent/60 hover:text-slate-900 dark:hover:text-white/90'
               }`}
             >
               {isActive && (
@@ -75,39 +108,23 @@ function Sidebar() {
               <Icon
                 size={15}
                 className={`shrink-0 transition-all duration-200 ${
-                  isActive ? 'text-indigo-400' : 'text-muted-foreground group-hover:text-foreground'
+                  isActive
+                    ? 'text-indigo-500 dark:text-indigo-400'
+                    : 'text-slate-500 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300'
                 }`}
                 strokeWidth={isActive ? 2 : 1.75}
               />
-              <span className={`font-medium text-[13px] ${isActive ? 'text-foreground' : ''}`}>{label}</span>
+              <span className="font-medium text-[13px]">{label}</span>
             </Link>
           )
         })}
       </nav>
 
-      {/* Settings + theme toggle */}
-      <nav className="relative px-2.5 pb-2 border-t border-border pt-2 space-y-0.5">
-        <Link
-          href="/settings"
-          className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-muted-foreground
-            hover:bg-accent/60 hover:text-foreground transition-all duration-200 group"
-        >
-          <Settings2 size={15} className="shrink-0 transition-colors" strokeWidth={1.75} />
-          <span className="text-[13px]">Settings</span>
-        </Link>
-
+      {/* ── Bottom: theme toggle ─────────────────────────────────────────── */}
+      <div className="relative px-2.5 pb-3 border-t border-border pt-2">
         <div className="flex items-center gap-3 px-3 py-1.5">
           <ThemeToggle size="sm" />
-          <span className="text-[13px] text-muted-foreground">Theme</span>
-        </div>
-      </nav>
-
-      {/* User */}
-      <div className="relative px-4 py-4 border-t border-border flex items-center gap-3">
-        <UserButton />
-        <div className="min-w-0">
-          <p className="text-xs font-medium truncate text-foreground">{displayName}</p>
-          <p className="text-[10px] text-muted-foreground mt-0.5">Candidate</p>
+          <span className="text-[13px] text-slate-600 dark:text-slate-400">Theme</span>
         </div>
       </div>
     </aside>

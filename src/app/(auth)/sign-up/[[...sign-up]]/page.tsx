@@ -65,8 +65,8 @@ export default function SignUpPage() {
             bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/30 mb-4">
             <span className="text-sm font-bold text-white">C</span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Create your account</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white/90">Create your account</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm">
             Join thousands of APAC professionals on Career OS
           </p>
         </div>
