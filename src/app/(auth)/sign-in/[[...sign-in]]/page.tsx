@@ -78,8 +78,23 @@ export default function SignInPage() {
               socialButtonsPlacement: 'top',
             },
             elements: {
-              socialButtonsBlockButton: { color: '#ffffff' },
-              socialButtonsBlockButtonText: { color: '#ffffff', fontWeight: '500' },
+              socialButtonsBlockButton: {
+                borderRadius: '9999px',
+                background: 'rgba(99, 102, 241, 0.14)',
+                border: '1px solid rgba(129, 140, 248, 0.35)',
+                color: '#ffffff',
+                backdropFilter: 'blur(8px)',
+                padding: '10px 20px',
+                transition: 'background 0.15s, border-color 0.15s',
+              },
+              'socialButtonsBlockButton:hover': {
+                background: 'rgba(99, 102, 241, 0.24)',
+                borderColor: 'rgba(129, 140, 248, 0.55)',
+              },
+              socialButtonsBlockButtonText: {
+                color: '#ffffff',
+                fontWeight: '500',
+              },
               socialButtonsBlockButtonArrow: { color: '#ffffff' },
             },
           }}
