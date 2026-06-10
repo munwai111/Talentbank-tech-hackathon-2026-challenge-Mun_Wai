@@ -77,6 +77,11 @@ export default function SignInPage() {
               socialButtonsVariant: 'blockButton',
               socialButtonsPlacement: 'top',
             },
+            elements: {
+              socialButtonsBlockButton: { color: '#ffffff' },
+              socialButtonsBlockButtonText: { color: '#ffffff', fontWeight: '500' },
+              socialButtonsBlockButtonArrow: { color: '#ffffff' },
+            },
           }}
         />
       </div>

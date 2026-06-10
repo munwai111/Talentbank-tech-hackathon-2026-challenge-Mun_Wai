@@ -153,20 +153,14 @@ export default function SignUpPage() {
           forceRedirectUrl="/onboarding"
           appearance={{
             variables: isDark ? DARK_VARS : LIGHT_VARS,
+            layout: {
+              socialButtonsVariant: 'blockButton',
+              socialButtonsPlacement: 'top',
+            },
             elements: {
-              card: {
-                boxShadow: 'none',
-                border: isDark ? '1px solid rgba(255,255,255,0.07)' : '1px solid rgba(0,0,0,0.08)',
-                borderTop: 'none',
-                borderRadius: '0 0 1rem 1rem',
-                paddingTop: '0',
-                marginTop: '-1px',
-              },
-              socialButtonsRoot: { display: 'none' },
-              dividerRow: { display: 'none' },
-              headerTitle: { display: 'none' },
-              headerSubtitle: { display: 'none' },
-              header: { display: 'none' },
+              socialButtonsBlockButton: { color: '#ffffff' },
+              socialButtonsBlockButtonText: { color: '#ffffff', fontWeight: '500' },
+              socialButtonsBlockButtonArrow: { color: '#ffffff' },
             },
           }}
         />
