@@ -672,6 +672,233 @@ function FullScreenLevelOverlay({ vaultView, origin, selectedLevel, skills, onBa
 }
 
 // ─────────────────────────────────────────────────────────────
+// BurstCanvas — canvas particle burst overlay
+// ─────────────────────────────────────────────────────────────
+type BurstTrigger = { x: number; y: number; color: string }
+
+type OrbParticle = {
+  x: number; y: number; vx: number; vy: number
+  size: number; life: number; decay: number
+}
+type SparkleParticle = {
+  x: number; y: number; vx: number; vy: number
+  size: number; life: number; decay: number
+}
+type ShardParticle = {
+  x: number; y: number; vx: number; vy: number
+  size: number; life: number; decay: number
+  rotation: number; rotSpeed: number
+}
+type RingState = { radius: number; life: number; decay: number; growSpeed: number; lineWidth: number; white: boolean }
+
+function drawSparkle(ctx: CanvasRenderingContext2D, x: number, y: number, size: number) {
+  ctx.beginPath()
+  for (let arm = 0; arm < 4; arm++) {
+    const a = (arm * Math.PI) / 2
+    ctx.moveTo(x, y)
+    ctx.lineTo(x + Math.cos(a) * size, y + Math.sin(a) * size)
+    ctx.lineTo(x + Math.cos(a + Math.PI / 4) * size * 0.28, y + Math.sin(a + Math.PI / 4) * size * 0.28)
+  }
+  ctx.closePath()
+}
+
+function BurstCanvas({
+  containerRef,
+  trigger,
+  onComplete,
+}: {
+  containerRef: React.RefObject<HTMLDivElement | null>
+  trigger: BurstTrigger | null
+  onComplete: () => void
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const rafRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    if (!trigger) return
+    const canvas = canvasRef.current
+    const container = containerRef.current
+    if (!canvas || !container) return
+
+    const dpr = window.devicePixelRatio || 1
+    const rect = container.getBoundingClientRect()
+    canvas.width = rect.width * dpr
+    canvas.height = rect.height * dpr
+    canvas.style.width = `${rect.width}px`
+    canvas.style.height = `${rect.height}px`
+
+    const ctxRaw = canvas.getContext('2d')
+    if (!ctxRaw) return
+    const ctx: CanvasRenderingContext2D = ctxRaw
+    ctx.scale(dpr, dpr)
+
+    const { x: ox, y: oy, color: accent } = trigger
+
+    // Orbs
+    const orbs: OrbParticle[] = Array.from({ length: 12 }, (_, i) => {
+      const angle = (i / 12) * Math.PI * 2 + (Math.random() - 0.5)
+      const speed = 3 + Math.random() * 5
+      return {
+        x: ox, y: oy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size: 4 + Math.random() * 6,
+        life: 1,
+        decay: 0.018 + Math.random() * 0.012,
+      }
+    })
+
+    // Sparkles
+    const sparkles: SparkleParticle[] = Array.from({ length: 20 }, () => {
+      const angle = Math.random() * Math.PI * 2
+      const speed = 1.5 + Math.random() * 8
+      return {
+        x: ox, y: oy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size: 1.5 + Math.random() * 2.5,
+        life: 1,
+        decay: 0.025 + Math.random() * 0.025,
+      }
+    })
+
+    // Shards
+    const shards: ShardParticle[] = Array.from({ length: 8 }, (_, i) => {
+      const angle = (i / 8) * Math.PI * 2 + (Math.random() - 0.5) * 0.8
+      const speed = 2 + Math.random() * 4
+      return {
+        x: ox, y: oy,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size: 3 + Math.random() * 5,
+        life: 1,
+        decay: 0.022 + Math.random() * 0.018,
+        rotation: Math.random() * Math.PI * 2,
+        rotSpeed: (Math.random() - 0.5) * 0.5,
+      }
+    })
+
+    // Rings
+    const rings: RingState[] = [
+      { radius: 0, life: 1, decay: 0.035, growSpeed: 10, lineWidth: 2.5, white: false },
+    ]
+    let ring2Spawned = false
+    let elapsed = 0
+
+    function step() {
+      ctx.clearRect(0, 0, rect.width, rect.height)
+      elapsed++
+
+      // Spawn ring2 after ~80ms (≈5 frames at 60fps)
+      if (!ring2Spawned && elapsed >= 5) {
+        ring2Spawned = true
+        rings.push({ radius: 0, life: 1, decay: 0.025, growSpeed: 6, lineWidth: 1.5, white: true })
+      }
+
+      // Draw rings
+      for (const ring of rings) {
+        ring.radius += ring.growSpeed
+        ring.life -= ring.decay
+        if (ring.life <= 0) continue
+        ctx.save()
+        ctx.globalAlpha = ring.white ? ring.life * 0.25 : ring.life * 0.6
+        ctx.strokeStyle = ring.white ? 'rgba(255,255,255,1)' : accent
+        ctx.lineWidth = ring.lineWidth
+        ctx.beginPath()
+        ctx.arc(ox, oy, ring.radius, 0, Math.PI * 2)
+        ctx.stroke()
+        ctx.restore()
+      }
+
+      // Draw orbs
+      for (const p of orbs) {
+        p.x += p.vx; p.y += p.vy
+        p.vy += 0.08
+        p.vx *= 0.965; p.vy *= 0.965
+        p.life -= p.decay
+        if (p.life <= 0) continue
+        const alpha = Math.pow(Math.max(0, p.life), 0.7)
+        ctx.save()
+        ctx.globalAlpha = alpha
+        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 2)
+        grad.addColorStop(0, 'rgba(255,255,255,1)')
+        grad.addColorStop(0.3, accent)
+        grad.addColorStop(1, 'transparent')
+        ctx.fillStyle = grad
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size * 2, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.globalAlpha = alpha
+        ctx.fillStyle = 'rgba(255,255,255,0.9)'
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size * 0.4, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.restore()
+      }
+
+      // Draw sparkles
+      for (const p of sparkles) {
+        p.x += p.vx; p.y += p.vy
+        p.vy += 0.08
+        p.vx *= 0.965; p.vy *= 0.965
+        p.life -= p.decay
+        if (p.life <= 0) continue
+        ctx.save()
+        ctx.globalAlpha = Math.pow(Math.max(0, p.life), 0.7)
+        ctx.fillStyle = 'rgba(255,255,255,1)'
+        drawSparkle(ctx, p.x, p.y, p.size)
+        ctx.fill()
+        ctx.restore()
+      }
+
+      // Draw shards
+      for (const p of shards) {
+        p.x += p.vx; p.y += p.vy
+        p.vy += 0.08
+        p.vx *= 0.965; p.vy *= 0.965
+        p.life -= p.decay
+        p.rotation += p.rotSpeed
+        if (p.life <= 0) continue
+        ctx.save()
+        ctx.globalAlpha = Math.pow(Math.max(0, p.life), 0.7)
+        ctx.translate(p.x, p.y)
+        ctx.rotate(p.rotation)
+        ctx.fillStyle = accent
+        ctx.fillRect(-p.size / 2, -p.size * 0.25, p.size, p.size * 0.5)
+        ctx.fillStyle = 'rgba(255,255,255,0.7)'
+        ctx.fillRect(-p.size / 2, -p.size * 0.25, p.size, p.size * 0.1)
+        ctx.restore()
+      }
+
+      const allDead =
+        rings.every(r => r.life <= 0) &&
+        orbs.every(p => p.life <= 0) &&
+        sparkles.every(p => p.life <= 0) &&
+        shards.every(p => p.life <= 0)
+
+      if (allDead) {
+        ctx.clearRect(0, 0, rect.width, rect.height)
+        onComplete()
+        return
+      }
+      rafRef.current = requestAnimationFrame(step)
+    }
+
+    rafRef.current = requestAnimationFrame(step)
+    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current) }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [trigger])
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 z-20 pointer-events-none"
+      style={{ width: '100%', height: '100%' }}
+    />
+  )
+}
+
+// ─────────────────────────────────────────────────────────────
 // SkillBubbleBank — glassmorphic physics bubbles
 // ─────────────────────────────────────────────────────────────
 type BubbleClickInfo = { level: number; cx: number; cy: number; cr: number }
@@ -689,6 +916,8 @@ function SkillBubbleBank({
   const btnRefs = useRef<(HTMLButtonElement | null)[]>([])
   const [positions, setPositions] = useState<BubblePhysics[]>([])
   const [mounted, setMounted] = useState(false)
+  const [burstTrigger, setBurstTrigger] = useState<BurstTrigger | null>(null)
+  const [poppingLevel, setPoppingLevel] = useState<number | null>(null)
 
   const countByLevel = LEVELS.reduce<Record<number, number>>((acc, l) => {
     acc[l] = skills.filter(s => s.level === l).length
@@ -773,14 +1002,28 @@ function SkillBubbleBank({
     const containerEl = containerRef.current
     if (!el || !containerEl) return
     const br = el.getBoundingClientRect()
-    const cr = containerEl.closest('[data-vault-root]')?.getBoundingClientRect()
-      ?? containerEl.getBoundingClientRect()
-    onBubbleClick({
-      level,
-      cx: br.left + br.width / 2 - cr.left,
-      cy: br.top + br.height / 2 - cr.top,
-      cr: br.width / 2,
-    })
+    const containerRect = containerEl.getBoundingClientRect()
+
+    // Position relative to container for canvas burst
+    const localX = br.left + br.width / 2 - containerRect.left
+    const localY = br.top + br.height / 2 - containerRect.top
+
+    // Position relative to vault root for clip-path overlay
+    const vaultRoot = containerEl.closest('[data-vault-root]')?.getBoundingClientRect() ?? containerRect
+    const overlayX = br.left + br.width / 2 - vaultRoot.left
+    const overlayY = br.top + br.height / 2 - vaultRoot.top
+
+    setPoppingLevel(level)
+    setBurstTrigger({ x: localX, y: localY, color: LEVEL_COLORS[level].accent })
+
+    setTimeout(() => {
+      onBubbleClick({
+        level,
+        cx: overlayX,
+        cy: overlayY,
+        cr: br.width / 2,
+      })
+    }, 180)
   }
 
   const breatheDurations = [3.8, 4.4, 3.2, 4.8, 3.5]
@@ -799,6 +1042,7 @@ function SkillBubbleBank({
         const count = countByLevel[level]
         const accent = LEVEL_COLORS[level].accent
         const popClass = isExiting ? 'bubble-pop-out' : mounted ? 'bubble-pop-in' : ''
+        const isPopping = poppingLevel === level
 
         return (
           <div
@@ -810,13 +1054,19 @@ function SkillBubbleBank({
               width: r * 2,
               height: r * 2,
               ['--pop-delay' as string]: `${i * 80}ms`,
+              transform: isPopping ? 'scale(0)' : undefined,
+              opacity: isPopping ? 0 : undefined,
+              transition: isPopping
+                ? 'transform 0.22s cubic-bezier(0.55,0,1,0.45), opacity 0.18s ease'
+                : undefined,
+              pointerEvents: isPopping ? 'none' : undefined,
             }}
             className={popClass}
           >
             <button
               ref={el => { btnRefs.current[i] = el }}
               onClick={() => handleClick(level, i)}
-              className="w-full h-full rounded-full flex flex-col items-center justify-center cursor-pointer focus:outline-none group"
+              className="relative w-full h-full rounded-full flex flex-col items-center justify-center cursor-pointer focus:outline-none group"
               style={{
                 ['--breathe-dur' as string]: `${breatheDurations[i]}s`,
                 ['--breathe-delay' as string]: `${breatheDelays[i]}s`,
@@ -846,6 +1096,19 @@ function SkillBubbleBank({
                   : 'inset 0 1px 0 rgba(255,255,255,0.06)'
               }}
             >
+              {/* Iridescent shimmer — soap-bubble light refraction */}
+              <div
+                className="absolute inset-0 rounded-full pointer-events-none"
+                style={{ background: 'radial-gradient(circle at 30% 25%, rgba(255,255,255,0.28) 0%, transparent 55%)' }}
+              />
+              <div
+                className="absolute rounded-full pointer-events-none"
+                style={{
+                  top: '12%', left: '18%', width: '30%', height: '18%',
+                  background: 'radial-gradient(ellipse, rgba(255,255,255,0.5), transparent 70%)',
+                  filter: 'blur(1px)',
+                }}
+              />
               <span className="text-[10px] font-medium leading-none mb-1.5 tracking-wide"
                 style={{ color: count > 0 ? accent + 'bb' : 'rgba(255,255,255,0.3)' }}>
                 {LEVEL_LABELS[level]}
@@ -858,6 +1121,11 @@ function SkillBubbleBank({
           </div>
         )
       })}
+      <BurstCanvas
+        containerRef={containerRef}
+        trigger={burstTrigger}
+        onComplete={() => setBurstTrigger(null)}
+      />
       <span className="absolute bottom-2.5 right-3 text-[10px] text-white/20 pointer-events-none select-none">
         click a bubble
       </span>
