@@ -1,7 +1,4 @@
-// /employer/candidates/[jobId] — Ranked candidates for a specific job
-// The employer's "match view": shows every candidate ranked by combined
-// skill fit + career goal alignment (E-01). Mirrors the candidate's
-// /jobs page but from the employer's perspective.
+// /employer/candidates/[jobId] — Ranked candidates + actual applicants for a job
 
 import { currentUser } from '@clerk/nextjs/server'
 import { createServerClient } from '@/lib/supabase/server'
@@ -18,6 +15,7 @@ import {
   candidateHasGoals,
 } from '@/lib/matching'
 import type { CareerData } from '@/types/database'
+import { ApplicantsPanel } from './ApplicantsPanel'
 
 type SkillRow = { name: string; level: number; source: string }
 
@@ -141,6 +139,45 @@ export default async function CandidatesForJobPage({
   const strongMatches = ranked.filter(c => c.score_pct >= 70).length
   const partialMatches = ranked.filter(c => c.score_pct >= 40 && c.score_pct < 70).length
 
+  // ── Fetch actual applicants for this job ─────────────────────────────────
+  const { data: applicantRows } = await supabase
+    .from('applications')
+    .select(`
+      id,
+      status,
+      created_at,
+      candidate_profiles (
+        id, name, headline, location,
+        skills ( name, level, source )
+      )
+    `)
+    .eq('job_id', jobId)
+    .order('created_at', { ascending: false })
+
+  type ApplicantRow = {
+    id: string
+    status: string
+    created_at: string
+    candidate_profiles: {
+      id: string; name: string; headline: string | null; location: string | null
+      skills: SkillRow[]
+    }
+  }
+
+  const applicants = (applicantRows ?? []) as unknown as ApplicantRow[]
+
+  // Enrich applicants with match score from the ranked list
+  const rankedById = new Map(ranked.map(r => [r.id, r]))
+  const enrichedApplicants = applicants.map(a => ({
+    appId: a.id,
+    status: a.status,
+    created_at: a.created_at,
+    ...a.candidate_profiles,
+    score_pct: rankedById.get(a.candidate_profiles.id)?.score_pct ?? null,
+    matched: rankedById.get(a.candidate_profiles.id)?.matched ?? [],
+    missing_required: rankedById.get(a.candidate_profiles.id)?.missing_required ?? [],
+  }))
+
   return (
     <div className="p-8 max-w-3xl">
       <BackLink jobTitle={job.title} />
@@ -164,6 +201,9 @@ export default async function CandidatesForJobPage({
           ))}
         </div>
       </Card>
+
+      {/* ── Applicants panel ─────────────────────────────────── */}
+      <ApplicantsPanel applicants={enrichedApplicants} />
 
       {/* ── Match summary ─────────────────────────────────────── */}
       <div className="flex gap-4 mb-6 text-sm">

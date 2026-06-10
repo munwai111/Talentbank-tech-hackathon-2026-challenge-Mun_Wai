@@ -57,16 +57,34 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true)
   const [reason, setReason] = useState<string | null>(null)
   const [expanded, setExpanded] = useState<string | null>(null)
+  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set())
+  const [applying, setApplying] = useState<string | null>(null)
 
   useEffect(() => {
-    fetch('/api/candidate/matches')
-      .then(r => r.json())
-      .then(data => {
-        setMatches(data.matches ?? [])
-        setReason(data.reason ?? null)
-        setLoading(false)
-      })
+    Promise.all([
+      fetch('/api/candidate/matches').then(r => r.json()),
+      fetch('/api/candidate/applications').then(r => r.json()),
+    ]).then(([matchData, appData]) => {
+      setMatches(matchData.matches ?? [])
+      setReason(matchData.reason ?? null)
+      setAppliedIds(new Set((appData.applications ?? []).map((a: { job_id: string }) => a.job_id)))
+      setLoading(false)
+    })
   }, [])
+
+  async function applyToJob(jobId: string) {
+    setApplying(jobId)
+    try {
+      const res = await fetch('/api/candidate/applications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ job_id: jobId }),
+      })
+      if (res.ok) setAppliedIds(prev => new Set([...prev, jobId]))
+    } finally {
+      setApplying(null)
+    }
+  }
 
   if (loading) {
     return (
@@ -250,9 +268,26 @@ export default function JobsPage() {
                 )}
 
                 <div className="flex gap-2 pt-1">
-                  <Button size="sm" className="flex-1 bg-indigo-600 hover:bg-indigo-500 border-0 text-white">
-                    Apply now →
-                  </Button>
+                  {appliedIds.has(match.job.id) ? (
+                    <div className="flex-1 flex items-center justify-center gap-2 text-sm font-medium
+                      text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 rounded-md px-3 py-1.5">
+                      ✓ Applied
+                    </div>
+                  ) : (
+                    <Button
+                      size="sm"
+                      className="flex-1 bg-indigo-600 hover:bg-indigo-500 border-0 text-white"
+                      disabled={applying === match.job.id}
+                      onClick={() => applyToJob(match.job.id)}
+                    >
+                      {applying === match.job.id ? (
+                        <span className="flex items-center gap-2">
+                          <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                          Applying…
+                        </span>
+                      ) : 'Apply now →'}
+                    </Button>
+                  )}
                   <Link href="/profile">
                     <Button size="sm" variant="outline"
                       className="border-white/15 bg-white/5 hover:bg-white/10 text-zinc-300">
@@ -267,13 +302,20 @@ export default function JobsPage() {
       </StaggerContainer>
 
       {matches.length > 0 && (
-        <p className="text-xs text-zinc-500 text-center mt-6">
-          Scores combine skill overlap (70%) and career goal alignment (30%).
-          Add skills or complete your Career Identity to improve your matches.
-          {' '}<Link href="/profile" className="underline hover:text-zinc-300">Skills Vault</Link>
-          {' · '}
-          <Link href="/discover" className="underline hover:text-zinc-300">Career Identity →</Link>
-        </p>
+        <div className="mt-6 flex flex-col items-center gap-2">
+          {appliedIds.size > 0 && (
+            <Link href="/applications"
+              className="text-sm text-indigo-400 hover:text-indigo-300 underline underline-offset-2">
+              View my applications ({appliedIds.size}) →
+            </Link>
+          )}
+          <p className="text-xs text-zinc-500 text-center">
+            Scores combine skill overlap (70%) and career goal alignment (30%).
+            {' '}<Link href="/profile" className="underline hover:text-zinc-300">Skills Vault</Link>
+            {' · '}
+            <Link href="/discover" className="underline hover:text-zinc-300">Career Identity →</Link>
+          </p>
+        </div>
       )}
     </div>
   )

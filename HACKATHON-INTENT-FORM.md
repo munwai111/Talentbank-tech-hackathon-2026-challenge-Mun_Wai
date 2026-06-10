@@ -1,5 +1,5 @@
 # Talentbank Tech Hackathon 2026 — Intent Form
-# Solo submission | Due: June 15, 2026
+# Team: LVMY (Solo) | Due: June 15, 2026
 # ─────────────────────────────────────────────────────────────────────────────
 
 ---
@@ -80,7 +80,33 @@ Talentbank is building Asia's Career OS. This submission is built with that goal
 ---
 
 ## Team
-**Solo submission** — Looi Mun Wai
+
+**Team name:** LVMY  
+**Format:** Solo submission  
+
+| Field | Details |
+|---|---|
+| Full name | Looi Mun Wai |
+| Role | Team Lead / Solo Developer |
+| Email | l_munwai@yahoo.com |
+| Mobile | +601111026284 |
+| Country | Malaysia |
+| Affiliation | No university affiliation — currently employed full-time as Senior Assistant, Store Development and Design at UNIQLO Malaysia HQ |
+| LinkedIn | linkedin.com/in/mun-wai-looi-086886225 |
+| GitHub | github.com/munwai111/Talentbank-tech-hackathon-2026-challenge-Mun_Wai |
+
+---
+
+## AI Usage Disclosure
+
+This project was built with AI assistance. Claude Code (Anthropic) was used throughout development for code generation, debugging, architecture review, and documentation. The product itself uses Claude Haiku 4.5 (Anthropic) as its AI inference engine for all career navigation, coaching, and matching features. All AI usage is intentional, disclosed, and constitutes the core of the product's value proposition.
+
+---
+
+## Build Scope
+
+**Primary audience:** Cross-audience (Candidates + Employers)  
+**Scope:** Career OS / Career Marketplace (compulsory) + 6 optional Challenge Modules
 
 ---
 

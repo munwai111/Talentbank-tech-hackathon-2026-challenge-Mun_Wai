@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { JobStatusToggle } from './JobStatusToggle'
 
 const REMOTE_LABELS = { remote: '🌐 Remote', hybrid: '🏠 Hybrid', onsite: '🏢 On-site' }
 
@@ -82,6 +83,7 @@ export default async function EmployerJobsPage() {
                   )}
                 </div>
                 <div className="flex gap-2 shrink-0">
+                  <JobStatusToggle jobId={job.id} initialStatus={job.status} />
                   <Link href={`/employer/candidates/${job.id}`}>
                     <Button size="sm" variant="outline">See matches →</Button>
                   </Link>

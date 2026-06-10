@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Zap, Waypoints, Crosshair, BrainCircuit,
-  Vault, FolderOpen, Settings2, ChevronRight,
+  Vault, FolderOpen, Settings2, ChevronRight, ClipboardList,
   type LucideIcon,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -19,10 +19,11 @@ type NavItem = {
 
 // Main nav — Career Identity is now inside Coach
 const NAV_ITEMS: NavItem[] = [
-  { href: '/dashboard', label: 'Dashboard',       Icon: Zap },
-  { href: '/coach',     label: 'AI Coach',        Icon: BrainCircuit },
-  { href: '/paths',     label: 'Path Navigator',  Icon: Waypoints },
-  { href: '/jobs',      label: 'Job Matches',     Icon: Crosshair },
+  { href: '/dashboard',     label: 'Dashboard',       Icon: Zap },
+  { href: '/coach',         label: 'AI Coach',        Icon: BrainCircuit },
+  { href: '/paths',         label: 'Path Navigator',  Icon: Waypoints },
+  { href: '/jobs',          label: 'Job Matches',     Icon: Crosshair },
+  { href: '/applications',  label: 'Applications',    Icon: ClipboardList },
 ]
 
 // Profile sub-links — appear under the profile header
