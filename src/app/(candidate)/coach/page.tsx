@@ -275,6 +275,21 @@ function StarterButton({ text, onClick }: { text: string; onClick: () => void })
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
+const COACH_STORAGE_KEY = 'career_os_coach_messages'
+const MAX_STORED_MESSAGES = 40
+
+function loadStoredMessages(): CoachMessage[] {
+  if (typeof window === 'undefined') return []
+  try {
+    const raw = localStorage.getItem(COACH_STORAGE_KEY)
+    if (!raw) return []
+    const parsed = JSON.parse(raw) as CoachMessage[]
+    return Array.isArray(parsed) ? parsed.slice(-MAX_STORED_MESSAGES) : []
+  } catch {
+    return []
+  }
+}
+
 function CoachPageInner() {
   const searchParams = useSearchParams()
   const [messages, setMessages] = useState<CoachMessage[]>([])
@@ -285,6 +300,20 @@ function CoachPageInner() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const nudgeFiredRef = useRef(false)
+
+  // Load persisted messages on mount
+  useEffect(() => {
+    const stored = loadStoredMessages()
+    if (stored.length > 0) setMessages(stored)
+  }, [])
+
+  // Persist messages to localStorage on every change
+  useEffect(() => {
+    if (messages.length === 0) return
+    try {
+      localStorage.setItem(COACH_STORAGE_KEY, JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)))
+    } catch { /* storage full or unavailable */ }
+  }, [messages])
 
   // Auto-scroll to latest message
   useEffect(() => {
@@ -409,6 +438,18 @@ function CoachPageInner() {
             <p className="text-xs text-zinc-500">Knows your skills · APAC market · Honest advice</p>
           </div>
           <div className="ml-auto flex items-center gap-3">
+            {messages.length > 0 && (
+              <button
+                onClick={() => {
+                  setMessages([])
+                  try { localStorage.removeItem(COACH_STORAGE_KEY) } catch { /* ignore */ }
+                }}
+                className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+                title="Clear conversation"
+              >
+                Clear
+              </button>
+            )}
             <button
               onClick={() => setCalibrationOpen(true)}
               className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg

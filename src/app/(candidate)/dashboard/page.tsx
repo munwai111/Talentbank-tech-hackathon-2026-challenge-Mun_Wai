@@ -27,7 +27,9 @@ export default async function DashboardPage() {
     .eq('user_id', dbUser.id).single()
 
   const skillCount = profile?.skills?.length ?? 0
-  const hasEmbedding = !!profile?.embedding
+  // Matching is "active" when the candidate has enough skills — not gated on
+  // the pgvector embedding (which requires OPENAI_API_KEY and generates async).
+  const isMatchingActive = skillCount >= 5
   const hasCareerIdentity = !!profile?.career_data?.synthesized_at
   const hasLifeChapter = !!profile?.career_data?.life_chapter_context
   const firstName = user.firstName ?? 'there'
@@ -72,7 +74,7 @@ export default async function DashboardPage() {
           Hey {firstName} <span className="text-2xl">👋</span>
         </h1>
         <p className="text-zinc-500 mt-1 text-sm">
-          {hasEmbedding ? "Your profile is active — employers can find you." : "Complete your Skills Vault to start getting matched."}
+          {isMatchingActive ? "Your profile is active — employers can find you." : "Complete your Skills Vault to start getting matched."}
         </p>
       </div>
 
@@ -130,11 +132,11 @@ export default async function DashboardPage() {
 
         {/* Match Status */}
         <div className="relative rounded-2xl p-5 overflow-hidden animate-fade-up animate-delay-3"
-          style={hasEmbedding
+          style={isMatchingActive
             ? { background: 'linear-gradient(135deg, rgba(6,182,212,0.1) 0%, rgba(99,102,241,0.06) 100%)', border: '1px solid rgba(6,182,212,0.2)' }
             : { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
           <p className="text-[11px] font-semibold tracking-wider uppercase text-zinc-600 mb-3">Match Status</p>
-          {hasEmbedding ? (
+          {isMatchingActive ? (
             <>
               <div className="flex items-center gap-2 mb-1">
                 <span className="relative flex h-2.5 w-2.5">
