@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
-import { gsap, useGSAP } from '@/lib/gsap-config'
+import { gsap, useGSAP, prefersReducedMotion } from '@/lib/gsap-config'
 
 type Props = {
   children: React.ReactNode
@@ -16,7 +16,7 @@ export function MagneticButton({ children, className, strength = 0.35 }: Props) 
 
   const onMove = contextSafe((e: MouseEvent) => {
     const el = ref.current
-    if (!el) return
+    if (!el || prefersReducedMotion()) return
     const rect = el.getBoundingClientRect()
     const cx = rect.left + rect.width / 2
     const cy = rect.top + rect.height / 2

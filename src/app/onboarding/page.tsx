@@ -121,7 +121,7 @@ export default function OnboardingPage() {
                 type="button"
                 onClick={() => { if (!loading) setSelected(role.id) }}
                 className={`ob-card opacity-0 w-full p-6 rounded-2xl border-2 backdrop-blur-sm text-left
-                  transition-all duration-300 cursor-pointer group
+                  transition duration-300 cursor-pointer group
                   ${isSelected
                     ? `${role.border} bg-gradient-to-br ${role.gradient}`
                     : 'border-white/10 bg-white/4 hover:border-white/25 hover:bg-white/7'
@@ -137,7 +137,7 @@ export default function OnboardingPage() {
                     <p className="text-zinc-400 text-sm mt-1">{role.description}</p>
                   </div>
                   <div className={`ml-auto mt-1 w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center
-                    transition-all duration-200
+                    transition duration-200
                     ${isSelected
                       ? role.accentColor === 'indigo' ? 'border-indigo-500 bg-indigo-500' : 'border-emerald-500 bg-emerald-500'
                       : 'border-white/30'

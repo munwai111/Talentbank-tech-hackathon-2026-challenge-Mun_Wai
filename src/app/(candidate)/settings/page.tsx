@@ -69,7 +69,7 @@ function StepDots({ step }: { step: 1 | 2 | 3 }) {
   return (
     <div className="flex items-center gap-2 mb-6">
       {[1, 2, 3].map(s => (
-        <div key={s} className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+        <div key={s} className={`h-1.5 flex-1 rounded-full transition duration-300 ${
           s < step ? 'bg-red-500' : s === step ? 'bg-red-400' : 'bg-white/15'
         }`} />
       ))}
@@ -92,7 +92,7 @@ function ReasonChip({
     <button
       type="button"
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm text-left w-full transition-all ${
+      className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm text-left w-full transition ${
         selected
           ? 'bg-red-500/10 border-red-500/40 text-red-300'
           : 'bg-white/4 border-white/10 text-zinc-300 hover:border-white/25 hover:bg-white/8'
@@ -100,7 +100,7 @@ function ReasonChip({
     >
       <span className="text-base flex-shrink-0">{reason.emoji}</span>
       <span className="flex-1">{reason.label}</span>
-      <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-all ${
+      <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition ${
         selected ? 'border-red-500 bg-red-500' : 'border-white/30'
       }`}>
         {selected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
@@ -250,7 +250,7 @@ export default function SettingsPage() {
               </div>
               <button
                 onClick={() => { setDeleteOpen(true); setDeleteStep(1) }}
-                className="shrink-0 px-4 py-2 border border-red-500/30 text-red-400 rounded-xl text-sm font-medium hover:bg-red-500/8 transition-all"
+                className="shrink-0 px-4 py-2 border border-red-500/30 text-red-400 rounded-xl text-sm font-medium hover:bg-red-500/8 transition"
               >
                 Delete account
               </button>
@@ -311,7 +311,7 @@ export default function SettingsPage() {
                 <button
                   onClick={() => setDeleteStep(2)}
                   disabled={!canProceedStep1}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition ${
                     canProceedStep1
                       ? 'bg-red-600 hover:bg-red-500 text-white'
                       : 'bg-white/8 text-zinc-500 cursor-not-allowed'
@@ -371,7 +371,7 @@ export default function SettingsPage() {
                 </label>
                 <input
                   type="text"
-                  className={`w-full border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none transition-all ${
+                  className={`w-full border rounded-xl px-4 py-3 text-sm font-mono focus:outline-none transition ${
                     confirmText === 'DELETE'
                       ? 'border-red-400 bg-red-500/10 text-red-300'
                       : 'border-white/10 bg-white/6 text-zinc-200 focus:border-white/25'
@@ -401,7 +401,7 @@ export default function SettingsPage() {
                 <button
                   onClick={handleDelete}
                   disabled={!canConfirm || deleting}
-                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                  className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition ${
                     canConfirm && !deleting
                       ? 'bg-red-600 hover:bg-red-500 text-white'
                       : 'bg-white/8 text-zinc-500 cursor-not-allowed'
@@ -437,7 +437,7 @@ export default function SettingsPage() {
               </p>
               <button
                 onClick={() => router.push('/sign-in')}
-                className="px-8 py-3 bg-white/10 hover:bg-white/15 text-zinc-200 rounded-xl text-sm font-medium transition-all"
+                className="px-8 py-3 bg-white/10 hover:bg-white/15 text-zinc-200 rounded-xl text-sm font-medium transition"
               >
                 Back to sign-in
               </button>

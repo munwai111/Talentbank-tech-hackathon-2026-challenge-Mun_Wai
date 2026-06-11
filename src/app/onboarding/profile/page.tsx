@@ -186,7 +186,7 @@ const INP = [
   'w-full bg-white/[0.06] border border-white/[0.1] rounded-2xl px-4 py-3.5',
   'text-slate-100 placeholder:text-slate-600 text-sm backdrop-blur-sm',
   'focus:outline-none focus:border-indigo-400/60 focus:ring-[3px] focus:ring-indigo-500/[0.12]',
-  'transition-all duration-300',
+  'transition duration-300',
 ].join(' ')
 
 const SEL = `${INP} appearance-none cursor-pointer`
@@ -325,7 +325,7 @@ function PhaseProgress({ currentPhase, completedPhases }: { currentPhase: number
               {/* Node */}
               <div className="flex flex-col items-center gap-1.5">
                 <div className={[
-                  'w-10 h-10 rounded-full flex items-center justify-center transition-all duration-500 relative',
+                  'w-10 h-10 rounded-full flex items-center justify-center transition duration-500 relative',
                   done   ? 'bg-emerald-500' : '',
                   active ? 'bg-indigo-500 animate-ring-pulse' : '',
                   locked ? 'bg-white/[0.05] border border-white/[0.08]' : '',
@@ -431,7 +431,7 @@ function VerifyNudgeModal({ onVerify, onSkip }: { onVerify: () => void; onSkip: 
             <span className="text-emerald-400 text-xs">✓</span>{b}
           </div>
         ))}
-        <button onClick={onVerify} className="w-full mt-5 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white font-semibold rounded-xl py-3 text-sm transition-all"
+        <button onClick={onVerify} className="w-full mt-5 bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white font-semibold rounded-xl py-3 text-sm transition"
           style={{ boxShadow: '0 4px 20px rgba(129,140,248,0.35)' }}>
           Add verification now
         </button>
@@ -448,13 +448,13 @@ function VerifyNudgeModal({ onVerify, onSkip }: { onVerify: () => void; onSkip: 
 function ScenarioCard({ qId, option, selected, onSelect }: { qId: string; option: { key: string; label: string }; selected: boolean; onSelect: () => void }) {
   return (
     <button type="button" onClick={onSelect}
-      className={`w-full text-left p-4 rounded-2xl border text-sm transition-all duration-200 ${
+      className={`w-full text-left p-4 rounded-2xl border text-sm transition duration-200 ${
         selected
           ? 'bg-indigo-500/[0.12] border-indigo-400/50 text-slate-100'
           : 'bg-white/[0.02] border-white/[0.06] text-slate-400 hover:bg-white/[0.05] hover:border-white/[0.12] hover:text-slate-200'
       }`}>
       <div className="flex items-start gap-3">
-        <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center text-[10px] font-bold mt-0.5 transition-all ${
+        <div className={`w-6 h-6 rounded-full border-2 flex-shrink-0 flex items-center justify-center text-[10px] font-bold mt-0.5 transition ${
           selected ? 'border-indigo-400 bg-indigo-500 text-white' : 'border-slate-600 text-slate-600'
         }`}>
           {option.key.toUpperCase()}
@@ -470,7 +470,7 @@ function ScenarioCard({ qId, option, selected, onSelect }: { qId: string; option
 function Pill({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
   return (
     <button type="button" onClick={onClick}
-      className={`px-3.5 py-2 rounded-full text-xs border transition-all duration-200 ${
+      className={`px-3.5 py-2 rounded-full text-xs border transition duration-200 ${
         selected
           ? 'bg-indigo-500/[0.15] border-indigo-400/60 text-indigo-300'
           : 'bg-white/[0.04] border-white/[0.08] text-slate-500 hover:border-white/20 hover:text-slate-300'
@@ -486,7 +486,7 @@ function Checkbox({ checked, onChange, label }: { checked: boolean; onChange: ()
   return (
     <label className="flex items-center gap-3 cursor-pointer group">
       <div onClick={onChange}
-        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all cursor-pointer ${
+        className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition cursor-pointer ${
           checked ? 'bg-indigo-500 border-indigo-500' : 'border-slate-600 bg-transparent group-hover:border-slate-400'
         }`}>
         {checked && <svg viewBox="0 0 12 12" width={10}><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/></svg>}
@@ -603,7 +603,7 @@ function Phase2({ entries, onChange, onAdd, onRemove }: {
           </div>
         </div>
       ))}
-      <button onClick={onAdd} className="w-full border border-dashed border-white/[0.1] rounded-2xl py-3 text-sm text-slate-600 hover:text-slate-400 hover:border-white/20 transition-all">
+      <button onClick={onAdd} className="w-full border border-dashed border-white/[0.1] rounded-2xl py-3 text-sm text-slate-600 hover:text-slate-400 hover:border-white/20 transition">
         + Add another qualification
       </button>
     </div>
@@ -657,7 +657,7 @@ function Phase3({ entries, onChange, onAdd, onRemove, expandedVerify, setExpande
             <div className="flex flex-wrap gap-2">
               {EMPLOYMENT_TYPES.map(et => (
                 <button key={et.value} type="button" onClick={() => onChange(e.id, 'employmentType', et.value)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs border transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs border transition ${
                     e.employmentType === et.value
                       ? 'bg-indigo-500/[0.15] border-indigo-400/50 text-indigo-300'
                       : 'bg-white/[0.04] border-white/[0.08] text-slate-500 hover:border-white/20 hover:text-slate-300'
@@ -712,7 +712,7 @@ function Phase3({ entries, onChange, onAdd, onRemove, expandedVerify, setExpande
 
           {e.verificationStatus === 'unverified' && (
             <button onClick={() => setExpandedVerify(expandedVerify === e.id ? null : e.id)}
-              className="w-full border border-dashed border-indigo-400/20 rounded-xl py-3 text-xs text-indigo-400 hover:bg-indigo-500/[0.08] transition-all flex items-center justify-center gap-2">
+              className="w-full border border-dashed border-indigo-400/20 rounded-xl py-3 text-xs text-indigo-400 hover:bg-indigo-500/[0.08] transition flex items-center justify-center gap-2">
               🏆 Verify this experience for a profile boost →
             </button>
           )}
@@ -726,7 +726,7 @@ function Phase3({ entries, onChange, onAdd, onRemove, expandedVerify, setExpande
                   <input className={`${INP} flex-1`} type="email" placeholder="yourname@company.com"
                     value={e.verificationEmail} onChange={ev => onChange(e.id, 'verificationEmail', ev.target.value)} />
                   <button onClick={() => { if (e.verificationEmail.includes('@')) { onChange(e.id, 'verificationStatus', 'email_sent'); setExpandedVerify(null) } }}
-                    className="px-4 py-2 bg-indigo-500 text-white rounded-xl text-xs font-medium hover:bg-indigo-400 transition-all whitespace-nowrap">
+                    className="px-4 py-2 bg-indigo-500 text-white rounded-xl text-xs font-medium hover:bg-indigo-400 transition whitespace-nowrap">
                     Send link
                   </button>
                 </div>
@@ -744,7 +744,7 @@ function Phase3({ entries, onChange, onAdd, onRemove, expandedVerify, setExpande
           )}
         </div>
       ))}
-      <button onClick={onAdd} className="w-full border border-dashed border-white/[0.1] rounded-2xl py-3 text-sm text-slate-600 hover:text-slate-400 hover:border-white/20 transition-all">
+      <button onClick={onAdd} className="w-full border border-dashed border-white/[0.1] rounded-2xl py-3 text-sm text-slate-600 hover:text-slate-400 hover:border-white/20 transition">
         + Add a role
       </button>
       <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-4 text-xs text-slate-600">
@@ -776,7 +776,7 @@ function Phase4({ bio, onBioChange, importUrl, onImportUrlChange, onImport, impo
           <input className={`${INP} flex-1`} type="url" placeholder="https://linkedin.com/in/yourname"
             value={importUrl} onChange={e => onImportUrlChange(e.target.value)} />
           <button onClick={onImport} disabled={importLoading || !importUrl.trim()}
-            className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 disabled:opacity-40 text-white rounded-xl text-xs font-medium hover:from-indigo-400 hover:to-violet-400 transition-all whitespace-nowrap min-w-[80px]">
+            className="px-4 py-2 bg-gradient-to-r from-indigo-500 to-violet-500 disabled:opacity-40 text-white rounded-xl text-xs font-medium hover:from-indigo-400 hover:to-violet-400 transition whitespace-nowrap min-w-[80px]">
             {importLoading ? '...' : importDone ? '✓' : 'Import'}
           </button>
         </div>
@@ -820,7 +820,7 @@ function Phase5({ data, onChange, onToggleHobby, onToggleInterest }: {
       <div className="flex gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
         {tabs.map((t, i) => (
           <button key={t.id} onClick={() => setSection(i)}
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs whitespace-nowrap transition-all flex-shrink-0 ${
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs whitespace-nowrap transition flex-shrink-0 ${
               section === i ? 'bg-indigo-500/[0.15] border border-indigo-400/30 text-indigo-300 font-semibold' : 'bg-white/[0.04] border border-transparent text-slate-500 hover:text-slate-300'
             }`}>
             {t.icon} {t.label}
@@ -836,7 +836,7 @@ function Phase5({ data, onChange, onToggleHobby, onToggleInterest }: {
             <textarea className={`${INP} resize-none`} rows={2} placeholder="e.g. Head of Data or CTO at a Series B startup" value={data.goal5Year} onChange={e => onChange('goal5Year', e.target.value)} /></div>
           <div><label className={LBL}>Dream role — if you could design it yourself</label>
             <input className={INP} placeholder="e.g. Principal AI Researcher at a healthcare company" value={data.dreamRole} onChange={e => onChange('dreamRole', e.target.value)} /></div>
-          <button onClick={() => setSection(1)} className="w-full bg-indigo-500/[0.12] border border-indigo-400/20 text-indigo-300 rounded-xl py-2.5 text-sm hover:bg-indigo-500/[0.18] transition-all">
+          <button onClick={() => setSection(1)} className="w-full bg-indigo-500/[0.12] border border-indigo-400/20 text-indigo-300 rounded-xl py-2.5 text-sm hover:bg-indigo-500/[0.18] transition">
             Next: Character assessment →
           </button>
         </div>
@@ -858,7 +858,7 @@ function Phase5({ data, onChange, onToggleHobby, onToggleInterest }: {
               </div>
             </div>
           ))}
-          <button onClick={() => setSection(2)} className="w-full bg-indigo-500/[0.12] border border-indigo-400/20 text-indigo-300 rounded-xl py-2.5 text-sm hover:bg-indigo-500/[0.18] transition-all">Next: Interests →</button>
+          <button onClick={() => setSection(2)} className="w-full bg-indigo-500/[0.12] border border-indigo-400/20 text-indigo-300 rounded-xl py-2.5 text-sm hover:bg-indigo-500/[0.18] transition">Next: Interests →</button>
         </div>
       )}
 
@@ -872,7 +872,7 @@ function Phase5({ data, onChange, onToggleHobby, onToggleInterest }: {
             <label className={LBL}>Professional interests</label>
             <div className="flex flex-wrap gap-2">{PROFESSIONAL_INTERESTS.map(i => <Pill key={i} label={i} selected={data.professionalInterests.includes(i)} onClick={() => onToggleInterest(i)} />)}</div>
           </div>
-          <button onClick={() => setSection(3)} className="w-full bg-indigo-500/[0.12] border border-indigo-400/20 text-indigo-300 rounded-xl py-2.5 text-sm hover:bg-indigo-500/[0.18] transition-all">Next: Strengths & weaknesses →</button>
+          <button onClick={() => setSection(3)} className="w-full bg-indigo-500/[0.12] border border-indigo-400/20 text-indigo-300 rounded-xl py-2.5 text-sm hover:bg-indigo-500/[0.18] transition">Next: Strengths & weaknesses →</button>
         </div>
       )}
 
@@ -895,7 +895,7 @@ function Phase5({ data, onChange, onToggleHobby, onToggleInterest }: {
               ))}
             </div>
           </div>
-          <button onClick={() => setSection(4)} className="w-full bg-indigo-500/[0.12] border border-indigo-400/20 text-indigo-300 rounded-xl py-2.5 text-sm hover:bg-indigo-500/[0.18] transition-all">Last section: Intention →</button>
+          <button onClick={() => setSection(4)} className="w-full bg-indigo-500/[0.12] border border-indigo-400/20 text-indigo-300 rounded-xl py-2.5 text-sm hover:bg-indigo-500/[0.18] transition">Last section: Intention →</button>
         </div>
       )}
 
@@ -906,7 +906,7 @@ function Phase5({ data, onChange, onToggleHobby, onToggleInterest }: {
             <div className="space-y-2">
               {PLATFORM_INTENTIONS.map(intent => (
                 <button key={intent} type="button" onClick={() => onChange('platformIntention', intent)}
-                  className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all ${
+                  className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition ${
                     data.platformIntention === intent ? 'bg-indigo-500/[0.12] border-indigo-400/40 text-slate-100' : 'bg-white/[0.02] border-white/[0.06] text-slate-400 hover:bg-white/[0.05] hover:border-white/[0.12]'
                   }`}>
                   <span className={data.platformIntention === intent ? 'text-indigo-400 mr-2' : 'text-slate-700 mr-2'}>●</span>{intent}
@@ -919,7 +919,7 @@ function Phase5({ data, onChange, onToggleHobby, onToggleInterest }: {
             <div className="space-y-2">
               {CURRENT_SITUATIONS.map(s => (
                 <button key={s} type="button" onClick={() => onChange('currentSituation', s)}
-                  className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition-all ${
+                  className={`w-full text-left px-4 py-3 rounded-xl border text-sm transition ${
                     data.currentSituation === s ? 'bg-indigo-500/[0.12] border-indigo-400/40 text-slate-100' : 'bg-white/[0.02] border-white/[0.06] text-slate-400 hover:bg-white/[0.05] hover:border-white/[0.12]'
                   }`}>
                   <span className={data.currentSituation === s ? 'text-indigo-400 mr-2' : 'text-slate-700 mr-2'}>●</span>{s}
@@ -1119,7 +1119,7 @@ export default function OnboardingProfilePage() {
           </div>
 
           {/* Glass card */}
-          <div className={`rounded-3xl p-6 transition-all duration-700 ${isIdle ? 'animate-card-breathe' : ''}`}
+          <div className={`rounded-3xl p-6 transition duration-700 ${isIdle ? 'animate-card-breathe' : ''}`}
             style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(40px)', border: '1px solid rgba(255,255,255,0.07)', boxShadow: `0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05), 0 0 80px ${phaseData.glow}15` }}>
 
             {/* Top edge shimmer */}
@@ -1156,7 +1156,7 @@ export default function OnboardingProfilePage() {
             </button>
           )}
           <button onClick={handleContinue} disabled={(!canContinue && phase !== 3) || saving}
-            className={`flex-1 rounded-2xl py-3.5 text-sm font-semibold transition-all duration-300 ${
+            className={`flex-1 rounded-2xl py-3.5 text-sm font-semibold transition duration-300 ${
               canContinue || phase === 3
                 ? 'text-white'
                 : 'bg-white/[0.06] text-slate-600 cursor-not-allowed'

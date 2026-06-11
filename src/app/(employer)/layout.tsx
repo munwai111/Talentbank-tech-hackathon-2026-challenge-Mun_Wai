@@ -39,7 +39,7 @@ export default async function EmployerLayout({ children }: { children: React.Rea
           <Link href="/employer/dashboard" className="flex items-center gap-2.5 group">
             <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-violet-500 to-indigo-600
               flex items-center justify-center text-xs font-bold shadow-lg shadow-violet-500/25
-              group-hover:shadow-violet-500/45 transition-all text-white">
+              group-hover:shadow-violet-500/45 transition text-white">
               C
             </div>
             <div>
@@ -56,7 +56,7 @@ export default async function EmployerLayout({ children }: { children: React.Rea
               key={href}
               href={href}
               className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-muted-foreground
-                hover:bg-accent/60 hover:text-foreground transition-all duration-200 group"
+                hover:bg-accent/60 hover:text-foreground transition duration-200 group"
             >
               <Icon size={15} className="shrink-0 transition-colors" strokeWidth={1.75} />
               <span className="text-[13px] font-medium">{label}</span>
@@ -66,7 +66,7 @@ export default async function EmployerLayout({ children }: { children: React.Rea
 
         <nav className="relative px-2.5 pb-2 border-t border-border pt-2">
           <Link href="/settings" className="flex items-center gap-3 px-3 py-2 rounded-xl text-sm text-muted-foreground
-            hover:bg-accent/60 hover:text-foreground transition-all duration-200 group">
+            hover:bg-accent/60 hover:text-foreground transition duration-200 group">
             <Settings2 size={15} className="shrink-0 transition-colors" strokeWidth={1.75} />
             <span className="text-[13px]">Settings</span>
           </Link>

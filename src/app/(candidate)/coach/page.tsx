@@ -266,7 +266,7 @@ function StarterButton({ text, onClick }: { text: string; onClick: () => void })
     <button
       onClick={onClick}
       className="text-left px-4 py-3 rounded-xl border border-white/10 bg-white/4 text-sm text-zinc-400
-                 hover:border-indigo-500/40 hover:text-white hover:bg-indigo-500/10 transition-all backdrop-blur-sm"
+                 hover:border-indigo-500/40 hover:text-white hover:bg-indigo-500/10 transition backdrop-blur-sm"
     >
       {text} →
     </button>
@@ -454,7 +454,7 @@ function CoachPageInner() {
               onClick={() => setCalibrationOpen(true)}
               className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg
                 bg-white/6 text-zinc-400 border border-white/10
-                hover:bg-white/10 hover:text-white transition-all"
+                hover:bg-white/10 hover:text-white transition"
             >
               🎛 Calibrate
             </button>
@@ -541,7 +541,7 @@ function CoachPageInner() {
             className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-600 to-indigo-600 text-white
                        flex items-center justify-center shadow-lg shadow-indigo-500/30
                        hover:from-violet-500 hover:to-indigo-500
-                       disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0"
+                       disabled:opacity-40 disabled:cursor-not-allowed transition shrink-0"
           >
             {streaming ? (
               <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

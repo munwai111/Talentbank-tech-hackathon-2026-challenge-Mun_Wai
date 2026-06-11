@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef } from 'react'
-import { gsap, useGSAP } from '@/lib/gsap-config'
+import { gsap, useGSAP, prefersReducedMotion } from '@/lib/gsap-config'
 
 type Props = {
   children: React.ReactNode
@@ -20,7 +20,7 @@ export function FadeUp({ children, delay = 0, y = 40, duration = 0.8, className,
     if (!ref.current) return
     gsap.fromTo(
       ref.current,
-      { opacity: 0, y },
+      { opacity: 0, y: prefersReducedMotion() ? 0 : y },
       {
         opacity: 1,
         y: 0,

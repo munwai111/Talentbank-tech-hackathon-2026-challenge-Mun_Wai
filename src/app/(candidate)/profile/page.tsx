@@ -92,7 +92,7 @@ function RestructureButton({
       disabled={loading}
       className="flex items-center gap-1.5 text-[11px] font-medium px-2.5 py-1 rounded-lg
         bg-indigo-500/10 text-indigo-400 border border-indigo-500/20
-        hover:bg-indigo-500/20 disabled:opacity-50 transition-all whitespace-nowrap"
+        hover:bg-indigo-500/20 disabled:opacity-50 transition whitespace-nowrap"
     >
       {loading ? (
         <><span className="w-3 h-3 border border-indigo-400 border-t-transparent rounded-full animate-spin" />Analyzing…</>
@@ -116,7 +116,7 @@ function WorkExperienceCard({ job }: { job: WorkExperienceEntry }) {
   }
 
   return (
-    <div className="rounded-2xl border border-white/7 bg-white/3 overflow-hidden hover:border-white/12 transition-all duration-200">
+    <div className="rounded-2xl border border-white/7 bg-white/3 overflow-hidden hover:border-white/12 transition duration-200">
       <div className="px-5 pt-4 pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
@@ -440,7 +440,7 @@ function SkillDetailCard({ skill, accentColor }: { skill: Skill; accentColor: st
   const lvl = LEVEL_COLORS[skill.level] ?? LEVEL_COLORS[3]
 
   return (
-    <div className="rounded-xl border border-white/7 bg-white/3 overflow-hidden hover:border-white/12 transition-all"
+    <div className="rounded-xl border border-white/7 bg-white/3 overflow-hidden hover:border-white/12 transition"
       style={{ borderLeft: `3px solid ${accentColor}33` }}>
       <div className="flex items-center gap-3 px-4 py-3">
         <div className="flex-1 min-w-0">
@@ -517,7 +517,7 @@ function SkillHotBar({
             <button
               key={level}
               onClick={() => onSelect(level)}
-              className="px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 whitespace-nowrap"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold transition duration-200 whitespace-nowrap"
               style={{
                 color: isActive ? accent : 'rgba(255,255,255,0.45)',
                 backgroundColor: isActive ? accent + '1a' : 'transparent',

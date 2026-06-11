@@ -137,7 +137,7 @@ export function LandingPage() {
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className={`rounded-xl p-6 border backdrop-blur-sm transition-all duration-300
+                className={`rounded-xl p-6 border backdrop-blur-sm transition duration-300
                   hover:-translate-y-1 hover:shadow-xl group cursor-default
                   ${f.highlight
                     ? 'border-indigo-500/40 bg-indigo-500/10 hover:border-indigo-400/60 hover:shadow-indigo-500/20'
@@ -194,7 +194,7 @@ export function LandingPage() {
             {EMPLOYER_FEATURES.map(item => (
               <div key={item.label}
                 className="flex items-center gap-3 rounded-xl p-4 border border-white/8 bg-white/4
-                  backdrop-blur-sm hover:border-white/15 hover:bg-white/7 transition-all duration-200">
+                  backdrop-blur-sm hover:border-white/15 hover:bg-white/7 transition duration-200">
                 <span className="w-9 h-9 rounded-lg bg-white/8 flex items-center justify-center shrink-0">
                   <item.Icon size={16} className="text-zinc-400" strokeWidth={1.75} />
                 </span>

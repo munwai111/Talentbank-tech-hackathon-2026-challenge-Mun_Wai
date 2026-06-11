@@ -123,7 +123,7 @@ export default async function EmployerDashboardPage() {
           { href: '/employer/company',    icon: '🏢', title: 'Update company profile', desc: 'Make your brand visible to candidates',          delay: 'animate-delay-3' },
         ].map(item => (
           <Link key={item.href} href={item.href} className={`animate-fade-up ${item.delay}`}>
-            <Card className="p-5 hover:border-indigo-500/30 hover:bg-indigo-500/8 transition-all cursor-pointer h-full group">
+            <Card className="p-5 hover:border-indigo-500/30 hover:bg-indigo-500/8 transition cursor-pointer h-full group">
               <span className="text-2xl">{item.icon}</span>
               <h3 className="font-medium mt-2">{item.title}</h3>
               <p className="text-sm text-zinc-500 mt-1">{item.desc}</p>

@@ -32,7 +32,7 @@ function ChipSelect({
           key={opt}
           type="button"
           onClick={() => toggle(opt)}
-          className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
+          className={`px-3 py-1.5 rounded-full text-sm border transition ${
             selected.includes(opt)
               ? 'bg-indigo-600 text-white border-indigo-600'
               : 'bg-white/6 text-zinc-400 border-white/15 hover:border-white/30'

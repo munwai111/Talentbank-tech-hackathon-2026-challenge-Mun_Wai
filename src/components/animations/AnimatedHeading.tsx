@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef } from 'react'
-import { gsap, useGSAP } from '@/lib/gsap-config'
+import { gsap, useGSAP, prefersReducedMotion } from '@/lib/gsap-config'
 
 type Props = {
   children: string
@@ -30,9 +30,10 @@ export function AnimatedHeading({
   useGSAP(() => {
     if (!ref.current) return
     const spans = ref.current.querySelectorAll<HTMLSpanElement>('.word')
+    const reduced = prefersReducedMotion()
     gsap.fromTo(
       spans,
-      { opacity: 0, y: 40, rotateX: -20 },
+      { opacity: 0, y: reduced ? 0 : 40, rotateX: reduced ? 0 : -20 },
       {
         opacity: 1,
         y: 0,

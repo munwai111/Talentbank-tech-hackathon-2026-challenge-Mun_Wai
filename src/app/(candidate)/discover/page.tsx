@@ -42,7 +42,7 @@ function ChipSelect({
           key={opt}
           type="button"
           onClick={() => toggle(opt)}
-          className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
+          className={`px-3 py-1.5 rounded-full text-sm border transition ${
             selected.includes(opt)
               ? 'bg-indigo-600 text-white border-indigo-600'
               : 'bg-white/6 text-zinc-400 border-white/15 hover:border-white/30'
@@ -61,7 +61,7 @@ function StepProgress({ current, total }: { current: number; total: number }) {
     <div className="flex items-center gap-2 mb-8">
       {Array.from({ length: total }).map((_, i) => (
         <div key={i} className="flex items-center gap-2">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all ${
+          <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition ${
             i < current ? 'bg-indigo-600 text-white' :
             i === current ? 'bg-indigo-500/20 text-indigo-300 border-2 border-indigo-500' :
             'bg-white/8 text-zinc-500'
@@ -181,7 +181,7 @@ export default function DiscoverPage() {
               key={opt.value}
               type="button"
               onClick={() => set('current_situation', opt.value)}
-              className={`p-4 rounded-xl border-2 text-left transition-all ${
+              className={`p-4 rounded-xl border-2 text-left transition ${
                 form.current_situation === opt.value
                   ? 'border-indigo-500 bg-indigo-500/10'
                   : 'border-white/15 hover:border-white/30'
@@ -209,7 +209,7 @@ export default function DiscoverPage() {
                 key={value}
                 type="button"
                 onClick={() => set('education_level', value)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-sm border transition-all ${
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm border transition ${
                   form.education_level === value
                     ? 'border-indigo-500 bg-indigo-500/10 text-indigo-300'
                     : 'border-white/15 hover:border-white/30'
@@ -343,7 +343,7 @@ export default function DiscoverPage() {
               key={opt.value}
               type="button"
               onClick={() => set('preferred_work_arrangement', opt.value)}
-              className={`flex-1 py-2.5 rounded-lg text-sm border-2 transition-all ${
+              className={`flex-1 py-2.5 rounded-lg text-sm border-2 transition ${
                 form.preferred_work_arrangement === opt.value
                   ? 'border-indigo-500 bg-indigo-500/10 text-indigo-300 font-medium'
                   : 'border-white/15 hover:border-white/30'
@@ -490,7 +490,7 @@ export default function DiscoverPage() {
                 key={pill}
                 type="button"
                 onClick={() => set('life_chapter_context', isSelected ? null : pill)}
-                className={`px-3 py-2 rounded-full text-sm border transition-all text-left ${
+                className={`px-3 py-2 rounded-full text-sm border transition text-left ${
                   isSelected
                     ? 'bg-indigo-600 text-white border-indigo-600'
                     : 'bg-white/6 text-zinc-400 border-white/15 hover:border-white/30'

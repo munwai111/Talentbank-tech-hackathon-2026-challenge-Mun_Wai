@@ -102,7 +102,7 @@ export default async function DashboardPage() {
             </div>
           </div>
           <div className="mt-3 h-1 bg-white/6 rounded-full overflow-hidden">
-            <div className="h-full rounded-full transition-all duration-1000"
+            <div className="h-full rounded-full transition duration-1000"
               style={{ width: `${completeness}%`, background: 'linear-gradient(90deg, #7c3aed, #4f46e5)' }} />
           </div>
         </div>
@@ -157,7 +157,7 @@ export default async function DashboardPage() {
               <Link href="/profile">
                 <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
                   bg-white/6 border border-white/10 hover:border-indigo-500/40 hover:bg-indigo-500/10
-                  transition-all cursor-pointer">
+                  transition cursor-pointer">
                   <span className="text-xs text-zinc-400 font-medium">Build vault →</span>
                 </div>
               </Link>
@@ -216,7 +216,7 @@ export default async function DashboardPage() {
               className={`animate-fade-up animate-delay-${Math.min(i + 1, 6)} ${item.disabled ? 'pointer-events-none opacity-35' : ''}`}
             >
               <div className={`rounded-2xl p-4 border bg-gradient-to-br ${item.gradient} ${item.border}
-                hover:shadow-lg ${item.glow} transition-all duration-200 cursor-pointer h-full group`}>
+                hover:shadow-lg ${item.glow} transition duration-200 cursor-pointer h-full group`}>
                 <div className="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center mb-3
                   group-hover:scale-110 transition-transform duration-200">
                   <item.Icon size={17} className={item.iconColor} strokeWidth={1.75} />
@@ -288,7 +288,7 @@ function NudgeCard({ href, color, Icon, title, desc, cta }: NudgeProps) {
           </div>
         </div>
         <Link href={href} className="shrink-0">
-          <button className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all whitespace-nowrap ${s.btnClass}`}>
+          <button className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap ${s.btnClass}`}>
             {cta}
           </button>
         </Link>

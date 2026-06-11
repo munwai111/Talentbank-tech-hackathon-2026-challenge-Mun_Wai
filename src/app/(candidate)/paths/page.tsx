@@ -111,7 +111,7 @@ function PathCard({ path }: { path: CareerPath }) {
   const timeline = `${path.timeline_months_min}–${path.timeline_months_max} months`
 
   return (
-    <div className="relative rounded-2xl flex flex-col overflow-hidden backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5"
+    <div className="relative rounded-2xl flex flex-col overflow-hidden backdrop-blur-sm transition duration-300 hover:-translate-y-0.5"
       style={{
         background: cfg.cardBg,
         border: `1px solid ${cfg.cardBorder}`,
@@ -180,7 +180,7 @@ function PathCard({ path }: { path: CareerPath }) {
         {/* CTA */}
         <a href="/jobs"
           className={`mt-auto flex items-center justify-center gap-1.5 text-sm font-semibold text-white
-            bg-gradient-to-r ${cfg.ctaGradient} rounded-xl px-4 py-2.5 transition-all
+            bg-gradient-to-r ${cfg.ctaGradient} rounded-xl px-4 py-2.5 transition
             hover:opacity-90 hover:shadow-lg`}>
           Explore matching jobs →
         </a>
@@ -265,7 +265,7 @@ export default function PathsPage() {
           onClick={fetchPaths}
           disabled={loading}
           className="flex items-center gap-2 text-sm font-medium text-zinc-400 border border-white/8 bg-white/3
-            rounded-xl px-4 py-2.5 hover:bg-white/6 hover:border-white/15 hover:text-zinc-200 disabled:opacity-40 transition-all"
+            rounded-xl px-4 py-2.5 hover:bg-white/6 hover:border-white/15 hover:text-zinc-200 disabled:opacity-40 transition"
         >
           <span className={loading ? 'animate-spin' : ''}>↺</span>
           {loading ? 'Generating…' : 'Refresh paths'}

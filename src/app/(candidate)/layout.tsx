@@ -80,7 +80,7 @@ function Sidebar() {
               className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[12px]
                 text-slate-600 dark:text-slate-400
                 hover:bg-accent/60 hover:text-slate-900 dark:hover:text-white/90
-                transition-all duration-150 group"
+                transition duration-150 group"
             >
               <Icon size={12} className="shrink-0 text-slate-500 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300 transition-colors" strokeWidth={1.75} />
               <span>{label}</span>
@@ -97,7 +97,7 @@ function Sidebar() {
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-all duration-200 group relative ${
+              className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition duration-200 group relative ${
                 isActive
                   ? 'bg-accent text-slate-900 dark:text-white/90'
                   : 'text-slate-600 dark:text-slate-400 hover:bg-accent/60 hover:text-slate-900 dark:hover:text-white/90'
@@ -108,7 +108,7 @@ function Sidebar() {
               )}
               <Icon
                 size={15}
-                className={`shrink-0 transition-all duration-200 ${
+                className={`shrink-0 transition duration-200 ${
                   isActive
                     ? 'text-indigo-500 dark:text-indigo-400'
                     : 'text-slate-500 dark:text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-300'

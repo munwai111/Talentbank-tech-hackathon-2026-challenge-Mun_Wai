@@ -49,6 +49,17 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
+/* ── Motion system — strong easing curves (exposed as ease-* utilities) ──
+   Built-in CSS easings are too weak; these have the punch that makes
+   motion feel intentional. ease-in is banned for UI: it delays the initial
+   movement at the exact moment the user is watching most closely.
+   Plain @theme (not inline) so the vars are emitted to :root for custom CSS. */
+@theme {
+  --ease-snap: cubic-bezier(0.23, 1, 0.32, 1);        /* strong ease-out — enter/exit */
+  --ease-glide: cubic-bezier(0.77, 0, 0.175, 1);      /* strong in-out — on-screen movement */
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);      /* iOS drawer curve */
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -313,22 +324,38 @@
 }
 .animate-scroll-bounce { animation: scroll-bounce 2s ease-in-out infinite; }
 
-/* Hover card lift — enhanced */
+/* Hover card lift — gated to real pointers (touch taps cause false hovers) */
 .card-hover {
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-              box-shadow 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-              border-color 0.3s ease;
+  transition: transform 250ms var(--ease-snap),
+              box-shadow 250ms var(--ease-snap),
+              border-color 250ms ease;
 }
-.card-hover:hover {
-  transform: translateY(-4px) scale(1.01);
+@media (hover: hover) and (pointer: fine) {
+  .card-hover:hover {
+    transform: translateY(-4px) scale(1.01);
+  }
 }
 
 /* Button press effect */
 .btn-press {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: transform 140ms var(--ease-snap), box-shadow 140ms var(--ease-snap);
 }
 .btn-press:active {
   transform: scale(0.97);
+}
+
+/* ── Global press feedback ────────────────────────────────────────────────
+   Every pressable element confirms the press instantly. Uses the `scale`
+   property (not transform) so it composes with transform-based animations.
+   Lives in @layer base so Tailwind utilities can still override per-element. */
+@layer base {
+  button:not(:disabled):active,
+  [role="button"]:not([aria-disabled="true"]):active {
+    scale: 0.97;
+  }
+  button, [role="button"] {
+    transition: scale 140ms var(--ease-snap);
+  }
 }
 
 /* Gradient text utility */
@@ -379,7 +406,8 @@
 }
 
 @keyframes bubble-pop-in {
-  0%   { opacity: 0; transform: scale(0); filter: blur(8px); }
+  /* Start from a visible scale — nothing in the real world appears from nothing */
+  0%   { opacity: 0; transform: scale(0.5); filter: blur(8px); }
   60%  { transform: scale(1.1); }
   100% { opacity: 1; transform: scale(1); filter: blur(0);  }
 }
@@ -413,4 +441,29 @@
   0%   { transform: scale(1);    opacity: 1; filter: blur(0); }
   40%  { transform: scale(1.28); opacity: 0.9; filter: blur(0); }
   100% { transform: scale(0);    opacity: 0; filter: blur(6px); }
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────────
+   Fewer and gentler animations, not zero: keep opacity/color transitions
+   that aid comprehension, remove movement. Infinite decorative loops
+   (aurora, breathe, float, shimmer) stop entirely. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.15s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.15s !important;
+    scroll-behavior: auto !important;
+  }
+  .animate-float, .animate-glow-pulse, .animate-ring-pulse,
+  .animate-card-breathe, .animate-shimmer, .animate-scroll-bounce,
+  .bubble-breathe {
+    animation: none !important;
+  }
+  .card-hover:hover {
+    transform: none;
+  }
+  button:not(:disabled):active,
+  [role="button"]:not([aria-disabled="true"]):active {
+    scale: 1;
+  }
 }

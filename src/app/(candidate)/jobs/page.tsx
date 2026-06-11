@@ -47,7 +47,7 @@ function ScoreBar({ pct }: { pct: number }) {
     : 'bg-gradient-to-r from-red-500 to-rose-500'
   return (
     <div className="h-1.5 bg-white/8 rounded-full overflow-hidden mt-2">
-      <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${pct}%` }} />
+      <div className={`h-full ${color} rounded-full transition-[width] duration-300 ease-snap`} style={{ width: `${pct}%` }} />
     </div>
   )
 }
