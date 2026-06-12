@@ -17,14 +17,19 @@ export async function GET() {
     .from('users').select('id, role').eq('clerk_id', userId).single()
   if (!user) return NextResponse.json({ profile: null })
 
-  // Supabase nested select — like a SQL JOIN but declarative
-  // skills(*) and portfolio_items(*) fetch all columns from those tables
-  const { data: profile } = await supabase
+  // Try full select including extended columns (available after add-profile-extended migration).
+  // Fall back to core columns if the extended columns don't exist yet.
+  let { data: profile, error } = await supabase
     .from('candidate_profiles')
     .select(`
       id, user_id, name, headline, bio, location, github_url, linkedin_url,
       salary_min, salary_max, availability, embedding, career_data,
       work_experience, education,
+      first_name, middle_name, last_name, date_of_birth, saq_data,
+      onboarding_completed, verified_candidate,
+      phone_number, phone_country_code, gender, ethnicity, country_of_origin,
+      disability_disclosure, seek_url, indeed_url, personal_website_url, resume_url,
+      address_line1, address_line2, city, state_region, country_name,
       created_at, updated_at,
       skills(id, candidate_id, name, level, source, evidence_url, created_at),
       portfolio_items(id, candidate_id, title, description, url, repo_url, tech_stack, impact, ai_summary, created_at)
@@ -32,7 +37,26 @@ export async function GET() {
     .eq('user_id', user.id)
     .single()
 
-  return NextResponse.json({ profile })
+  if (error && error.message.includes('column')) {
+    // Migration not yet run — fall back to core columns
+    const fallback = await supabase
+      .from('candidate_profiles')
+      .select(`
+        id, user_id, name, headline, bio, location, github_url, linkedin_url,
+        salary_min, salary_max, availability, career_data,
+        work_experience, education,
+        first_name, middle_name, last_name, date_of_birth, saq_data,
+        onboarding_completed, verified_candidate, created_at, updated_at,
+        skills(id, candidate_id, name, level, source, evidence_url, created_at),
+        portfolio_items(id, candidate_id, title, description, url, repo_url, tech_stack, impact, ai_summary, created_at)
+      `)
+      .eq('user_id', user.id)
+      .single()
+    profile = fallback.data as typeof profile
+    error = fallback.error
+  }
+
+  return NextResponse.json({ profile: error ? null : profile })
 }
 
 // POST: create user + profile records (called from onboarding)
@@ -169,8 +193,31 @@ export async function PUT(req: Request) {
       location: body.location,
       bio: body.bio,
       github_url: body.github_url,
+      linkedin_url: body.linkedin_url,
       salary_min: body.salary_min,
       salary_max: body.salary_max,
+      first_name: body.first_name,
+      middle_name: body.middle_name,
+      last_name: body.last_name,
+      date_of_birth: body.date_of_birth,
+      phone_number: body.phone_number,
+      phone_country_code: body.phone_country_code,
+      gender: body.gender,
+      ethnicity: body.ethnicity,
+      country_of_origin: body.country_of_origin,
+      disability_disclosure: body.disability_disclosure,
+      seek_url: body.seek_url,
+      indeed_url: body.indeed_url,
+      personal_website_url: body.personal_website_url,
+      resume_url: body.resume_url,
+      address_line1: body.address_line1,
+      address_line2: body.address_line2,
+      city: body.city,
+      state_region: body.state_region,
+      country_name: body.country_name,
+      work_experience: body.work_experience,
+      education: body.education,
+      career_data: body.career_data,
     })
     .eq('user_id', user.id)
 

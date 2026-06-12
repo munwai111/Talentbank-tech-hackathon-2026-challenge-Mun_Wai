@@ -207,6 +207,22 @@ export type Database = {
           saq_data: SaqData | null                  // JSONB — SAQ responses
           onboarding_completed: boolean
           verified_candidate: boolean
+          // Extended profile fields
+          phone_number: string | null
+          phone_country_code: string | null
+          gender: string | null
+          ethnicity: string | null
+          country_of_origin: string | null
+          disability_disclosure: boolean
+          seek_url: string | null
+          indeed_url: string | null
+          personal_website_url: string | null
+          resume_url: string | null
+          address_line1: string | null
+          address_line2: string | null
+          city: string | null
+          state_region: string | null
+          country_name: string | null
           created_at: string
           updated_at: string
         }
@@ -233,6 +249,21 @@ export type Database = {
           saq_data?: SaqData | null
           onboarding_completed?: boolean
           verified_candidate?: boolean
+          phone_number?: string | null
+          phone_country_code?: string | null
+          gender?: string | null
+          ethnicity?: string | null
+          country_of_origin?: string | null
+          disability_disclosure?: boolean
+          seek_url?: string | null
+          indeed_url?: string | null
+          personal_website_url?: string | null
+          resume_url?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          state_region?: string | null
+          country_name?: string | null
         }
         Update: {
           name?: string
@@ -255,6 +286,21 @@ export type Database = {
           saq_data?: SaqData | null
           onboarding_completed?: boolean
           verified_candidate?: boolean
+          phone_number?: string | null
+          phone_country_code?: string | null
+          gender?: string | null
+          ethnicity?: string | null
+          country_of_origin?: string | null
+          disability_disclosure?: boolean
+          seek_url?: string | null
+          indeed_url?: string | null
+          personal_website_url?: string | null
+          resume_url?: string | null
+          address_line1?: string | null
+          address_line2?: string | null
+          city?: string | null
+          state_region?: string | null
+          country_name?: string | null
         }
         Relationships: [
           { foreignKeyName: 'candidate_profiles_user_id_fkey'; columns: ['user_id']; isOneToOne: true; referencedRelation: 'users'; referencedColumns: ['id'] }
