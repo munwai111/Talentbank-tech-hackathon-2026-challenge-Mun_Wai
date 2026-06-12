@@ -12,7 +12,7 @@
 //   Step 2 — Consequence summary + type-to-confirm ("DELETE")
 //   Step 3 — Processing → done screen (redirects to sign-in)
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 
@@ -116,6 +116,17 @@ type DeleteStep = 1 | 2 | 3
 export default function SettingsPage() {
   const { user } = useUser()
   const router = useRouter()
+
+  // General settings — language preference persists locally for the pilot
+  const [language, setLanguage] = useState('en')
+  useEffect(() => {
+    const saved = localStorage.getItem('careeros.settings.language')
+    if (saved) setLanguage(saved)
+  }, [])
+  function changeLanguage(lang: string) {
+    setLanguage(lang)
+    localStorage.setItem('careeros.settings.language', lang)
+  }
 
   // Delete flow state
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -224,6 +235,56 @@ export default function SettingsPage() {
               {item}
             </span>
           ))}
+        </div>
+      </div>
+
+      {/* ── General ───────────────────────────────────────────────── */}
+      <div className="bg-white/4 border border-white/8 rounded-2xl p-6 mb-6">
+        <h2 className="font-semibold text-zinc-200 mb-4">General</h2>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between py-2 border-b border-white/8">
+            <div>
+              <span className="text-sm text-zinc-400">Language</span>
+              <p className="text-xs text-zinc-600 mt-0.5">Interface language for your account</p>
+            </div>
+            <div className="flex gap-1.5">
+              {[
+                { id: 'en', label: 'English' },
+                { id: 'bm', label: 'Bahasa' },
+                { id: 'zh', label: '中文' },
+              ].map(l => (
+                <button key={l.id} onClick={() => changeLanguage(l.id)}
+                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+                    language === l.id
+                      ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/40'
+                      : 'bg-white/4 text-zinc-500 border-white/10 hover:text-zinc-300'
+                  }`}>
+                  {l.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-white/8">
+            <div>
+              <span className="text-sm text-zinc-400">Payment methods</span>
+              <p className="text-xs text-zinc-600 mt-0.5">Career OS is free for candidates during the pilot</p>
+            </div>
+            <span className="text-xs text-zinc-500">None required</span>
+          </div>
+          <div className="flex items-center justify-between py-2 border-b border-white/8">
+            <div>
+              <span className="text-sm text-zinc-400">Verification &amp; uploads</span>
+              <p className="text-xs text-zinc-600 mt-0.5">Documents and imports used for AI parsing and verification</p>
+            </div>
+            <a href="/profile?tab=vault" className="text-xs text-indigo-400 hover:text-indigo-300">Manage</a>
+          </div>
+          <div className="flex items-center justify-between py-2">
+            <div>
+              <span className="text-sm text-zinc-400">Account activity</span>
+              <p className="text-xs text-zinc-600 mt-0.5">Sign-in sessions and connected authentication apps</p>
+            </div>
+            <span className="text-xs text-zinc-500">Managed via your sign-in provider</span>
+          </div>
         </div>
       </div>
 

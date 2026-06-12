@@ -1,13 +1,52 @@
-// Candidate Dashboard
+// Candidate Dashboard — the Navigator's home base.
+// Left rail: identity + personal menu. Main: getting-started checklist,
+// application progress with recalibrating focus signals, status cards.
 import { currentUser } from '@clerk/nextjs/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CircularProgress } from '@/components/ui/CircularProgress'
+import { ProfileRail } from './ProfileRail'
 import {
-  Vault, Waypoints, Crosshair, BrainCircuit, FolderOpen, GitBranch,
-  Fingerprint, type LucideIcon,
+  BrainCircuit, Fingerprint, Waypoints, Check, ArrowRight,
+  BadgeCheck, Clock, type LucideIcon,
 } from 'lucide-react'
+
+/* ── Focus signal — recalibrates with application age ─────────────────────
+   Deterministic coaching heuristic: status × days-since-applied → where the
+   candidate's effort is best spent right now. Recomputed on every visit. */
+function focusSignal(status: string, days: number): { tone: string; text: string; coachQ: string } {
+  if (status === 'offer') return {
+    tone: 'text-emerald-400',
+    text: 'Offer on the table — respond promptly.',
+    coachQ: 'I received a job offer. How should I evaluate and negotiate it?',
+  }
+  if (status === 'interview') return {
+    tone: 'text-sky-400',
+    text: 'High priority — prep with your AI Coach.',
+    coachQ: 'I have an interview coming up for this role. Help me prepare.',
+  }
+  if (status === 'reviewing') return days > 10
+    ? { tone: 'text-amber-400', text: `In review for ${days} days — a polite follow-up is reasonable.`, coachQ: 'My application has been in review for a while. Should I follow up, and how?' }
+    : { tone: 'text-amber-400', text: 'In review — stay ready.', coachQ: 'My application is being reviewed. What should I do while I wait?' }
+  if (days > 14) return {
+    tone: 'text-zinc-500',
+    text: `No movement in ${days} days — consider redirecting effort to stronger matches.`,
+    coachQ: 'An application has had no response for over two weeks. Should I move on, and where should I focus instead?',
+  }
+  if (days > 7) return {
+    tone: 'text-zinc-400',
+    text: 'A week in — keep applying to stronger matches meanwhile.',
+    coachQ: 'I applied a week ago with no response yet. What should my strategy be?',
+  }
+  return {
+    tone: 'text-indigo-300',
+    text: 'Recently applied — momentum is on your side.',
+    coachQ: 'I just applied for a role. How do I maximise my chances from here?',
+  }
+}
+
+const APP_STAGES = ['applied', 'reviewing', 'interview', 'offer']
 
 export default async function DashboardPage() {
   const user = await currentUser()
@@ -23,273 +62,256 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from('candidate_profiles')
-    .select('headline, bio, location, github_url, embedding, career_data, skills(id)')
+    .select('id, headline, bio, location, github_url, career_data, work_experience, verified_candidate, skills(id)')
     .eq('user_id', dbUser.id).single()
 
+  const { data: applications } = await supabase
+    .from('applications')
+    .select('id, status, created_at, jobs(title, companies(name))')
+    .eq('candidate_id', profile?.id ?? '')
+    .order('created_at', { ascending: false })
+
   const skillCount = profile?.skills?.length ?? 0
-  // Matching is "active" when the candidate has enough skills — not gated on
-  // the pgvector embedding (which requires OPENAI_API_KEY and generates async).
-  const isMatchingActive = skillCount >= 5
   const hasCareerIdentity = !!profile?.career_data?.synthesized_at
   const hasLifeChapter = !!profile?.career_data?.life_chapter_context
+  const hasImport = !!profile?.github_url || (profile?.work_experience?.length ?? 0) > 0
   const firstName = user.firstName ?? 'there'
 
-  type CoachNudge = { message: string; prompt: string } | null
-  const coachNudge: CoachNudge = (() => {
-    if (!hasCareerIdentity || skillCount < 3) return null
-    if (hasLifeChapter) return {
-      message: "Your life context is set — your coach can factor it into salary and role advice.",
-      prompt: "Given my life situation, what roles and salary ranges should I be targeting right now?",
-    }
-    if (skillCount >= 5) return {
-      message: `You have ${skillCount} skills in your vault. Your coach can tell you if you're paid what you're worth.`,
-      prompt: "Based on my skills, am I being paid what the market says I should be earning in Malaysia?",
-    }
-    return {
-      message: "Your Career Identity is live. Your coach can map your next realistic move.",
-      prompt: "What's the most realistic next role I should be targeting given where I am right now?",
-    }
-  })()
-
-  const completeness = [
-    profile?.headline, profile?.bio, profile?.location, skillCount > 0, profile?.github_url,
-  ].filter(Boolean).length * 20
-
-  const QUICK_ACTIONS: { href: string; Icon: LucideIcon; iconColor: string; label: string; desc: string; gradient: string; border: string; glow: string; disabled: boolean }[] = [
-    { href: '/profile',            Icon: Vault,        iconColor: 'text-amber-400',  label: 'Skills Vault',      desc: 'Add skills, import from GitHub',                                        gradient: 'from-amber-500/15 to-yellow-500/8',   border: 'border-amber-500/18',  glow: 'hover:shadow-amber-500/10',  disabled: false },
-    { href: '/paths',              Icon: Waypoints,    iconColor: 'text-sky-400',    label: 'Path Navigator',    desc: skillCount > 0 ? 'See 3 directions mapped from your skills' : 'Add skills first', gradient: 'from-sky-500/15 to-indigo-500/8',    border: 'border-sky-500/18',    glow: 'hover:shadow-sky-500/10',    disabled: skillCount === 0 },
-    { href: '/jobs',               Icon: Crosshair,    iconColor: 'text-rose-400',   label: 'Job Matches',       desc: skillCount > 0 ? 'Roles ranked by skill fit' : 'Add skills first',    gradient: 'from-rose-500/15 to-pink-500/8',      border: 'border-rose-500/18',   glow: 'hover:shadow-rose-500/10',   disabled: skillCount === 0 },
-    { href: '/coach',              Icon: BrainCircuit, iconColor: 'text-indigo-400', label: 'AI Coach',          desc: 'Honest APAC career advice',                                             gradient: 'from-indigo-500/15 to-blue-500/8',    border: 'border-indigo-500/18', glow: 'hover:shadow-indigo-500/10', disabled: false },
-    { href: '/portfolio',          Icon: FolderOpen,   iconColor: 'text-teal-400',   label: 'Portfolio',         desc: "Showcase what you've built",                                            gradient: 'from-teal-500/15 to-emerald-500/8',   border: 'border-teal-500/18',   glow: 'hover:shadow-teal-500/10',   disabled: false },
-    { href: '/profile?tab=github', Icon: GitBranch,    iconColor: 'text-violet-400', label: 'GitHub Import',     desc: 'AI extracts your real skill stack',                                     gradient: 'from-violet-500/15 to-purple-500/8',  border: 'border-violet-500/18', glow: 'hover:shadow-violet-500/10', disabled: false },
+  /* ── Getting-started checklist — computed from real account state ──────── */
+  const todo: { label: string; desc: string; done: boolean; href: string }[] = [
+    { label: 'Add your first 5 skills',        desc: 'Unlocks job matching',                       done: skillCount >= 5,                         href: '/profile?tab=vault' },
+    { label: 'Import your CV or GitHub',       desc: 'AI verifies and structures your history',    done: hasImport,                               href: '/profile?tab=vault' },
+    { label: 'Set your headline and location', desc: 'Makes you legible to employers',             done: !!profile?.headline && !!profile?.location, href: '/profile?tab=settings' },
+    { label: 'Complete your Career Identity',  desc: 'Goals and values shape every match',         done: hasCareerIdentity,                       href: '/discover' },
+    { label: 'Add your life chapter context',  desc: 'Advice grounded in your reality',            done: hasLifeChapter,                          href: '/discover' },
+    { label: 'Apply to your first role',       desc: 'Start your application pipeline',            done: (applications?.length ?? 0) > 0,         href: '/jobs' },
   ]
+  const doneCount = todo.filter(t => t.done).length
+  const setupPct = Math.round((doneCount / todo.length) * 100)
+  const isNewAccount = doneCount < todo.length
+
+  const coachNudge = hasCareerIdentity && skillCount >= 3 ? {
+    message: hasLifeChapter
+      ? 'Your life context is set — your coach can factor it into salary and role advice.'
+      : `You have ${skillCount} skills in your vault. Your coach can tell you if you're paid what you're worth.`,
+    prompt: hasLifeChapter
+      ? 'Given my life situation, what roles and salary ranges should I be targeting right now?'
+      : 'Based on my skills, am I being paid what the market says I should be earning in Malaysia?',
+  } : null
 
   return (
-    <div className="px-8 py-6 max-w-5xl">
+    <div className="px-6 py-6 flex gap-6 items-start">
+      <ProfileRail />
 
-      {/* ── Greeting ─────────────────────────────────────────────────────── */}
-      <div className="mb-8 animate-fade-up">
-        <p className="text-xs font-semibold tracking-[0.15em] uppercase text-zinc-600 mb-1">Overview</p>
-        <h1 className="text-2xl font-bold text-white tracking-tight">
-          Hey {firstName}
-        </h1>
-        <p className="text-zinc-500 mt-1 text-sm">
-          {isMatchingActive ? "Your profile is active — employers can find you." : "Complete your Skills Vault to start getting matched."}
-        </p>
-      </div>
+      <div className="flex-1 min-w-0 max-w-3xl">
 
-      {/* ── Metric cards ─────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-3 mb-8">
-
-        {/* Profile Strength */}
-        <div className="relative rounded-2xl p-5 overflow-hidden animate-fade-up animate-delay-1"
-          style={{ background: 'linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(79,70,229,0.06) 100%)', border: '1px solid rgba(124,58,237,0.22)' }}>
-          <div className="absolute inset-0 opacity-40"
-            style={{ background: 'radial-gradient(ellipse at top right, rgba(124,58,237,0.15), transparent 70%)' }} />
-          <p className="text-[11px] font-semibold tracking-wider uppercase text-violet-400/70 mb-3">Profile Strength</p>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <CircularProgress value={completeness} size={64} stroke={5} />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <span className="text-sm font-bold text-white">{completeness}%</span>
-              </div>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white tracking-tight">{completeness}<span className="text-base text-violet-400">%</span></p>
-              <p className="text-xs text-zinc-500 mt-0.5">
-                {completeness === 100 ? 'Complete' : `${5 - Math.round(completeness / 20)} fields left`}
-              </p>
-            </div>
+        {/* ── Greeting ───────────────────────────────────────────────────── */}
+        <div className="mb-6 animate-fade-up">
+          <p className="section-label mb-1">Home base</p>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-white tracking-tight">Hey {firstName}</h1>
+            {profile?.verified_candidate ? (
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                <BadgeCheck size={12} strokeWidth={2} /> Verified
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-white/6 text-zinc-500 border border-white/10">
+                <Clock size={11} strokeWidth={2} /> Verification pending
+              </span>
+            )}
           </div>
-          <div className="mt-3 h-1 bg-white/6 rounded-full overflow-hidden">
-            <div className="h-full rounded-full transition duration-1000"
-              style={{ width: `${completeness}%`, background: 'linear-gradient(90deg, #7c3aed, #4f46e5)' }} />
-          </div>
+          <p className="text-zinc-500 mt-1 text-sm">
+            {skillCount >= 5 ? 'Your profile is live — employers can find you.' : 'Complete your setup to start getting matched.'}
+          </p>
         </div>
 
-        {/* Skills Vault */}
-        <div className="relative rounded-2xl p-5 overflow-hidden animate-fade-up animate-delay-2"
-          style={{ background: 'linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(20,184,166,0.05) 100%)', border: '1px solid rgba(16,185,129,0.2)' }}>
-          <div className="absolute inset-0 opacity-40"
-            style={{ background: 'radial-gradient(ellipse at bottom left, rgba(16,185,129,0.12), transparent 70%)' }} />
-          <p className="text-[11px] font-semibold tracking-wider uppercase text-emerald-400/70 mb-3">Skills in Vault</p>
-          <p className="text-4xl font-bold tracking-tight"
-            style={{ background: 'linear-gradient(135deg, #34d399, #10b981)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-            {skillCount}
-          </p>
-          <p className="text-xs text-zinc-500 mt-1.5">
-            {skillCount === 0 ? 'No skills added yet' : skillCount < 5 ? 'Add more to unlock matching' : 'Matching-ready'}
-          </p>
-          {skillCount > 0 && (
-            <div className="mt-3 flex gap-0.5">
-              {Array.from({ length: Math.min(skillCount, 10) }).map((_, i) => (
-                <div key={i} className="h-1 flex-1 rounded-full bg-emerald-500/40" />
+        {/* ── Getting started / account completion ──────────────────────── */}
+        {isNewAccount && (
+          <div className="surface p-5 mb-5 animate-fade-up animate-delay-1">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="section-label mb-1">Getting started</p>
+                <p className="text-sm text-zinc-400">{doneCount} of {todo.length} complete — every item makes your matches sharper.</p>
+              </div>
+              <div className="relative shrink-0">
+                <CircularProgress value={setupPct} size={52} stroke={4} />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="text-[11px] font-bold text-white">{setupPct}%</span>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-1">
+              {todo.map(item => (
+                <Link key={item.label} href={item.href}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-150 group ${
+                    item.done ? 'opacity-50' : 'hover:bg-white/5'
+                  }`}>
+                  <span className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${
+                    item.done
+                      ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
+                      : 'border-white/20 text-transparent group-hover:border-indigo-400/50'
+                  }`}>
+                    <Check size={11} strokeWidth={3} />
+                  </span>
+                  <span className={`text-sm font-medium ${item.done ? 'text-zinc-500 line-through' : 'text-zinc-200'}`}>
+                    {item.label}
+                  </span>
+                  <span className="text-xs text-zinc-600 ml-auto hidden sm:inline">{item.desc}</span>
+                  {!item.done && <ArrowRight size={13} className="text-zinc-600 group-hover:text-indigo-400 transition-colors shrink-0" />}
+                </Link>
               ))}
-              {skillCount > 10 && <div className="h-1 w-4 rounded-full bg-emerald-500/20" />}
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
-        {/* Match Status */}
-        <div className="relative rounded-2xl p-5 overflow-hidden animate-fade-up animate-delay-3"
-          style={isMatchingActive
-            ? { background: 'linear-gradient(135deg, rgba(6,182,212,0.1) 0%, rgba(99,102,241,0.06) 100%)', border: '1px solid rgba(6,182,212,0.2)' }
-            : { background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-          <p className="text-[11px] font-semibold tracking-wider uppercase text-zinc-600 mb-3">Match Status</p>
-          {isMatchingActive ? (
-            <>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-400" />
-                </span>
-                <span className="text-sm font-semibold text-cyan-300">Active</span>
+        {/* ── Application progress ───────────────────────────────────────── */}
+        {applications && applications.length > 0 && (
+          <div className="surface p-5 mb-5 animate-fade-up animate-delay-2">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <p className="section-label mb-1">Your applications</p>
+                <p className="text-sm text-zinc-400">Live status — focus signals recalibrate as time passes.</p>
               </div>
-              <p className="text-xs text-zinc-500">Visible to employers</p>
-              <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20">
-                <span className="text-xs text-cyan-400 font-medium">Matching live</span>
-              </div>
-            </>
-          ) : (
-            <>
-              <p className="text-sm font-medium text-zinc-400">Inactive</p>
-              <p className="text-xs text-zinc-600 mt-1">Add skills to activate</p>
-              <Link href="/profile">
-                <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
-                  bg-white/6 border border-white/10 hover:border-indigo-500/40 hover:bg-indigo-500/10
-                  transition cursor-pointer">
-                  <span className="text-xs text-zinc-400 font-medium">Build vault →</span>
-                </div>
+              <Link href="/applications" className="text-xs text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1">
+                View all <ArrowRight size={12} />
               </Link>
-            </>
+            </div>
+            <div className="space-y-4">
+              {applications.slice(0, 4).map(app => {
+                const job = app.jobs as unknown as { title: string; companies: { name: string } } | null
+                const days = Math.floor((Date.now() - new Date(app.created_at).getTime()) / 86_400_000)
+                const signal = focusSignal(app.status, days)
+                const stageIdx = APP_STAGES.indexOf(app.status)
+                const isDead = app.status === 'rejected' || app.status === 'withdrawn'
+                return (
+                  <div key={app.id} className={`pb-4 border-b border-white/6 last:border-0 last:pb-0 ${isDead ? 'opacity-50' : ''}`}>
+                    <div className="flex items-start justify-between gap-3 mb-2">
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-white truncate">{job?.title ?? 'Role'}</p>
+                        <p className="text-xs text-zinc-500">{job?.companies?.name} · applied {days === 0 ? 'today' : `${days}d ago`}</p>
+                      </div>
+                      <span className="text-xs text-zinc-400 capitalize shrink-0">{app.status}</span>
+                    </div>
+                    {!isDead && (
+                      <div className="flex items-center gap-1.5 mb-2">
+                        {APP_STAGES.map((stage, i) => (
+                          <div key={stage} className={`h-1 flex-1 rounded-full transition-colors ${
+                            i <= stageIdx ? 'bg-gradient-to-r from-indigo-500 to-violet-400' : 'bg-white/8'
+                          }`} />
+                        ))}
+                      </div>
+                    )}
+                    {!isDead && (
+                      <div className="flex items-center justify-between gap-3">
+                        <p className={`text-xs ${signal.tone}`}>{signal.text}</p>
+                        <Link href={`/coach?q=${encodeURIComponent(signal.coachQ)}`}
+                          className="text-[11px] text-zinc-500 hover:text-indigo-300 transition-colors shrink-0 inline-flex items-center gap-1">
+                          <BrainCircuit size={11} /> Consult coach
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* ── Status cards ───────────────────────────────────────────────── */}
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <StatCard label="Skills in vault" delay="animate-delay-2">
+            <p className="text-3xl font-bold text-white">{skillCount}</p>
+            <p className="text-xs text-zinc-500 mt-1">{skillCount >= 5 ? 'Matching-ready' : 'Add more to unlock matching'}</p>
+          </StatCard>
+          <StatCard label="Match status" delay="animate-delay-3">
+            {skillCount >= 5 ? (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2.5 w-2.5">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-400" />
+                  </span>
+                  <span className="text-sm font-semibold text-cyan-300">Live</span>
+                </div>
+                <p className="text-xs text-zinc-500 mt-1">Visible to employers</p>
+              </>
+            ) : (
+              <>
+                <p className="text-sm font-medium text-zinc-400">Inactive</p>
+                <p className="text-xs text-zinc-600 mt-1">Add skills to activate</p>
+              </>
+            )}
+          </StatCard>
+          <StatCard label="Applications" delay="animate-delay-4">
+            <p className="text-3xl font-bold text-white">{applications?.length ?? 0}</p>
+            <p className="text-xs text-zinc-500 mt-1">
+              {(applications?.length ?? 0) === 0 ? 'None yet — browse matches' : 'In your pipeline'}
+            </p>
+          </StatCard>
+        </div>
+
+        {/* ── Nudges ─────────────────────────────────────────────────────── */}
+        <div className="space-y-3">
+          {!hasCareerIdentity && (
+            <NudgeCard
+              href="/discover" Icon={Fingerprint}
+              title="Build your Career Identity"
+              desc="5 minutes. Tell us what you want — values, goals, work style. Shapes every match."
+              cta="Start"
+            />
+          )}
+          {skillCount > 0 && hasCareerIdentity && (
+            <NudgeCard
+              href="/paths" Icon={Waypoints}
+              title="See your Career Path Navigator"
+              desc="3 directions from your real skills — strong match today, emerging in 6–18 months, stretch goal."
+              cta="Navigate"
+            />
+          )}
+          {coachNudge && (
+            <NudgeCard
+              href={`/coach?q=${encodeURIComponent(coachNudge.prompt)}`}
+              Icon={BrainCircuit}
+              title="Your coach has something to say"
+              desc={coachNudge.message}
+              cta="Ask coach"
+            />
           )}
         </div>
       </div>
-
-      {/* ── Nudge cards ─────────────────────────────────────────────────────── */}
-      <div className="space-y-3 mb-8">
-        {!hasCareerIdentity && (
-          <NudgeCard
-            href="/discover" color="violet" Icon={Fingerprint}
-            title="Build your Career Identity"
-            desc="5 minutes. Tell us what you want — values, goals, work style. Shapes every match."
-            cta="Start →"
-          />
-        )}
-        {completeness < 100 && (
-          <NudgeCard
-            href="/profile" color="indigo" Icon={skillCount === 0 ? Vault : Crosshair}
-            title={skillCount === 0 ? 'Build your Skills Vault first' : 'Complete your profile'}
-            desc={skillCount === 0
-              ? "Add skills so employers can find you on ability — not school name."
-              : `You're ${completeness}% done. ${5 - Math.round(completeness / 20)} fields left to activate full matching.`}
-            cta={skillCount === 0 ? 'Build vault →' : 'Complete →'}
-          />
-        )}
-        {skillCount > 0 && hasCareerIdentity && (
-          <NudgeCard
-            href="/paths" color="blue" Icon={Waypoints}
-            title="See your Career Path Navigator"
-            desc="3 directions from your real skills — strong match today, emerging in 6–18 months, stretch goal."
-            cta="Navigate →"
-          />
-        )}
-        {coachNudge && (
-          <NudgeCard
-            href={`/coach?q=${encodeURIComponent(coachNudge.prompt)}`}
-            color="teal" Icon={BrainCircuit}
-            title="Your coach has something to say"
-            desc={coachNudge.message}
-            cta="Ask coach →"
-          />
-        )}
-      </div>
-
-      {/* ── Quick actions ─────────────────────────────────────────────────── */}
-      <div className="mb-2">
-        <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-zinc-600 mb-4">Quick Actions</p>
-        <div className="grid grid-cols-3 gap-3">
-          {QUICK_ACTIONS.map((item, i) => (
-            <Link
-              key={item.href}
-              href={item.disabled ? '#' : item.href}
-              className={`animate-fade-up animate-delay-${Math.min(i + 1, 6)} ${item.disabled ? 'pointer-events-none opacity-35' : ''}`}
-            >
-              <div className={`rounded-2xl p-4 border bg-gradient-to-br ${item.gradient} ${item.border}
-                hover:shadow-lg ${item.glow} transition duration-200 cursor-pointer h-full group`}>
-                <div className="w-9 h-9 rounded-xl bg-white/8 flex items-center justify-center mb-3
-                  group-hover:scale-110 transition-transform duration-200">
-                  <item.Icon size={17} className={item.iconColor} strokeWidth={1.75} />
-                </div>
-                <p className="text-sm font-semibold text-zinc-200 mb-0.5">{item.label}</p>
-                <p className="text-xs text-zinc-500 leading-snug">{item.desc}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-
     </div>
   )
 }
 
-// ── NudgeCard component ──────────────────────────────────────────────────────
+function StatCard({ label, delay, children }: { label: string; delay: string; children: React.ReactNode }) {
+  return (
+    <div className={`surface p-4 animate-fade-up ${delay}`}>
+      <p className="section-label mb-2">{label}</p>
+      {children}
+    </div>
+  )
+}
 
-type NudgeProps = {
+function NudgeCard({ href, Icon, title, desc, cta }: {
   href: string
-  color: 'violet' | 'indigo' | 'blue' | 'teal'
   Icon: LucideIcon
   title: string
   desc: string
   cta: string
-}
-
-const NUDGE_STYLES: Record<NudgeProps['color'], { border: string; bg: string; titleColor: string; descColor: string; btnClass: string }> = {
-  violet: {
-    border: 'border-l-violet-500/60 border-violet-500/15',
-    bg: 'bg-violet-500/6',
-    titleColor: 'text-violet-200',
-    descColor: 'text-violet-300/60',
-    btnClass: 'bg-violet-600 hover:bg-violet-500 text-white',
-  },
-  indigo: {
-    border: 'border-l-indigo-500/60 border-indigo-500/15',
-    bg: 'bg-indigo-500/6',
-    titleColor: 'text-indigo-200',
-    descColor: 'text-indigo-300/60',
-    btnClass: 'bg-indigo-600 hover:bg-indigo-500 text-white',
-  },
-  blue: {
-    border: 'border-l-blue-500/60 border-blue-500/15',
-    bg: 'bg-blue-500/6',
-    titleColor: 'text-blue-200',
-    descColor: 'text-blue-300/60',
-    btnClass: 'bg-blue-600 hover:bg-blue-500 text-white',
-  },
-  teal: {
-    border: 'border-l-teal-500/60 border-teal-500/15',
-    bg: 'bg-teal-500/6',
-    titleColor: 'text-teal-200',
-    descColor: 'text-teal-300/60',
-    btnClass: 'bg-teal-600 hover:bg-teal-500 text-white',
-  },
-}
-
-function NudgeCard({ href, color, Icon, title, desc, cta }: NudgeProps) {
-  const s = NUDGE_STYLES[color]
+}) {
   return (
-    <div className={`rounded-2xl border-l-[3px] border ${s.border} ${s.bg} px-5 py-4 backdrop-blur-sm`}>
+    <div className="rounded-2xl border-l-[3px] border border-l-indigo-500/60 border-indigo-500/15 bg-indigo-500/6 px-5 py-4">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-start gap-3 min-w-0">
-          <Icon size={16} className={`shrink-0 mt-0.5 ${s.titleColor}`} strokeWidth={1.75} />
+          <Icon size={16} className="shrink-0 mt-0.5 text-indigo-200" strokeWidth={1.75} />
           <div className="min-w-0">
-            <h3 className={`font-semibold text-sm ${s.titleColor}`}>{title}</h3>
-            <p className={`text-xs mt-0.5 leading-relaxed ${s.descColor}`}>{desc}</p>
+            <h3 className="font-semibold text-sm text-indigo-200">{title}</h3>
+            <p className="text-xs mt-0.5 leading-relaxed text-indigo-300/60">{desc}</p>
           </div>
         </div>
         <Link href={href} className="shrink-0">
-          <button className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap ${s.btnClass}`}>
-            {cta}
+          <button className="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition whitespace-nowrap bg-indigo-600 hover:bg-indigo-500 text-white inline-flex items-center gap-1.5">
+            {cta} <ArrowRight size={12} />
           </button>
         </Link>
       </div>
