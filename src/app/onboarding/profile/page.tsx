@@ -12,6 +12,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { Crosshair, Brain, Sparkles, Zap, Compass } from 'lucide-react'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -808,11 +809,11 @@ function Phase5({ data, onChange, onToggleHobby, onToggleInterest }: {
 }) {
   const [section, setSection] = useState(0)
   const tabs = [
-    { id: 'goals', label: 'Goals', icon: '🎯' },
-    { id: 'character', label: 'Character', icon: '🧠' },
-    { id: 'hobbies', label: 'Interests', icon: '✨' },
-    { id: 'scenarios', label: 'Strengths', icon: '💪' },
-    { id: 'intention', label: 'Intention', icon: '🔮' },
+    { id: 'goals', label: 'Goals', Icon: Crosshair },
+    { id: 'character', label: 'Character', Icon: Brain },
+    { id: 'hobbies', label: 'Interests', Icon: Sparkles },
+    { id: 'scenarios', label: 'Strengths', Icon: Zap },
+    { id: 'intention', label: 'Intention', Icon: Compass },
   ]
 
   return (
@@ -823,7 +824,7 @@ function Phase5({ data, onChange, onToggleHobby, onToggleInterest }: {
             className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs whitespace-nowrap transition flex-shrink-0 ${
               section === i ? 'bg-indigo-500/[0.15] border border-indigo-400/30 text-indigo-300 font-semibold' : 'bg-white/[0.04] border border-transparent text-slate-500 hover:text-slate-300'
             }`}>
-            {t.icon} {t.label}
+            <t.Icon size={12} strokeWidth={1.75} /> {t.label}
           </button>
         ))}
       </div>
