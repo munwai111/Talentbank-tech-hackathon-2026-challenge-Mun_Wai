@@ -1,13 +1,10 @@
 'use client'
 
-// Top hotbar — candidate navigation (replaces the left sidebar).
-// LinkedIn-pattern: brand left, icon-over-label nav center, identity right.
-
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { UserButton } from '@clerk/nextjs'
 import {
-  Zap, BrainCircuit, Waypoints, Crosshair, ClipboardList,
+  Zap, Waypoints, Crosshair, ClipboardList,
   Newspaper, CalendarDays,
   type LucideIcon,
 } from 'lucide-react'
@@ -15,7 +12,6 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 const NAV_ITEMS: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: '/dashboard',    label: 'Home',         Icon: Zap },
-  { href: '/coach',        label: 'AI Coach',     Icon: BrainCircuit },
   { href: '/paths',        label: 'Navigator',    Icon: Waypoints },
   { href: '/jobs',         label: 'Jobs',         Icon: Crosshair },
   { href: '/applications', label: 'Applications', Icon: ClipboardList },

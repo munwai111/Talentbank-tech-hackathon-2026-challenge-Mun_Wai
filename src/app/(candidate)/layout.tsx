@@ -1,6 +1,5 @@
-// Candidate shell layout — the Navigator journey.
-// Top hotbar navigation; content centered below.
 import { CandidateHotbar } from './CandidateHotbar'
+import { FloatingAIOrb } from '@/components/floating-ai/FloatingAIOrb'
 
 export default function CandidateLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -11,6 +10,7 @@ export default function CandidateLayout({ children }: { children: React.ReactNod
           {children}
         </div>
       </main>
+      <FloatingAIOrb />
     </div>
   )
 }
