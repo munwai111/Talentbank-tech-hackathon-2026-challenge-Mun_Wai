@@ -1,9 +1,5 @@
 'use client'
 
-// /news — market movement from channels the candidate follows.
-// Pilot scope: curated updates from the platform's partner companies.
-// Follow + save state persists locally until the social graph ships.
-
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
@@ -65,6 +61,14 @@ const TAG_STYLES: Record<Post['tag'], string> = {
   Insight: 'bg-amber-500/15 text-amber-400 border-amber-500/25',
 }
 
+function patchPreferences(updates: Record<string, unknown>) {
+  fetch('/api/candidate/preferences', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates),
+  }).catch(console.error)
+}
+
 function NewsContent() {
   const searchParams = useSearchParams()
   const initialTab = searchParams.get('tab') === 'saved' ? 'saved' : 'following'
@@ -73,19 +77,26 @@ function NewsContent() {
   const [followed, setFollowed] = useState<Set<string>>(new Set(CHANNELS))
 
   useEffect(() => {
-    try {
-      const s = JSON.parse(localStorage.getItem('careeros.news.saved') ?? '[]')
-      setSaved(new Set(s))
-      const f = localStorage.getItem('careeros.news.followed')
-      if (f) setFollowed(new Set(JSON.parse(f)))
-    } catch { /* fresh state */ }
+    fetch('/api/candidate/preferences')
+      .then(r => r.json())
+      .then(({ preferences }) => {
+        if (!preferences) return
+        setSaved(new Set(preferences.news_saved ?? []))
+        // Empty array = first visit → default to all channels followed
+        setFollowed(
+          (preferences.news_followed as string[])?.length
+            ? new Set(preferences.news_followed as string[])
+            : new Set(CHANNELS),
+        )
+      })
+      .catch(console.error)
   }, [])
 
   function toggleSave(id: string) {
     setSaved(prev => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id); else next.add(id)
-      localStorage.setItem('careeros.news.saved', JSON.stringify([...next]))
+      patchPreferences({ news_saved: [...next] })
       return next
     })
   }
@@ -94,7 +105,7 @@ function NewsContent() {
     setFollowed(prev => {
       const next = new Set(prev)
       if (next.has(channel)) next.delete(channel); else next.add(channel)
-      localStorage.setItem('careeros.news.followed', JSON.stringify([...next]))
+      patchPreferences({ news_followed: [...next] })
       return next
     })
   }
@@ -197,10 +208,6 @@ function NewsContent() {
           ))}
         </div>
       )}
-
-      <p className="text-xs text-zinc-600 text-center mt-6">
-        Pilot feed — curated from platform partners. Follows and saves are stored on this device.
-      </p>
     </div>
   )
 }

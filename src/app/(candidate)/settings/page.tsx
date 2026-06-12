@@ -117,15 +117,20 @@ export default function SettingsPage() {
   const { user } = useUser()
   const router = useRouter()
 
-  // General settings — language preference persists locally for the pilot
   const [language, setLanguage] = useState('en')
   useEffect(() => {
-    const saved = localStorage.getItem('careeros.settings.language')
-    if (saved) setLanguage(saved)
+    fetch('/api/candidate/preferences')
+      .then(r => r.json())
+      .then(({ preferences }) => { if (preferences?.language) setLanguage(preferences.language) })
+      .catch(console.error)
   }, [])
   function changeLanguage(lang: string) {
     setLanguage(lang)
-    localStorage.setItem('careeros.settings.language', lang)
+    fetch('/api/candidate/preferences', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ language: lang }),
+    }).catch(console.error)
   }
 
   // Delete flow state

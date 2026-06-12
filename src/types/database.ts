@@ -535,6 +535,41 @@ export type Database = {
           { foreignKeyName: 'coaching_sessions_candidate_id_fkey'; columns: ['candidate_id']; isOneToOne: true; referencedRelation: 'candidate_profiles'; referencedColumns: ['id'] }
         ]
       }
+
+      // ── user_preferences ─────────────────────────────────────────
+      // Per-user preferences: UI language, news follows/saves, event tickets.
+      // One row per user (primary key = user_id).
+      user_preferences: {
+        Row: {
+          user_id: string
+          language: string
+          news_followed: string[]
+          news_saved: string[]
+          event_tickets: string[]
+          host_request: { title: string; format: string; about: string; submitted_at: number } | null
+          updated_at: string
+        }
+        Insert: {
+          user_id: string
+          language?: string
+          news_followed?: string[]
+          news_saved?: string[]
+          event_tickets?: string[]
+          host_request?: { title: string; format: string; about: string; submitted_at: number } | null
+          updated_at?: string
+        }
+        Update: {
+          language?: string
+          news_followed?: string[]
+          news_saved?: string[]
+          event_tickets?: string[]
+          host_request?: { title: string; format: string; about: string; submitted_at: number } | null
+          updated_at?: string
+        }
+        Relationships: [
+          { foreignKeyName: 'user_preferences_user_id_fkey'; columns: ['user_id']; isOneToOne: true; referencedRelation: 'users'; referencedColumns: ['id'] }
+        ]
+      }
     }
 
     Views: {
@@ -575,6 +610,7 @@ export type Match = Database['public']['Tables']['matches']['Row']
 export type Application = Database['public']['Tables']['applications']['Row']
 export type EmployerSignal = Database['public']['Tables']['employer_signals']['Row']
 export type CoachingSession = Database['public']['Tables']['coaching_sessions']['Row']
+export type UserPreferences = Database['public']['Tables']['user_preferences']['Row']
 
 // Gap analysis type extracted for reuse
 export type GapAnalysis = NonNullable<Match['gap_analysis']>

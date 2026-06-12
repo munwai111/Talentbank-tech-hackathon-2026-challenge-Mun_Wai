@@ -1,9 +1,5 @@
 'use client'
 
-// /events — career events: discover and register, hold tickets, or host.
-// Pilot scope: curated events; registrations and host requests persist
-// locally until the events backend ships.
-
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { FadeUp } from '@/components/animations/FadeUp'
@@ -67,6 +63,15 @@ const EVENTS: CareerEvent[] = [
 ]
 
 type Tab = 'discover' | 'tickets' | 'host'
+type HostForm = { title: string; format: string; about: string }
+
+function patchPreferences(updates: Record<string, unknown>) {
+  fetch('/api/candidate/preferences', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(updates),
+  }).catch(console.error)
+}
 
 function EventsContent() {
   const searchParams = useSearchParams()
@@ -75,27 +80,32 @@ function EventsContent() {
   const [tab, setTab] = useState<Tab>(initialTab)
   const [tickets, setTickets] = useState<Set<string>>(new Set())
   const [hostSubmitted, setHostSubmitted] = useState(false)
-  const [hostForm, setHostForm] = useState({ title: '', format: 'Online', about: '' })
+  const [hostForm, setHostForm] = useState<HostForm>({ title: '', format: 'Online', about: '' })
 
   useEffect(() => {
-    try {
-      setTickets(new Set(JSON.parse(localStorage.getItem('careeros.events.tickets') ?? '[]')))
-      setHostSubmitted(localStorage.getItem('careeros.events.hostRequest') !== null)
-    } catch { /* fresh state */ }
+    fetch('/api/candidate/preferences')
+      .then(r => r.json())
+      .then(({ preferences }) => {
+        if (!preferences) return
+        setTickets(new Set(preferences.event_tickets ?? []))
+        setHostSubmitted(preferences.host_request !== null)
+      })
+      .catch(console.error)
   }, [])
 
   function register(id: string) {
     setTickets(prev => {
       const next = new Set(prev)
       if (next.has(id)) next.delete(id); else next.add(id)
-      localStorage.setItem('careeros.events.tickets', JSON.stringify([...next]))
+      patchPreferences({ event_tickets: [...next] })
       return next
     })
   }
 
   function submitHost(e: React.FormEvent) {
     e.preventDefault()
-    localStorage.setItem('careeros.events.hostRequest', JSON.stringify({ ...hostForm, at: Date.now() }))
+    const request = { ...hostForm, submitted_at: Date.now() }
+    patchPreferences({ host_request: request })
     setHostSubmitted(true)
   }
 
@@ -239,10 +249,6 @@ function EventsContent() {
           </form>
         )
       )}
-
-      <p className="text-xs text-zinc-600 text-center mt-6">
-        Pilot — curated events; registrations are stored on this device.
-      </p>
     </div>
   )
 }
