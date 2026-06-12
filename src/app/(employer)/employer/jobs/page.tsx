@@ -7,8 +7,8 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { JobStatusToggle } from './JobStatusToggle'
-
-const REMOTE_LABELS = { remote: '🌐 Remote', hybrid: '🏠 Hybrid', onsite: '🏢 On-site' }
+import { WORK_MODE } from '@/components/shared/meta'
+import { ClipboardList } from 'lucide-react'
 
 export default async function EmployerJobsPage() {
   const user = await currentUser()
@@ -32,7 +32,8 @@ export default async function EmployerJobsPage() {
     <div className="p-8 max-w-3xl">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold">My Jobs 📋</h1>
+          <p className="section-label !text-teal-400 mb-1.5">Your postings</p>
+          <h1 className="text-2xl font-bold">My Jobs</h1>
           <p className="text-zinc-500 mt-1">
             {jobs?.length ?? 0} role{jobs?.length !== 1 ? 's' : ''} posted
           </p>
@@ -44,7 +45,7 @@ export default async function EmployerJobsPage() {
 
       {(!jobs || jobs.length === 0) ? (
         <Card className="p-10 text-center border-dashed">
-          <p className="text-3xl mb-3">📋</p>
+          <ClipboardList size={28} strokeWidth={1.5} className="mx-auto mb-4 text-zinc-500" />
           <h3 className="font-semibold mb-1">No jobs posted yet</h3>
           <p className="text-sm text-zinc-500 mb-4">
             Post your first role and candidates will be matched to it immediately.
@@ -62,13 +63,13 @@ export default async function EmployerJobsPage() {
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-semibold">{job.title}</h3>
                     <Badge variant={job.status === 'open' ? 'default' : 'secondary'} className="text-xs">
-                      {job.status === 'open' ? '🟢 Open' : '⚫ Closed'}
+                      {job.status === 'open' ? 'Open' : 'Closed'}
                     </Badge>
                   </div>
                   <p className="text-xs text-zinc-400 mt-1">
                     Posted {new Date(job.created_at).toLocaleDateString('en-MY', { day: 'numeric', month: 'short', year: 'numeric' })}
                     {job.location && ` · ${job.location}`}
-                    {' · '}{REMOTE_LABELS[job.remote]}
+                    {' · '}{WORK_MODE[job.remote].label}
                   </p>
                   {/* Required skills preview */}
                   {job.required_skills?.length > 0 && (

@@ -71,7 +71,7 @@ export default async function DashboardPage() {
       <div className="mb-8 animate-fade-up">
         <p className="text-xs font-semibold tracking-[0.15em] uppercase text-zinc-600 mb-1">Overview</p>
         <h1 className="text-2xl font-bold text-white tracking-tight">
-          Hey {firstName} <span className="text-2xl">👋</span>
+          Hey {firstName}
         </h1>
         <p className="text-zinc-500 mt-1 text-sm">
           {isMatchingActive ? "Your profile is active — employers can find you." : "Complete your Skills Vault to start getting matched."}

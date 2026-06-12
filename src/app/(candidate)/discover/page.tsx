@@ -334,10 +334,10 @@ export default function DiscoverPage() {
         <Label className="mb-2 block">Preferred work arrangement</Label>
         <div className="flex gap-3">
           {([
-            { value: 'remote',   label: '🌐 Fully remote' },
-            { value: 'hybrid',   label: '🏠 Hybrid' },
-            { value: 'onsite',   label: '🏢 On-site' },
-            { value: 'flexible', label: '✨ No preference' },
+            { value: 'remote',   label: 'Fully remote' },
+            { value: 'hybrid',   label: 'Hybrid' },
+            { value: 'onsite',   label: 'On-site' },
+            { value: 'flexible', label: 'No preference' },
           ] as const).map(opt => (
             <button
               key={opt.value}
@@ -589,7 +589,7 @@ export default function DiscoverPage() {
       </div>
 
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Career Identity Builder 🧭</h1>
+        <h1 className="text-2xl font-bold">Career Identity Builder</h1>
         <p className="text-zinc-500 mt-1">
           5 steps. About 6 minutes. What you share here shapes every match, path, and coaching conversation.
         </p>
@@ -604,7 +604,7 @@ export default function DiscoverPage() {
           <>
             {error && (
               <p className="mt-4 text-sm text-red-400 bg-red-500/8 border border-red-500/20 rounded-lg px-4 py-3">
-                ⚠️ {error}
+                {error}
               </p>
             )}
             <div className="flex justify-between mt-8 pt-4 border-t border-white/8">

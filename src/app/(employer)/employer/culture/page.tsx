@@ -225,7 +225,7 @@ export default function EmployerCulturePage() {
   return (
     <div className="p-8 max-w-2xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Culture Profile 🏢</h1>
+        <h1 className="text-2xl font-bold">Culture Profile</h1>
         <p className="text-zinc-500 mt-1">
           Help candidates understand who you are — not just what the role is.
           {done && <span className="ml-2 text-emerald-400 text-sm font-medium">✓ Completed</span>}
@@ -258,7 +258,7 @@ export default function EmployerCulturePage() {
           <>
             {error && (
               <p className="mt-4 text-sm text-red-400 bg-red-500/8 border border-red-500/20 rounded-lg px-4 py-3">
-                ⚠️ {error}
+                {error}
               </p>
             )}
             <div className="flex justify-between mt-8 pt-4 border-t border-white/8">

@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import { Button } from '@/components/ui/button'
 import { gsap, useGSAP } from '@/lib/gsap-config'
+import { Compass, Radar } from 'lucide-react'
 
 function wait(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms))
@@ -13,23 +14,29 @@ function wait(ms: number) {
 const ROLES = [
   {
     id: 'candidate' as const,
-    emoji: '🎯',
-    title: "I'm looking for work",
-    description: 'Build your Skills Vault, get matched to jobs on ability, and get an AI coach that tells you exactly what to fix.',
-    accentColor: 'indigo',
+    Icon: Compass,
+    journey: 'The Navigator journey',
+    title: "I'm building my career",
+    description: 'Vault your skills with evidence, see three plotted routes forward, and get coached by an AI that knows your profile and the market.',
     gradient: 'from-indigo-500/20 to-violet-500/10',
     border: 'border-indigo-500/50',
     glow: 'rgba(99,102,241,0.25)',
+    labelClass: '!text-indigo-400',
+    radioClass: 'border-indigo-500 bg-indigo-500',
+    iconWrap: 'border-indigo-500/30 bg-indigo-500/10 text-indigo-400',
   },
   {
     id: 'employer' as const,
-    emoji: '🏢',
-    title: "I'm hiring",
-    description: 'Post jobs and find candidates ranked by proven skills — not school names. Stop filtering in ATS, start finding real talent.',
-    accentColor: 'emerald',
-    gradient: 'from-emerald-500/20 to-teal-500/10',
-    border: 'border-emerald-500/50',
-    glow: 'rgba(52,211,153,0.25)',
+    Icon: Radar,
+    journey: 'The Scout journey',
+    title: "I'm hiring talent",
+    description: 'Post skills-first roles and see candidates ranked by proven ability and goal alignment — not school names or keyword luck.',
+    gradient: 'from-teal-500/20 to-cyan-500/10',
+    border: 'border-teal-500/50',
+    glow: 'rgba(45,212,191,0.25)',
+    labelClass: '!text-teal-400',
+    radioClass: 'border-teal-400 bg-teal-400',
+    iconWrap: 'border-teal-500/30 bg-teal-500/10 text-teal-400',
   },
 ]
 
@@ -78,7 +85,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-[#070714] flex items-center justify-center px-4 overflow-hidden">
+    <div ref={containerRef} className="min-h-screen bg-[#070714] map-grid flex items-center justify-center px-4 overflow-hidden">
 
       {/* Aurora background */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden" aria-hidden>
@@ -104,10 +111,10 @@ export default function OnboardingPage() {
         {/* Heading */}
         <div className="text-center mb-10">
           <h1 className="ob-heading text-3xl font-bold mb-2 text-white opacity-0">
-            How are you using Career OS?
+            Two journeys. Which is yours?
           </h1>
           <p className="ob-sub text-zinc-400 opacity-0">
-            We&apos;ll personalise your experience based on your answer.
+            The entire platform reshapes itself around your answer.
           </p>
         </div>
 
@@ -129,19 +136,18 @@ export default function OnboardingPage() {
                 style={isSelected ? { boxShadow: `0 0 40px ${role.glow}` } : {}}
               >
                 <div className="flex items-start gap-4">
-                  <span className="text-3xl transition-transform duration-300 group-hover:scale-110">
-                    {role.emoji}
+                  <span className={`w-11 h-11 rounded-full border flex items-center justify-center shrink-0
+                    transition-transform duration-300 group-hover:scale-110 ${role.iconWrap}`}>
+                    <role.Icon size={19} strokeWidth={1.75} />
                   </span>
                   <div className="flex-1">
+                    <p className={`section-label mb-1 ${isSelected ? role.labelClass : ''}`}>{role.journey}</p>
                     <h3 className="font-semibold text-lg text-white">{role.title}</h3>
                     <p className="text-zinc-400 text-sm mt-1">{role.description}</p>
                   </div>
                   <div className={`ml-auto mt-1 w-5 h-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center
                     transition duration-200
-                    ${isSelected
-                      ? role.accentColor === 'indigo' ? 'border-indigo-500 bg-indigo-500' : 'border-emerald-500 bg-emerald-500'
-                      : 'border-white/30'
-                    }`}>
+                    ${isSelected ? role.radioClass : 'border-white/30'}`}>
                     {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
                   </div>
                 </div>
@@ -162,9 +168,10 @@ export default function OnboardingPage() {
         <Button
           onClick={handleContinue}
           disabled={!selected || loading}
-          className="ob-card opacity-0 w-full bg-gradient-to-r from-violet-600 to-indigo-600
-            hover:from-violet-500 hover:to-indigo-500 border-0
-            shadow-xl shadow-indigo-500/30 text-white disabled:opacity-40 disabled:cursor-not-allowed"
+          className={`ob-card opacity-0 w-full border-0 text-white disabled:opacity-40 disabled:cursor-not-allowed
+            ${selected === 'employer'
+              ? 'bg-teal-600 hover:bg-teal-500 shadow-xl shadow-teal-500/25'
+              : 'bg-indigo-600 hover:bg-indigo-500 shadow-xl shadow-indigo-500/25'}`}
           size="lg"
         >
           {loading ? (
@@ -172,7 +179,7 @@ export default function OnboardingPage() {
               <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />
               Setting up your account…
             </span>
-          ) : 'Continue →'}
+          ) : 'Begin the journey'}
         </Button>
 
         <p className="ob-footer text-center text-xs text-zinc-600 mt-4 opacity-0">

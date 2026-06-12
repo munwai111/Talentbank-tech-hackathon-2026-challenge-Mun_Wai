@@ -33,12 +33,13 @@ export default async function TalentPoolPage() {
     .from('candidate_profiles')
     .select('id', { count: 'exact', head: true })
 
-  const REMOTE_LABELS = { remote: '🌐 Remote', hybrid: '🏠 Hybrid', onsite: '🏢 On-site' }
+  const REMOTE_LABELS = { remote: 'Remote', hybrid: 'Hybrid', onsite: 'On-site' }
 
   return (
     <div className="p-8 max-w-3xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Talent Pool 🎯</h1>
+        <p className="section-label !text-teal-400 mb-1.5">Radar</p>
+        <h1 className="text-2xl font-bold">Talent Pool</h1>
         <p className="text-zinc-500 mt-1">
           {totalCandidates ?? 0} candidates on platform · select a role to see ranked matches
         </p>
@@ -46,13 +47,12 @@ export default async function TalentPoolPage() {
 
       {(!jobs || jobs.length === 0) ? (
         <Card className="p-10 text-center border-dashed">
-          <p className="text-3xl mb-3">🎯</p>
           <h3 className="font-semibold mb-1">Post a job to see candidates</h3>
           <p className="text-sm text-zinc-500 mb-4">
             Each role you post is instantly matched against every candidate on the platform.
           </p>
           <Link href="/employer/jobs/new">
-            <Button>Post a job →</Button>
+            <Button>Post a job</Button>
           </Link>
         </Card>
       ) : (
@@ -78,7 +78,7 @@ export default async function TalentPoolPage() {
                   )}
                 </div>
                 <Link href={`/employer/candidates/${job.id}`}>
-                  <Button size="sm">See ranked candidates →</Button>
+                  <Button size="sm">See ranked candidates</Button>
                 </Link>
               </div>
             </Card>

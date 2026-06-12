@@ -134,7 +134,7 @@ function Sidebar() {
 
 export default function CandidateLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background" data-journey="candidate">
       <Sidebar />
       <main className="flex-1 overflow-y-auto bg-background text-foreground relative">
         {children}

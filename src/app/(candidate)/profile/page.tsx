@@ -48,7 +48,7 @@ const SOURCE_BADGES: Record<string, { label: string; color: string }> = {
   manual:     { label: 'Self-reported',  color: 'bg-white/6 text-zinc-500 border-white/8' },
   import:     { label: '📄 Resume',      color: 'bg-amber-500/10 text-amber-400 border-amber-500/15' },
   github:     { label: '🐙 GitHub',      color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/15' },
-  assessment: { label: '✅ Assessed',    color: 'bg-blue-500/10 text-blue-400 border-blue-500/15' },
+  assessment: { label: 'Assessed',    color: 'bg-blue-500/10 text-blue-400 border-blue-500/15' },
 }
 
 const LEVELS = [1, 2, 3, 4, 5] as const
@@ -1276,7 +1276,7 @@ function ImportSection({
               imp.mode === mode ? 'bg-indigo-600 text-white' : 'bg-white/6 text-zinc-400 hover:bg-white/10'
             }`}
           >
-            {mode === 'pdf' ? '📎 Upload File' : mode === 'url' ? '🔗 URL' : '📋 Paste Text'}
+            {mode === 'pdf' ? 'Upload File' : mode === 'url' ? 'URL' : 'Paste Text'}
           </button>
         ))}
       </div>
@@ -1301,7 +1301,7 @@ function ImportSection({
             onChange={e => setImp(s => ({ ...s, url: e.target.value, extracted: null }))} />
           {imp.url.toLowerCase().includes('linkedin.com') ? (
             <div className="p-3 bg-amber-500/8 border border-amber-500/20 rounded-lg text-xs text-amber-400 space-y-1">
-              <p className="font-semibold">⚠️ LinkedIn blocks automated access</p>
+              <p className="font-semibold">LinkedIn blocks automated access</p>
               <p>Use Paste Text instead: copy your full page with Cmd+A → Cmd+C</p>
               <button onClick={() => setImp(s => ({ ...s, mode: 'text', url: '' }))}
                 className="text-amber-400 font-semibold underline hover:text-amber-300">Switch to Paste Text →</button>
@@ -1326,13 +1326,13 @@ function ImportSection({
         ) : 'Extract profile with AI'}
       </Button>
 
-      {imp.error && <div className="p-4 bg-red-500/8 border border-red-500/20 rounded-xl text-sm text-red-400">⚠️ {imp.error}</div>}
+      {imp.error && <div className="p-4 bg-red-500/8 border border-red-500/20 rounded-xl text-sm text-red-400">{imp.error}</div>}
 
       {imp.extracting && (
         <div className="p-4 bg-white/4 rounded-xl text-sm text-zinc-400 space-y-1.5">
-          <p>🔍 Reading source content...</p>
+          <p>Reading source content…</p>
           <p>🧠 Identifying skills and background...</p>
-          <p>✅ Cross-checking skill levels...</p>
+          <p>Cross-checking skill levels…</p>
           <p>📊 Normalising and estimating salary range...</p>
         </div>
       )}
@@ -1365,7 +1365,7 @@ function ExtractedResults({ imp, setImp, onApply }: {
 
       {ep.warnings.length > 0 && (
         <div className="p-4 bg-amber-500/8 border border-amber-500/20 rounded-xl">
-          <p className="text-xs font-semibold text-amber-400 mb-2">⚠️ AI flagged these for review:</p>
+          <p className="text-xs font-semibold text-amber-400 mb-2">AI flagged these for review:</p>
           <ul className="space-y-1">{ep.warnings.map((w, i) => <li key={i} className="text-xs text-amber-400">• {w}</li>)}</ul>
         </div>
       )}
@@ -1390,7 +1390,7 @@ function ExtractedResults({ imp, setImp, onApply }: {
               <div key={i} className="flex items-center gap-3">
                 <span className="flex-1 text-sm font-medium">{skill.name}</span>
                 <span className={`text-[11px] px-2.5 py-1 rounded-lg font-semibold border shrink-0 ${(LEVEL_COLORS[skill.level] ?? LEVEL_COLORS[3]).badge}`}>{LEVEL_LABELS[skill.level]}</span>
-                <span className="text-xs text-zinc-400 shrink-0 w-20 text-right">{skill.source_type === 'inferred' ? '🔍 inferred' : '📝 explicit'}</span>
+                <span className="text-xs text-zinc-400 shrink-0 w-20 text-right">{skill.source_type === 'inferred' ? 'inferred' : 'explicit'}</span>
               </div>
             ))}
           </div>
@@ -1412,7 +1412,7 @@ function ExtractedResults({ imp, setImp, onApply }: {
         <Button onClick={onApply} disabled={imp.applying || (!imp.applyBio && !imp.applySkills)} className="w-full">
           {imp.applying ? <span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />Applying...</span> : 'Apply to my profile'}
         </Button>
-        {imp.applySuccess && <p className="text-sm text-emerald-400 font-medium text-center mt-3">✅ Done! Check your Vault tab.</p>}
+        {imp.applySuccess && <p className="text-sm text-emerald-400 font-medium text-center mt-3">Done — check your Vault tab.</p>}
       </Card>
     </div>
   )
@@ -1441,12 +1441,12 @@ function GithubSection({ gh, setGh, onImport }: {
       </div>
       {gh.importing && (
         <div className="p-4 bg-white/4 rounded-lg text-sm text-zinc-400 space-y-1">
-          <p>🔍 Fetching repositories...</p><p>🧠 Reading code to identify skills...</p><p>✨ Generating skill evidence...</p>
+          <p>Fetching repositories…</p><p>Reading code to identify skills…</p><p>Generating skill evidence…</p>
         </div>
       )}
       {gh.result && (
         <div className="p-4 bg-emerald-500/8 border border-emerald-500/20 rounded-lg">
-          <p className="font-medium text-emerald-300 mb-2">✅ {gh.result.skills.length} skills extracted!</p>
+          <p className="font-medium text-emerald-300 mb-2">{gh.result.skills.length} skills extracted</p>
           <div className="flex flex-wrap gap-1.5 mb-3">
             {gh.result.skills.map(s => <Badge key={s} className="bg-emerald-500/15 text-emerald-400 border-0">{s}</Badge>)}
           </div>
@@ -1681,7 +1681,7 @@ function ProfilePageInner() {
   return (
     <div className="px-8 py-6 relative" data-vault-root>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Skills Vault 🗂️</h1>
+        <h1 className="text-2xl font-bold">Skills Vault</h1>
         <p className="text-zinc-500 mt-1">Your evidence base. Employers see skills, not school names.</p>
       </div>
 

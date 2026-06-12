@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { PlusCircle, Users, ClipboardList, Building2, ArrowRight, type LucideIcon } from 'lucide-react'
 
 export default async function EmployerDashboardPage() {
   const user = await currentUser()
@@ -34,7 +35,8 @@ export default async function EmployerDashboardPage() {
     <div className="p-8 max-w-4xl">
       {/* ── Greeting ─────────────────────────────────────────── */}
       <div className="mb-8 animate-fade-up">
-        <h1 className="text-2xl font-bold">Hey {firstName} 👋</h1>
+        <p className="section-label !text-teal-400 mb-1.5">Scout base</p>
+        <h1 className="text-2xl font-bold">Hey {firstName}</h1>
         <p className="text-zinc-500 mt-1">
           {company?.name ?? 'Your company'} · Employer portal
         </p>
@@ -59,7 +61,7 @@ export default async function EmployerDashboardPage() {
         <Card className="p-5 animate-fade-up animate-delay-3">
           <p className="text-sm text-zinc-500 mb-1">Matching status</p>
           <Badge variant={activeJobs.length > 0 ? 'default' : 'secondary'} className="mt-1">
-            {activeJobs.length > 0 ? '🟢 Active' : '⚪ No active jobs'}
+            {activeJobs.length > 0 ? 'Active' : 'No active jobs'}
           </Badge>
           <p className="text-xs text-zinc-400 mt-1">
             {activeJobs.length > 0 ? 'Candidates are being ranked' : 'Post a role to start matching'}
@@ -79,7 +81,7 @@ export default async function EmployerDashboardPage() {
               </p>
             </div>
             <Link href="/employer/jobs/new">
-              <Button size="sm" className="shrink-0 ml-4">Post a job →</Button>
+              <Button size="sm" className="shrink-0 ml-4">Post a job <ArrowRight size={13} /></Button>
             </Link>
           </div>
         </Card>
@@ -101,10 +103,10 @@ export default async function EmployerDashboardPage() {
                 </div>
                 <div className="flex items-center gap-3">
                   <Badge variant={job.status === 'open' ? 'default' : 'secondary'}>
-                    {job.status === 'open' ? '🟢 Open' : job.status}
+                    {job.status === 'open' ? 'Open' : job.status}
                   </Badge>
                   <Link href={`/employer/candidates/${job.id}`}>
-                    <Button size="sm" variant="outline">See matches →</Button>
+                    <Button size="sm" variant="outline">See matches <ArrowRight size={13} /></Button>
                   </Link>
                 </div>
               </div>
@@ -114,18 +116,20 @@ export default async function EmployerDashboardPage() {
       )}
 
       {/* ── Quick actions ─────────────────────────────────────── */}
-      <h2 className="font-semibold mb-4 text-zinc-300">Quick actions</h2>
+      <h2 className="section-label mb-4">Quick actions</h2>
       <div className="grid grid-cols-2 gap-4">
-        {[
-          { href: '/employer/jobs/new',   icon: '➕', title: 'Post a new role',       desc: 'Define skills, salary, and location',            delay: 'animate-delay-1' },
-          { href: '/employer/candidates', icon: '🎯', title: 'Browse talent pool',     desc: 'Find candidates across all your open roles',     delay: 'animate-delay-2' },
-          { href: '/employer/jobs',       icon: '📋', title: 'Manage jobs',            desc: 'Edit, close, or reopen existing listings',       delay: 'animate-delay-2' },
-          { href: '/employer/company',    icon: '🏢', title: 'Update company profile', desc: 'Make your brand visible to candidates',          delay: 'animate-delay-3' },
-        ].map(item => (
+        {([
+          { href: '/employer/jobs/new',   Icon: PlusCircle,    title: 'Post a new role',        desc: 'Define skills, salary, and location',         delay: 'animate-delay-1' },
+          { href: '/employer/candidates', Icon: Users,         title: 'Browse talent pool',     desc: 'Find candidates across all your open roles',  delay: 'animate-delay-2' },
+          { href: '/employer/jobs',       Icon: ClipboardList, title: 'Manage jobs',            desc: 'Edit, close, or reopen existing listings',    delay: 'animate-delay-2' },
+          { href: '/employer/company',    Icon: Building2,     title: 'Update company profile', desc: 'Make your brand visible to candidates',       delay: 'animate-delay-3' },
+        ] as { href: string; Icon: LucideIcon; title: string; desc: string; delay: string }[]).map(item => (
           <Link key={item.href} href={item.href} className={`animate-fade-up ${item.delay}`}>
-            <Card className="p-5 hover:border-indigo-500/30 hover:bg-indigo-500/8 transition cursor-pointer h-full group">
-              <span className="text-2xl">{item.icon}</span>
-              <h3 className="font-medium mt-2">{item.title}</h3>
+            <Card className="p-5 hover:border-teal-500/30 hover:bg-teal-500/6 transition cursor-pointer h-full group">
+              <span className="w-9 h-9 rounded-full border border-teal-500/25 bg-teal-500/8 flex items-center justify-center">
+                <item.Icon size={16} className="text-teal-400" strokeWidth={1.75} />
+              </span>
+              <h3 className="font-medium mt-3">{item.title}</h3>
               <p className="text-sm text-zinc-500 mt-1">{item.desc}</p>
             </Card>
           </Link>

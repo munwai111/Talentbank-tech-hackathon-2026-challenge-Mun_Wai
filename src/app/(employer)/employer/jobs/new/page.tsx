@@ -121,7 +121,8 @@ export default function PostJobPage() {
   return (
     <div className="p-8 max-w-2xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Post a Job ➕</h1>
+        <p className="section-label !text-teal-400 mb-1.5">New posting</p>
+        <h1 className="text-2xl font-bold">Post a Job</h1>
         <p className="text-zinc-500 mt-1">
           Define the role and required skills. Candidates are matched the moment you publish.
         </p>
@@ -169,9 +170,9 @@ export default function PostJobPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="onsite">🏢 On-site</SelectItem>
-                  <SelectItem value="hybrid">🏠 Hybrid</SelectItem>
-                  <SelectItem value="remote">🌐 Remote</SelectItem>
+                  <SelectItem value="onsite">On-site</SelectItem>
+                  <SelectItem value="hybrid">Hybrid</SelectItem>
+                  <SelectItem value="remote">Remote</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -227,7 +228,7 @@ export default function PostJobPage() {
 
         {error && (
           <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-            ⚠️ {error}
+            {error}
           </p>
         )}
 

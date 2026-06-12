@@ -16,6 +16,8 @@ import {
 } from '@/lib/matching'
 import type { CareerData } from '@/types/database'
 import { ApplicantsPanel } from './ApplicantsPanel'
+import { LocationMeta, SalaryMeta } from '@/components/shared/meta'
+import { Users, Compass, X, MapPin } from 'lucide-react'
 
 type SkillRow = { name: string; level: number; source: string }
 
@@ -82,7 +84,7 @@ export default async function CandidatesForJobPage({
       <div className="p-8 max-w-3xl">
         <BackLink jobTitle={job.title} />
         <Card className="p-10 text-center border-dashed mt-6">
-          <p className="text-3xl mb-3">👥</p>
+          <Users size={28} strokeWidth={1.5} className="mx-auto mb-4 text-zinc-500" />
           <h3 className="font-semibold mb-1">No candidates yet</h3>
           <p className="text-sm text-zinc-500">
             Candidates are joining the platform. Check back soon.
@@ -184,11 +186,9 @@ export default async function CandidatesForJobPage({
 
       {/* ── Job summary ──────────────────────────────────────── */}
       <Card className="p-5 mb-6 mt-4 bg-zinc-50">
-        <div className="flex flex-wrap gap-2 text-sm text-zinc-500 mb-3">
-          {job.location && <span>📍 {job.location}</span>}
-          {job.salary_min && (
-            <span>💰 RM {job.salary_min.toLocaleString()} – {job.salary_max?.toLocaleString()}/mo</span>
-          )}
+        <div className="flex flex-wrap gap-4 text-sm text-zinc-500 mb-3">
+          {job.location && <LocationMeta>{job.location}</LocationMeta>}
+          {job.salary_min && <SalaryMeta min={job.salary_min} max={job.salary_max} />}
         </div>
         <div className="flex flex-wrap gap-1.5">
           {required.map((s: string) => (
@@ -229,7 +229,10 @@ export default async function CandidatesForJobPage({
                     <p className="text-sm text-zinc-500">{candidate.headline}</p>
                   )}
                   {candidate.location && (
-                    <p className="text-xs text-zinc-400 mt-0.5">📍 {candidate.location}</p>
+                    <p className="inline-flex items-center gap-1 text-xs text-zinc-400 mt-0.5">
+                      <MapPin size={11} strokeWidth={1.75} className="opacity-60" />
+                      {candidate.location}
+                    </p>
                   )}
                 </div>
               </div>
@@ -237,12 +240,12 @@ export default async function CandidatesForJobPage({
               <div className="flex items-center gap-2 shrink-0">
                 {candidate.goal_alignment_label === 'goal_match' && (
                   <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                    🎯 Goal match
+                    <Compass size={11} strokeWidth={2} className="inline mr-1" />Goal match
                   </span>
                 )}
                 {candidate.goal_alignment_label === 'career_pivot' && (
                   <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                    🔀 Growth hire
+                    Growth hire
                   </span>
                 )}
                 <span className={`text-sm font-bold px-3 py-1 rounded-full border ${
@@ -275,7 +278,7 @@ export default async function CandidatesForJobPage({
               ))}
               {candidate.missing_required.map(s => (
                 <Badge key={s} variant="outline" className="text-red-500 border-red-200 text-xs font-normal">
-                  ✗ {s}
+                  <X size={10} strokeWidth={2.5} className="inline" /> {s}
                 </Badge>
               ))}
             </div>
@@ -302,7 +305,7 @@ export default async function CandidatesForJobPage({
 
       {ranked.length === 0 && (
         <Card className="p-10 text-center border-dashed">
-          <p className="text-3xl mb-3">👥</p>
+          <Users size={28} strokeWidth={1.5} className="mx-auto mb-4 text-zinc-500" />
           <h3 className="font-semibold mb-1">No candidates with skills yet</h3>
           <p className="text-sm text-zinc-500">
             Candidates need to add skills to their profile before they can be matched.

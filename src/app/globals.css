@@ -150,6 +150,131 @@
   }
 }
 
+/* ════════════════════════════════════════════════════════════════════════
+   CAREER OS DESIGN LANGUAGE — "Cartography"
+   The product is a career GPS; the interface speaks in map vocabulary:
+   waypoint grids, contour lines, plotted routes. One quiet texture layer
+   per page — never competing with the data the user came to read.
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── Journey accent system ────────────────────────────────────────────────
+   The platform adapts its identity to who you are. Candidates navigate
+   (indigo); employers scout (teal). Set data-journey on a layout root. */
+:root,
+[data-journey="candidate"] {
+  --journey-accent: oklch(0.67 0.19 264);          /* indigo-400 */
+  --journey-accent-strong: oklch(0.58 0.21 270);   /* indigo-500 */
+  --journey-soft: oklch(0.67 0.19 264 / 12%);
+  --journey-border: oklch(0.67 0.19 264 / 30%);
+  --journey-glow: oklch(0.67 0.19 264 / 18%);
+}
+[data-journey="employer"] {
+  --journey-accent: oklch(0.78 0.13 185);          /* teal-400 */
+  --journey-accent-strong: oklch(0.70 0.14 185);   /* teal-500 */
+  --journey-soft: oklch(0.78 0.13 185 / 12%);
+  --journey-border: oklch(0.78 0.13 185 / 30%);
+  --journey-glow: oklch(0.78 0.13 185 / 18%);
+}
+
+/* ── Map textures (pure CSS — zero network, GPU-composited) ─────────────── */
+
+/* Waypoint dot grid — reads as chart paper / map grid */
+.map-grid {
+  background-image: radial-gradient(circle, oklch(1 0 0 / 4.5%) 1px, transparent 1.5px);
+  background-size: 28px 28px;
+}
+
+/* Contour lines — soft concentric topography, one corner only */
+.topo-corner {
+  position: relative;
+}
+.topo-corner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='white' stroke-opacity='0.05'%3E%3Cpath d='M-80 140 C 60 40 230 90 320 10'/%3E%3Cpath d='M-80 200 C 80 90 250 150 380 40'/%3E%3Cpath d='M-80 260 C 100 140 280 210 440 80'/%3E%3Cpath d='M-80 320 C 120 200 310 270 500 120'/%3E%3Cpath d='M-80 380 C 140 260 340 330 560 170'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 110% auto;
+  background-position: top left;
+}
+
+/* Plotted route — dashed path line for journey/step connectors */
+.route-line {
+  background-image: linear-gradient(to bottom, var(--journey-border) 55%, transparent 55%);
+  background-size: 1px 7px;
+  width: 1px;
+}
+.route-line-h {
+  background-image: linear-gradient(to right, var(--journey-border) 55%, transparent 55%);
+  background-size: 7px 1px;
+  height: 1px;
+}
+
+/* Waypoint marker — the "you are here" dot */
+.waypoint {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  border-radius: 9999px;
+  background: var(--journey-accent);
+  box-shadow: 0 0 0 3px var(--journey-soft);
+}
+
+/* ── Surface system — calm, consistent card levels ──────────────────────── */
+.surface {
+  background: oklch(1 0 0 / 2.5%);
+  border: 1px solid oklch(1 0 0 / 7%);
+  border-radius: var(--radius-xl);
+}
+.surface-raised {
+  background: oklch(0.10 0.025 264);
+  border: 1px solid oklch(1 0 0 / 9%);
+  border-radius: var(--radius-xl);
+  box-shadow: 0 8px 28px oklch(0 0 0 / 35%);
+}
+.surface-journey {
+  background: var(--journey-soft);
+  border: 1px solid var(--journey-border);
+  border-radius: var(--radius-xl);
+}
+
+/* Section label — small caps tracking, the system's wayfinding voice */
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* ── Route drawing — the hero's one signature moment ─────────────────────
+   SVG path draws itself once on load; waypoints pop in along it. */
+@keyframes route-draw {
+  from { stroke-dashoffset: var(--route-len, 900); }
+  to   { stroke-dashoffset: 0; }
+}
+.animate-route-draw {
+  stroke-dasharray: var(--route-len, 900);
+  animation: route-draw 1.8s var(--ease-glide) 0.3s both;
+}
+@keyframes waypoint-pop {
+  from { opacity: 0; transform: scale(0.6); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.animate-waypoint {
+  animation: waypoint-pop 0.5s var(--ease-snap) both;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+@keyframes float-label {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.animate-route-label {
+  animation: float-label 0.55s var(--ease-snap) both;
+}
+
 /* ── Registration Wizard — All Animation Keyframes ─────────────────────── */
 
 /* Phase unlock celebration */

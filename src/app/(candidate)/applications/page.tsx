@@ -5,6 +5,8 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { FadeUp } from '@/components/animations/FadeUp'
+import { StatusChip, WorkModeMeta, LocationMeta, SalaryMeta } from '@/components/shared/meta'
+import { Inbox, ArrowRight } from 'lucide-react'
 
 type ApplicationRow = {
   id: string
@@ -22,26 +24,6 @@ type ApplicationRow = {
     status: string
     companies: { name: string; industry: string | null }
   }
-}
-
-const STATUS_CONFIG: Record<string, { label: string; classes: string }> = {
-  applied:    { label: '📨 Applied',    classes: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30' },
-  reviewing:  { label: '🔍 Reviewing',  classes: 'bg-amber-500/15 text-amber-400 border-amber-500/30' },
-  interview:  { label: '🎤 Interview',  classes: 'bg-sky-500/15 text-sky-400 border-sky-500/30' },
-  offer:      { label: '🎉 Offer',      classes: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' },
-  rejected:   { label: '✗ Rejected',   classes: 'bg-red-500/15 text-red-400 border-red-500/30' },
-  withdrawn:  { label: '↩ Withdrawn',  classes: 'bg-zinc-500/15 text-zinc-400 border-zinc-500/30' },
-}
-
-const REMOTE_LABELS = { remote: '🌐 Remote', hybrid: '🏠 Hybrid', onsite: '🏢 On-site' }
-
-function StatusChip({ status }: { status: string }) {
-  const cfg = STATUS_CONFIG[status] ?? STATUS_CONFIG.applied
-  return (
-    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full border ${cfg.classes}`}>
-      {cfg.label}
-    </span>
-  )
 }
 
 export default function ApplicationsPage() {
@@ -71,23 +53,25 @@ export default function ApplicationsPage() {
 
   return (
     <div className="px-8 py-6 max-w-3xl">
-      <FadeUp className="mb-6" scrollTrigger={false}>
-        <h1 className="text-2xl font-bold text-white">My Applications 📨</h1>
+      <FadeUp className="mb-8" scrollTrigger={false}>
+        <p className="section-label mb-2">Your journey</p>
+        <h1 className="text-2xl font-bold text-white">Applications</h1>
         <p className="text-zinc-400 mt-1">
-          Track every role you&apos;ve applied to and where you stand.
+          Every role you&apos;ve applied to, and exactly where you stand.
         </p>
       </FadeUp>
 
       {applications.length === 0 && (
-        <div className="p-10 text-center rounded-xl border border-white/8 bg-white/3">
-          <p className="text-3xl mb-3">📭</p>
+        <div className="p-10 text-center surface">
+          <Inbox size={28} strokeWidth={1.5} className="mx-auto mb-4 text-zinc-500" />
           <h3 className="font-semibold mb-1 text-white">No applications yet</h3>
-          <p className="text-sm text-zinc-400 mb-4">
-            Browse your matched jobs and hit &ldquo;Apply now&rdquo; to get started.
+          <p className="text-sm text-zinc-400 mb-5">
+            Browse your matched jobs and apply — your strongest routes are already ranked.
           </p>
           <Link href="/jobs">
             <Button className="bg-indigo-600 hover:bg-indigo-500 border-0 text-white">
-              Browse job matches →
+              Browse job matches
+              <ArrowRight size={14} />
             </Button>
           </Link>
         </div>
@@ -95,9 +79,7 @@ export default function ApplicationsPage() {
 
       {active.length > 0 && (
         <section className="mb-8">
-          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3">
-            Active · {active.length}
-          </p>
+          <p className="section-label mb-3">Active · {active.length}</p>
           <div className="space-y-3">
             {active.map(app => <ApplicationCard key={app.id} app={app} />)}
           </div>
@@ -106,9 +88,7 @@ export default function ApplicationsPage() {
 
       {closed.length > 0 && (
         <section>
-          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-wide mb-3">
-            Closed · {closed.length}
-          </p>
+          <p className="section-label mb-3">Closed · {closed.length}</p>
           <div className="space-y-3 opacity-60">
             {closed.map(app => <ApplicationCard key={app.id} app={app} />)}
           </div>
@@ -129,7 +109,7 @@ function ApplicationCard({ app }: { app: ApplicationRow }) {
   const wasUpdated = app.updated_at !== app.created_at
 
   return (
-    <div className="rounded-xl border border-white/8 bg-white/3 p-5 backdrop-blur-sm">
+    <div className="surface p-5">
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-base text-white">{job.title}</h3>
@@ -139,12 +119,10 @@ function ApplicationCard({ app }: { app: ApplicationRow }) {
               <span className="text-zinc-500"> · {job.companies.industry}</span>
             )}
           </p>
-          <div className="flex flex-wrap gap-3 mt-2 text-xs text-zinc-500">
-            {job.location && <span>📍 {job.location}</span>}
-            <span>{REMOTE_LABELS[job.remote]}</span>
-            {job.salary_min && (
-              <span>💰 RM {job.salary_min.toLocaleString()} – {job.salary_max?.toLocaleString()}/mo</span>
-            )}
+          <div className="flex flex-wrap gap-3 mt-2.5 text-xs text-zinc-500">
+            {job.location && <LocationMeta>{job.location}</LocationMeta>}
+            <WorkModeMeta mode={job.remote} />
+            {job.salary_min && <SalaryMeta min={job.salary_min} max={job.salary_max} />}
           </div>
         </div>
         <div className="shrink-0">
@@ -153,7 +131,7 @@ function ApplicationCard({ app }: { app: ApplicationRow }) {
       </div>
 
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/6">
-        <div className="flex gap-3 text-xs text-zinc-500">
+        <div className="flex gap-3 items-center text-xs text-zinc-500">
           <span>Applied {appliedDate}</span>
           {wasUpdated && <span>· Updated {updatedDate}</span>}
           {job.status === 'closed' && (
@@ -162,10 +140,9 @@ function ApplicationCard({ app }: { app: ApplicationRow }) {
             </Badge>
           )}
         </div>
-        <Link href="/jobs">
-          <button className="text-xs text-zinc-500 hover:text-indigo-400 transition-colors">
-            See all matches →
-          </button>
+        <Link href="/jobs" className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-indigo-400 transition-colors">
+          See all matches
+          <ArrowRight size={12} />
         </Link>
       </div>
     </div>

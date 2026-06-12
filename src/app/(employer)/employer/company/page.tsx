@@ -62,7 +62,7 @@ export default function CompanyProfilePage() {
   return (
     <div className="p-8 max-w-2xl">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Company Profile 🏢</h1>
+        <h1 className="text-2xl font-bold">Company Profile</h1>
         <p className="text-zinc-500 mt-1">
           This is what candidates see when they look at your job listings.
         </p>
