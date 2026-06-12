@@ -3,10 +3,10 @@
 import {
   MapPin, Globe, FileText, ExternalLink,
   Briefcase, GraduationCap, FolderOpen, Award, Layers,
-  Building2, Calendar, Star,
+  Building2, Calendar, Star, Sparkles,
 } from 'lucide-react'
 import { GithubIcon, LinkedinIcon } from '@/components/ui/BrandIcons'
-import type { CandidateProfile, Skill, PortfolioItem, WorkExperienceEntry, EducationEntry } from '@/types/database'
+import type { CandidateProfile, Skill, PortfolioItem, WorkExperienceEntry, EducationEntry, PersonaAnalysis } from '@/types/database'
 
 type FullProfile = CandidateProfile & { skills: Skill[]; portfolio_items: PortfolioItem[] }
 
@@ -297,6 +297,64 @@ function AwardsSection({ profile }: { profile: FullProfile }) {
   )
 }
 
+// ── AI Persona (generated via AI Profiling in edit mode) ──────────────────────
+
+function PersonaMiniBar({ label, score }: { label: string; score: number }) {
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-[11px] text-zinc-400">{label}</p>
+        <span className="text-[10px] text-zinc-600 tabular-nums">{score}</span>
+      </div>
+      <div className="h-1 rounded-full bg-white/6 overflow-hidden">
+        <div className="h-full rounded-full bg-indigo-500" style={{ width: `${Math.min(100, Math.max(0, score))}%` }} />
+      </div>
+    </div>
+  )
+}
+
+function PersonaSection({ profile }: { profile: FullProfile }) {
+  const persona: PersonaAnalysis | null | undefined = profile.career_data?.ai_persona
+  if (!persona) return null
+  const topFit = persona.field_fit?.slice(0, 3) ?? []
+  return (
+    <section className="mb-8">
+      <SectionHeader icon={Sparkles} label="Persona & Working Style" />
+      <div className="rounded-xl border border-white/7 bg-white/2 p-5 space-y-4">
+        <div className="flex flex-wrap items-center gap-2">
+          {persona.mbti && (
+            <>
+              <span className="px-3 py-1 rounded-lg bg-violet-500/12 border border-violet-500/25 text-violet-300 text-sm font-bold tracking-widest">
+                {persona.mbti.type}
+              </span>
+              <span className="text-xs text-zinc-500">{persona.mbti.label}</span>
+            </>
+          )}
+          <span className="ml-auto text-[10px] text-zinc-700 uppercase tracking-wider">AI-generated · indicative</span>
+        </div>
+        <p className="text-xs text-zinc-400 leading-relaxed">{persona.persona_summary}</p>
+        {persona.big_five?.length > 0 && (
+          <div className="grid grid-cols-2 gap-x-5 gap-y-2.5">
+            {persona.big_five.map(t => <PersonaMiniBar key={t.name} label={t.name} score={t.score} />)}
+          </div>
+        )}
+        {persona.strengths?.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {persona.strengths.map(s => (
+              <span key={s} className="text-[11px] px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">{s}</span>
+            ))}
+          </div>
+        )}
+        {topFit.length > 0 && (
+          <p className="text-[11px] text-zinc-500 border-t border-white/6 pt-3">
+            Best-fit fields: {topFit.map(f => `${f.field} (${f.fit_score})`).join(' · ')}
+          </p>
+        )}
+      </div>
+    </section>
+  )
+}
+
 // ── Skills ────────────────────────────────────────────────────────────────────
 
 const LEVEL_LABELS: Record<number, string> = { 1: 'Elementary', 2: 'Beginner', 3: 'Intermediate', 4: 'Advanced', 5: 'Expert' }
@@ -344,6 +402,7 @@ export function ProfileViewMode({ profile, avatarUrl, clerkName }: {
     <div className="max-w-2xl mx-auto py-8 px-4">
       <ProfileHero profile={profile} avatarUrl={avatarUrl} clerkName={clerkName} />
       <AboutSection profile={profile} />
+      <PersonaSection profile={profile} />
       <WorkSection work={work} />
       <EducationSection education={education} />
       <ProjectsSection items={profile.portfolio_items} />

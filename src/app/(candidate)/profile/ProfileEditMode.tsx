@@ -4,22 +4,23 @@ import { useState, useRef } from 'react'
 import {
   User, Briefcase, GraduationCap, FolderOpen, Award, Layers, Link2,
   Plus, Trash2, GripVertical, Info, Check, Loader2, Upload, Globe,
-  ExternalLink, FileText, ChevronDown, ChevronUp,
+  ExternalLink, FileText, ChevronDown, ChevronUp, Sparkles,
   type LucideIcon,
 } from 'lucide-react'
 import { GithubIcon, LinkedinIcon } from '@/components/ui/BrandIcons'
+import { AIProfilingSection } from './AIProfilingSection'
 import type { CandidateProfile, Skill, WorkExperienceEntry, EducationEntry, PortfolioItem } from '@/types/database'
 import { SORTED_COUNTRIES, getStatesForCountry, GENDER_OPTIONS, ETHNICITY_OPTIONS } from '@/lib/countries'
 
 type FullProfile = CandidateProfile & { skills: Skill[]; portfolio_items: PortfolioItem[] }
 
-type EditSection = 'personal' | 'experience' | 'education' | 'projects' | 'awards' | 'skills' | 'accounts'
+type EditSection = 'personal' | 'experience' | 'education' | 'projects' | 'awards' | 'skills' | 'accounts' | 'ai'
 
 type AwardEntry = { title: string; issuer: string; date: string; description: string; url: string }
 
 // ── Floating glass nav ────────────────────────────────────────────────────────
 
-const NAV_ITEMS: { id: EditSection; label: string; icon: LucideIcon }[] = [
+const NAV_ITEMS: { id: EditSection; label: string; icon: LucideIcon; info?: string }[] = [
   { id: 'personal',    label: 'Personal Info',  icon: User },
   { id: 'experience',  label: 'Experience',      icon: Briefcase },
   { id: 'education',   label: 'Education',       icon: GraduationCap },
@@ -27,6 +28,8 @@ const NAV_ITEMS: { id: EditSection; label: string; icon: LucideIcon }[] = [
   { id: 'awards',      label: 'Awards',          icon: Award },
   { id: 'skills',      label: 'Skills Vault',    icon: Layers },
   { id: 'accounts',    label: 'Linked Accounts', icon: Link2 },
+  { id: 'ai',          label: 'AI Profiling',    icon: Sparkles,
+    info: 'AI reads your resume/CV and profile to build a full persona: achievements, MBTI-style type, Big Five traits, Korn Ferry-style competencies & drivers, field fit, life priorities and behavioural insights. Indicative — not a clinical assessment.' },
 ]
 
 function EditSectionNav({ active, onChange }: { active: EditSection; onChange: (s: EditSection) => void }) {
@@ -35,7 +38,7 @@ function EditSectionNav({ active, onChange }: { active: EditSection; onChange: (
       <div className="rounded-2xl border border-white/10 bg-white/3 backdrop-blur-xl p-2 space-y-0.5
         shadow-[0_8px_32px_rgba(0,0,0,0.4),inset_0_1px_0_rgba(255,255,255,0.06)]">
         <p className="text-[10px] font-semibold tracking-widest uppercase text-zinc-600 px-2 pt-1 pb-2">Edit Profile</p>
-        {NAV_ITEMS.map(({ id, label, icon: Icon }) => (
+        {NAV_ITEMS.map(({ id, label, icon: Icon, info }) => (
           <button key={id} onClick={() => onChange(id)}
             className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-all duration-150 text-left ${
               active === id
@@ -44,7 +47,12 @@ function EditSectionNav({ active, onChange }: { active: EditSection; onChange: (
             }`}>
             <Icon size={14} strokeWidth={active === id ? 2 : 1.75}
               className={active === id ? 'text-indigo-400' : 'text-zinc-500'} />
-            {label}
+            <span className="flex-1">{label}</span>
+            {info && (
+              <span title={info} className="text-zinc-600 hover:text-zinc-400 cursor-help shrink-0">
+                <Info size={11} />
+              </span>
+            )}
           </button>
         ))}
       </div>
@@ -695,14 +703,20 @@ const SECTION_TITLES: Record<EditSection, string> = {
   awards:     'Awards & Certifications',
   skills:     'Skills Vault',
   accounts:   'Linked Accounts',
+  ai:         'AI Profiling',
 }
 
-export function ProfileEditMode({ profile, onSave, onSaveProjects }: {
+const VALID_SECTIONS = new Set<EditSection>(['personal', 'experience', 'education', 'projects', 'awards', 'skills', 'accounts', 'ai'])
+
+export function ProfileEditMode({ profile, onSave, onSaveProjects, initialSection }: {
   profile: FullProfile
   onSave: (data: Partial<FullProfile>) => Promise<void>
   onSaveProjects: (projects: { title: string; description: string; url: string; repo_url: string; tech_stack: string; impact: string }[]) => Promise<void>
+  initialSection?: string | null
 }) {
-  const [section, setSection] = useState<EditSection>('personal')
+  const [section, setSection] = useState<EditSection>(
+    initialSection && VALID_SECTIONS.has(initialSection as EditSection) ? initialSection as EditSection : 'personal'
+  )
 
   return (
     <div className="flex gap-8 py-8 px-4 max-w-5xl mx-auto items-start">
@@ -717,6 +731,7 @@ export function ProfileEditMode({ profile, onSave, onSaveProjects }: {
         {section === 'awards'      && <AwardsSection profile={profile} onSave={onSave} />}
         {section === 'skills'      && <SkillsSection />}
         {section === 'accounts'    && <LinkedAccountsSection profile={profile} onSave={onSave} />}
+        {section === 'ai'          && <AIProfilingSection profile={profile} onSave={onSave} />}
       </div>
     </div>
   )

@@ -135,6 +135,7 @@ function ProfilePageInner() {
           profile={profile}
           onSave={handleSave}
           onSaveProjects={handleSaveProjects}
+          initialSection={params.get('section')}
         />
       )}
     </div>
