@@ -4,7 +4,7 @@ import { useState, useRef } from 'react'
 import {
   User, Briefcase, GraduationCap, FolderOpen, Award, Layers, Link2,
   Plus, Trash2, GripVertical, Info, Check, Loader2, Upload, Globe,
-  ExternalLink, FileText, ChevronDown, ChevronUp, Sparkles,
+  ExternalLink, FileText, ChevronDown, ChevronUp, Sparkles, AlertTriangle,
   type LucideIcon,
 } from 'lucide-react'
 import { GithubIcon, LinkedinIcon, FacebookIcon, InstagramIcon, TiktokIcon } from '@/components/ui/BrandIcons'
@@ -12,6 +12,7 @@ import { AIProfilingSection } from './AIProfilingSection'
 import type { CandidateProfile, Skill, WorkExperienceEntry, EducationEntry, PortfolioItem } from '@/types/database'
 import { SORTED_COUNTRIES, getStatesForCountry, GENDER_OPTIONS, ETHNICITY_OPTIONS } from '@/lib/countries'
 import { toExternalHref } from '@/lib/url'
+import { checkProfileLink, type ProfileLinkPlatform } from '@/lib/profile-links'
 
 type FullProfile = CandidateProfile & { skills: Skill[]; portfolio_items: PortfolioItem[] }
 
@@ -584,11 +585,14 @@ function SkillsSection() {
 
 // ── Linked accounts section ───────────────────────────────────────────────────
 
-function AccountLink({ icon: Icon, label, placeholder, value, color, onChange }: {
-  icon: React.ComponentType<{ size?: number; className?: string }>; label: string; placeholder: string; value: string; color: string; onChange: (v: string) => void
+function AccountLink({ icon: Icon, label, placeholder, value, color, onChange, platform }: {
+  icon: React.ComponentType<{ size?: number; className?: string }>; label: string; placeholder: string; value: string; color: string; onChange: (v: string) => void; platform?: ProfileLinkPlatform
 }) {
+  const warning = platform ? checkProfileLink(value, platform) : null
   return (
-    <div className={`flex items-center gap-3 p-3 rounded-xl border ${value ? 'border-white/12 bg-white/3' : 'border-white/7 bg-white/1'}`}>
+    <div className={`flex items-center gap-3 p-3 rounded-xl border ${
+      warning ? 'border-amber-500/25 bg-amber-500/4' : value ? 'border-white/12 bg-white/3' : 'border-white/7 bg-white/1'
+    }`}>
       <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${color}`}>
         <Icon size={15} />
       </div>
@@ -596,10 +600,15 @@ function AccountLink({ icon: Icon, label, placeholder, value, color, onChange }:
         <p className="text-xs font-medium text-zinc-400 mb-1">{label}</p>
         <input className="w-full bg-transparent text-sm text-white placeholder:text-zinc-600 focus:outline-none"
           value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
+        {warning && (
+          <p className="flex items-start gap-1 text-[11px] text-amber-400/90 mt-1.5 leading-snug">
+            <AlertTriangle size={10} className="shrink-0 mt-0.5" />{warning}
+          </p>
+        )}
       </div>
       {value && (
         <a href={toExternalHref(value) ?? '#'} target="_blank" rel="noopener noreferrer"
-          title="Open link in new tab" className="text-zinc-600 hover:text-indigo-400 transition-colors shrink-0">
+          title="Open link in new tab" className="text-zinc-600 hover:text-indigo-400 transition-colors shrink-0 self-center">
           <ExternalLink size={12} />
         </a>
       )}
@@ -652,11 +661,11 @@ function LinkedAccountsSection({ profile, onSave }: { profile: FullProfile; onSa
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <AccountLink icon={GithubIcon} label="GitHub" placeholder="https://github.com/username" value={form.github_url} color="bg-emerald-500/15 text-emerald-400" onChange={v => set('github_url', v)} />
-        <AccountLink icon={LinkedinIcon} label="LinkedIn" placeholder="https://linkedin.com/in/username" value={form.linkedin_url} color="bg-sky-500/15 text-sky-400" onChange={v => set('linkedin_url', v)} />
-        <AccountLink icon={Globe} label="Personal Website" placeholder="https://yourname.dev" value={form.personal_website_url} color="bg-violet-500/15 text-violet-400" onChange={v => set('personal_website_url', v)} />
-        <AccountLink icon={ExternalLink} label="Seek Profile" placeholder="https://seek.com.au/profile/…" value={form.seek_url} color="bg-orange-500/15 text-orange-400" onChange={v => set('seek_url', v)} />
-        <AccountLink icon={ExternalLink} label="Indeed Profile" placeholder="https://indeed.com/r/…" value={form.indeed_url} color="bg-blue-500/15 text-blue-400" onChange={v => set('indeed_url', v)} />
+        <AccountLink icon={GithubIcon} label="GitHub" platform="github" placeholder="https://github.com/username" value={form.github_url} color="bg-emerald-500/15 text-emerald-400" onChange={v => set('github_url', v)} />
+        <AccountLink icon={LinkedinIcon} label="LinkedIn" platform="linkedin" placeholder="https://linkedin.com/in/username" value={form.linkedin_url} color="bg-sky-500/15 text-sky-400" onChange={v => set('linkedin_url', v)} />
+        <AccountLink icon={Globe} label="Personal Website" platform="website" placeholder="https://yourname.dev" value={form.personal_website_url} color="bg-violet-500/15 text-violet-400" onChange={v => set('personal_website_url', v)} />
+        <AccountLink icon={ExternalLink} label="Seek Profile" platform="seek" placeholder="https://seek.com.au/profile/…" value={form.seek_url} color="bg-orange-500/15 text-orange-400" onChange={v => set('seek_url', v)} />
+        <AccountLink icon={ExternalLink} label="Indeed Profile" platform="indeed" placeholder="https://indeed.com/r/…" value={form.indeed_url} color="bg-blue-500/15 text-blue-400" onChange={v => set('indeed_url', v)} />
       </div>
 
       {/* Social — optional, for marketing / comms / media / content-creator roles */}
@@ -668,9 +677,9 @@ function LinkedAccountsSection({ profile, onSave }: { profile: FullProfile; onSa
             Add only <span className="text-zinc-400">public</span> profiles so viewers can open them without logging in.
           </p>
         </div>
-        <AccountLink icon={InstagramIcon} label="Instagram" placeholder="https://instagram.com/username" value={form.instagram_url} color="bg-pink-500/15 text-pink-400" onChange={v => set('instagram_url', v)} />
-        <AccountLink icon={TiktokIcon} label="TikTok" placeholder="https://tiktok.com/@username" value={form.tiktok_url} color="bg-zinc-500/15 text-zinc-200" onChange={v => set('tiktok_url', v)} />
-        <AccountLink icon={FacebookIcon} label="Facebook" placeholder="https://facebook.com/username" value={form.facebook_url} color="bg-blue-600/15 text-blue-400" onChange={v => set('facebook_url', v)} />
+        <AccountLink icon={InstagramIcon} label="Instagram" platform="instagram" placeholder="https://instagram.com/username" value={form.instagram_url} color="bg-pink-500/15 text-pink-400" onChange={v => set('instagram_url', v)} />
+        <AccountLink icon={TiktokIcon} label="TikTok" platform="tiktok" placeholder="https://tiktok.com/@username" value={form.tiktok_url} color="bg-zinc-500/15 text-zinc-200" onChange={v => set('tiktok_url', v)} />
+        <AccountLink icon={FacebookIcon} label="Facebook" platform="facebook" placeholder="https://facebook.com/username" value={form.facebook_url} color="bg-blue-600/15 text-blue-400" onChange={v => set('facebook_url', v)} />
       </div>
 
       <div className="p-4 rounded-xl border border-white/8 bg-white/2">
