@@ -79,8 +79,8 @@ export default async function DashboardPage() {
 
   /* ── Getting-started checklist — computed from real account state ──────── */
   const todo: { label: string; desc: string; done: boolean; href: string }[] = [
-    { label: 'Add your first 5 skills',        desc: 'Unlocks job matching',                       done: skillCount >= 5,                         href: '/profile?tab=vault' },
-    { label: 'Import your CV or GitHub',       desc: 'AI verifies and structures your history',    done: hasImport,                               href: '/profile?tab=vault' },
+    { label: 'Add your first 5 skills',        desc: 'Unlocks job matching',                       done: skillCount >= 5,                         href: '/profile?mode=edit&section=skills' },
+    { label: 'Import your CV or GitHub',       desc: 'AI verifies and structures your history',    done: hasImport,                               href: '/profile?mode=edit&section=skills' },
     { label: 'Set your headline and location', desc: 'Makes you legible to employers',             done: !!profile?.headline && !!profile?.location, href: '/profile?tab=settings' },
     { label: 'Complete your Career Identity',  desc: 'Goals and values shape every match',         done: hasCareerIdentity,                       href: '/discover' },
     { label: 'Add your life chapter context',  desc: 'Advice grounded in your reality',            done: hasLifeChapter,                          href: '/discover' },

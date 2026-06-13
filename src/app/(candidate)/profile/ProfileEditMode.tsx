@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { GithubIcon, LinkedinIcon, FacebookIcon, InstagramIcon, TiktokIcon } from '@/components/ui/BrandIcons'
 import { AIProfilingSection } from './AIProfilingSection'
+import { SkillsVault } from './SkillsVault'
 import type { CandidateProfile, Skill, WorkExperienceEntry, EducationEntry, PortfolioItem } from '@/types/database'
 import { SORTED_COUNTRIES, getStatesForCountry, GENDER_OPTIONS, ETHNICITY_OPTIONS } from '@/lib/countries'
 import { toExternalHref } from '@/lib/url'
@@ -565,22 +566,10 @@ function AwardsSection({ profile, onSave }: { profile: FullProfile; onSave: (dat
   )
 }
 
-// ── Skills section (link to vault) ────────────────────────────────────────────
+// ── Skills section — gamified inline vault ────────────────────────────────────
 
-function SkillsSection() {
-  return (
-    <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-6 text-center">
-      <Layers size={28} className="text-indigo-400 mx-auto mb-3" />
-      <p className="text-sm font-semibold text-white mb-1">Skills Vault</p>
-      <p className="text-xs text-zinc-500 mb-4 leading-relaxed">
-        Your full skills vault with physics bubbles, level breakdowns, and AI-recommended skills to build.
-      </p>
-      <a href="/profile?tab=vault"
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-sm font-medium text-white transition-colors">
-        <Layers size={14} />Open Skills Vault
-      </a>
-    </div>
-  )
+function SkillsSection({ profile }: { profile: FullProfile }) {
+  return <SkillsVault skills={profile.skills} />
 }
 
 // ── Linked accounts section ───────────────────────────────────────────────────
@@ -761,7 +750,7 @@ export function ProfileEditMode({ profile, onSave, onSaveProjects, initialSectio
         {section === 'education'   && <EducationSection profile={profile} onSave={onSave} />}
         {section === 'projects'    && <ProjectsSection profile={profile} onSaveProjects={onSaveProjects} />}
         {section === 'awards'      && <AwardsSection profile={profile} onSave={onSave} />}
-        {section === 'skills'      && <SkillsSection />}
+        {section === 'skills'      && <SkillsSection profile={profile} />}
         {section === 'accounts'    && <LinkedAccountsSection profile={profile} onSave={onSave} />}
         {section === 'ai'          && <AIProfilingSection profile={profile} onSave={onSave} />}
       </div>

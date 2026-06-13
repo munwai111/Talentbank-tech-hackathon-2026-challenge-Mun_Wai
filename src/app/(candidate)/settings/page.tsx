@@ -281,7 +281,7 @@ export default function SettingsPage() {
               <span className="text-sm text-zinc-400">Verification &amp; uploads</span>
               <p className="text-xs text-zinc-600 mt-0.5">Documents and imports used for AI parsing and verification</p>
             </div>
-            <a href="/profile?tab=vault" className="text-xs text-indigo-400 hover:text-indigo-300">Manage</a>
+            <a href="/profile?mode=edit&section=skills" className="text-xs text-indigo-400 hover:text-indigo-300">Manage</a>
           </div>
           <div className="flex items-center justify-between py-2">
             <div>

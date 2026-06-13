@@ -428,6 +428,20 @@
 }
 .animate-glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
 
+/* Skills Vault — gamified node pop + drawer slide */
+@keyframes vault-pop {
+  0%   { opacity: 0; transform: translateY(8px) scale(0.9); }
+  60%  { opacity: 1; transform: translateY(-2px) scale(1.03); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.vault-pop { animation: vault-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@keyframes vault-drawer-in {
+  0%   { opacity: 0; transform: translateX(24px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.vault-drawer { animation: vault-drawer-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
 /* Gradient border sweep */
 @keyframes border-sweep {
   0%   { background-position: 0% 50%; }
