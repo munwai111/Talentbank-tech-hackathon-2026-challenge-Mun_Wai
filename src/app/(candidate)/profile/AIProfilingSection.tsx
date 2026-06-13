@@ -184,10 +184,13 @@ function WorkplaceBehaviourCard({ wb }: { wb: NonNullable<PersonaAnalysis['workp
 function MbtiCard({ mbti }: { mbti: PersonaAnalysis['mbti'] }) {
   return (
     <ResultCard icon={User} title="MBTI-style Type Indication">
-      <div className="flex items-center gap-3 mb-3">
+      <div className="flex items-center gap-3 mb-2">
         <span className="text-2xl font-bold text-indigo-300 tracking-widest">{mbti.type}</span>
         <span className="text-sm text-zinc-400">{mbti.label}</span>
       </div>
+      <p className="text-[11px] text-zinc-600 mb-3 leading-snug">
+        Confidence = how consistently each preference shows across contexts (not how strong one example is). Higher = more defining and less likely to flex.
+      </p>
       <div className="space-y-2.5 mb-3">
         {mbti.dichotomies.map(d => (
           <ScoreBar key={d.dimension} label={`${d.dimension} → ${d.pole}`} score={d.confidence} insight={d.rationale} color="bg-violet-500" />
@@ -223,6 +226,9 @@ function PersonaResults({ persona }: { persona: PersonaAnalysis }) {
 
       {persona.big_five?.length > 0 && (
         <ResultCard icon={HeartPulse} title="Big Five (OCEAN)">
+          <p className="text-[11px] text-zinc-600 mb-3 leading-snug">
+            Scores reflect how consistently a trait holds across role, goals, social life, stress and values — 50 is balanced; higher means more defining and less likely to flex, not &ldquo;better&rdquo;.
+          </p>
           <div className="space-y-3">
             {persona.big_five.map(t => <ScoreBar key={t.name} label={t.name} score={t.score} insight={t.insight} />)}
           </div>
