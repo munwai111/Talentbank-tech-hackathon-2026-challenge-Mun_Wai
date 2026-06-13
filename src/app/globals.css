@@ -61,6 +61,8 @@
 }
 
 :root {
+  --aura-x: 60%;
+  --aura-y: 30%;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -174,6 +176,33 @@
   --journey-soft: oklch(0.78 0.13 185 / 12%);
   --journey-border: oklch(0.78 0.13 185 / 30%);
   --journey-glow: oklch(0.78 0.13 185 / 18%);
+}
+
+/* ── Mouse-reactive aura — radial gradient that follows the cursor ────────
+   Only active in dark mode (the site's signature look). The JS side lives
+   in AuraBackground.tsx; this is the pure-CSS rendering layer.
+   z-index: -1 keeps it behind all content, in front of body background. */
+.dark body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(
+    900px circle at var(--aura-x) var(--aura-y),
+    oklch(0.67 0.19 264 / 0.07),
+    transparent 45%
+  );
+}
+
+/* Employer journey gets a teal aura instead */
+[data-journey="employer"] .dark body::before,
+.dark [data-journey="employer"] body::before {
+  background: radial-gradient(
+    900px circle at var(--aura-x) var(--aura-y),
+    oklch(0.78 0.13 185 / 0.07),
+    transparent 45%
+  );
 }
 
 /* ── Map textures (pure CSS — zero network, GPU-composited) ─────────────── */

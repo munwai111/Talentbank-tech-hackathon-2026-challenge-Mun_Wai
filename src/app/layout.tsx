@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Plus_Jakarta_Sans, Syne } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
+import { AuraBackground } from "@/components/ui/AuraBackground";
 import "./globals.css";
 
 // Body font — modern, consumer-facing, warm personality
@@ -36,6 +37,7 @@ export default function RootLayout({
       <html lang="en" className={`${jakarta.variable} ${syne.variable} h-full antialiased`} suppressHydrationWarning>
         <body className="min-h-full flex flex-col bg-background text-foreground">
           <ThemeProvider>
+            <AuraBackground />
             {children}
           </ThemeProvider>
         </body>

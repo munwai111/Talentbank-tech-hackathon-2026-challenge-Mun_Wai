@@ -38,52 +38,27 @@ const TIERS: TierConfig[] = [
   { level: 1, name: 'Foundational', text: 'text-zinc-600 dark:text-zinc-300',     border: 'border-zinc-400/40',   bg: 'bg-zinc-500/10',    glow: 'rgba(161,161,170,0.35)', grad: 'from-zinc-300 to-zinc-500' },
 ]
 const ROMAN = ['I', 'II', 'III', 'IV', 'V']
-const HEX = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
 const cfg = (level: number) => TIERS.find(t => t.level === level) ?? TIERS[4]
-
-const TIER_IMAGES = [
-  '/tier-emblems/tier-1-foundational.png',
-  '/tier-emblems/tier-2-developing.png',
-  '/tier-emblems/tier-3-proficient.png',
-  '/tier-emblems/tier-4-advanced.png',
-  '/tier-emblems/tier-5-expert.png',
-]
 
 const SOURCE_LABEL: Record<string, string> = {
   import: 'From résumé', github: 'From GitHub', assessment: 'From assessment', manual: 'Self-added',
 }
 
-// ── Tier emblem (AI-generated badge art, clipped to hexagon) ─────────────────
+// ── Tier emblem — clean minimal competency badge ───────────────────────────
 
 function TierEmblem({ level, size = 56 }: { level: number; size?: number }) {
   const t = cfg(level)
-  const [imgFailed, setImgFailed] = useState(false)
-
   return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      {/* Ambient glow halo behind the emblem */}
-      <div className="absolute inset-0 rounded-full blur-lg opacity-50" style={{ background: t.glow }} />
-      {imgFailed ? (
-        /* CSS fallback when image unavailable */
-        <>
-          <div className={`absolute inset-0 bg-gradient-to-br ${t.grad}`} style={{ clipPath: HEX }} />
-          <div className="absolute inset-[3px] bg-background flex items-center justify-center" style={{ clipPath: HEX }}>
-            <span className={`font-bold ${t.text}`} style={{ fontSize: size * 0.32 }}>{ROMAN[level - 1]}</span>
-          </div>
-        </>
-      ) : (
-        /* AI-generated badge clipped to hexagon */
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={TIER_IMAGES[level - 1]}
-          alt={`${t.name} tier emblem`}
-          width={size}
-          height={size}
-          onError={() => setImgFailed(true)}
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ clipPath: HEX }}
-        />
-      )}
+    <div
+      className={`shrink-0 rounded-2xl border-2 flex items-center justify-center ${t.bg} ${t.border}`}
+      style={{ width: size, height: size }}
+    >
+      <span
+        className={`font-display font-bold select-none ${t.text}`}
+        style={{ fontSize: size * 0.34 }}
+      >
+        {ROMAN[level - 1]}
+      </span>
     </div>
   )
 }
