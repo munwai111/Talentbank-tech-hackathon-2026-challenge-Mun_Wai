@@ -41,21 +41,49 @@ const ROMAN = ['I', 'II', 'III', 'IV', 'V']
 const HEX = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
 const cfg = (level: number) => TIERS.find(t => t.level === level) ?? TIERS[4]
 
+const TIER_IMAGES = [
+  '/tier-emblems/tier-1-foundational.png',
+  '/tier-emblems/tier-2-developing.png',
+  '/tier-emblems/tier-3-proficient.png',
+  '/tier-emblems/tier-4-advanced.png',
+  '/tier-emblems/tier-5-expert.png',
+]
+
 const SOURCE_LABEL: Record<string, string> = {
   import: 'From résumé', github: 'From GitHub', assessment: 'From assessment', manual: 'Self-added',
 }
 
-// ── Tier emblem (CSS-drawn hexagon rank badge) ────────────────────────────────
+// ── Tier emblem (AI-generated badge art, clipped to hexagon) ─────────────────
 
 function TierEmblem({ level, size = 56 }: { level: number; size?: number }) {
   const t = cfg(level)
+  const [imgFailed, setImgFailed] = useState(false)
+
   return (
-    <div className="relative shrink-0 animate-float" style={{ width: size, height: size }}>
-      <div className="absolute inset-0 rounded-full blur-md opacity-60" style={{ background: t.glow }} />
-      <div className={`absolute inset-0 bg-gradient-to-br ${t.grad}`} style={{ clipPath: HEX }} />
-      <div className="absolute inset-[3px] bg-background flex items-center justify-center" style={{ clipPath: HEX }}>
-        <span className={`font-bold ${t.text}`} style={{ fontSize: size * 0.32 }}>{ROMAN[level - 1]}</span>
-      </div>
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      {/* Ambient glow halo behind the emblem */}
+      <div className="absolute inset-0 rounded-full blur-lg opacity-50" style={{ background: t.glow }} />
+      {imgFailed ? (
+        /* CSS fallback when image unavailable */
+        <>
+          <div className={`absolute inset-0 bg-gradient-to-br ${t.grad}`} style={{ clipPath: HEX }} />
+          <div className="absolute inset-[3px] bg-background flex items-center justify-center" style={{ clipPath: HEX }}>
+            <span className={`font-bold ${t.text}`} style={{ fontSize: size * 0.32 }}>{ROMAN[level - 1]}</span>
+          </div>
+        </>
+      ) : (
+        /* AI-generated badge clipped to hexagon */
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={TIER_IMAGES[level - 1]}
+          alt={`${t.name} tier emblem`}
+          width={size}
+          height={size}
+          onError={() => setImgFailed(true)}
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ clipPath: HEX }}
+        />
+      )}
     </div>
   )
 }
