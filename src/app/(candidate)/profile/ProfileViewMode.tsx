@@ -5,8 +5,9 @@ import {
   Briefcase, GraduationCap, FolderOpen, Award, Layers,
   Building2, Calendar, Star, Sparkles,
 } from 'lucide-react'
-import { GithubIcon, LinkedinIcon } from '@/components/ui/BrandIcons'
+import { GithubIcon, LinkedinIcon, FacebookIcon, InstagramIcon, TiktokIcon } from '@/components/ui/BrandIcons'
 import type { CandidateProfile, Skill, PortfolioItem, WorkExperienceEntry, EducationEntry, PersonaAnalysis } from '@/types/database'
+import { toExternalHref } from '@/lib/url'
 
 type FullProfile = CandidateProfile & { skills: Skill[]; portfolio_items: PortfolioItem[] }
 
@@ -45,14 +46,20 @@ function ProfileHero({ profile, avatarUrl, clerkName }: {
     : profile.name || clerkName
 
   type LinkEntry = { href: string; icon: React.ComponentType<{ size?: number; className?: string }>; label: string; color: string }
-  const links: LinkEntry[] = [
-    profile.github_url && { href: profile.github_url, icon: GithubIcon, label: 'GitHub', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20' },
-    profile.linkedin_url && { href: profile.linkedin_url, icon: LinkedinIcon, label: 'LinkedIn', color: 'bg-sky-500/10 text-sky-400 border-sky-500/20 hover:bg-sky-500/20' },
-    profile.personal_website_url && { href: profile.personal_website_url, icon: Globe, label: 'Website', color: 'bg-violet-500/10 text-violet-400 border-violet-500/20 hover:bg-violet-500/20' },
-    profile.resume_url && { href: profile.resume_url, icon: FileText, label: 'Resume/CV', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20 hover:bg-amber-500/20' },
-    profile.seek_url && { href: profile.seek_url, icon: ExternalLink, label: 'Seek', color: 'bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20' },
-    profile.indeed_url && { href: profile.indeed_url, icon: ExternalLink, label: 'Indeed', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20' },
-  ].filter(Boolean) as LinkEntry[]
+  // toExternalHref() guarantees a scheme so the chip opens the candidate's actual
+  // profile instead of resolving as a relative path on our own site.
+  const linkDefs = [
+    profile.github_url && { href: toExternalHref(profile.github_url)!, icon: GithubIcon, label: 'GitHub', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20' },
+    profile.linkedin_url && { href: toExternalHref(profile.linkedin_url)!, icon: LinkedinIcon, label: 'LinkedIn', color: 'bg-sky-500/10 text-sky-400 border-sky-500/20 hover:bg-sky-500/20' },
+    profile.personal_website_url && { href: toExternalHref(profile.personal_website_url)!, icon: Globe, label: 'Website', color: 'bg-violet-500/10 text-violet-400 border-violet-500/20 hover:bg-violet-500/20' },
+    profile.resume_url && { href: toExternalHref(profile.resume_url)!, icon: FileText, label: 'Resume/CV', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20 hover:bg-amber-500/20' },
+    profile.seek_url && { href: toExternalHref(profile.seek_url)!, icon: ExternalLink, label: 'Seek', color: 'bg-orange-500/10 text-orange-400 border-orange-500/20 hover:bg-orange-500/20' },
+    profile.indeed_url && { href: toExternalHref(profile.indeed_url)!, icon: ExternalLink, label: 'Indeed', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20' },
+    profile.instagram_url && { href: toExternalHref(profile.instagram_url)!, icon: InstagramIcon, label: 'Instagram', color: 'bg-pink-500/10 text-pink-400 border-pink-500/20 hover:bg-pink-500/20' },
+    profile.tiktok_url && { href: toExternalHref(profile.tiktok_url)!, icon: TiktokIcon, label: 'TikTok', color: 'bg-zinc-500/10 text-zinc-200 border-zinc-400/20 hover:bg-zinc-500/20' },
+    profile.facebook_url && { href: toExternalHref(profile.facebook_url)!, icon: FacebookIcon, label: 'Facebook', color: 'bg-blue-600/10 text-blue-400 border-blue-600/20 hover:bg-blue-600/20' },
+  ]
+  const links = linkDefs.filter(Boolean) as LinkEntry[]
 
   const locationParts = [profile.city, profile.state_region, profile.country_name].filter(Boolean)
   const locationStr = locationParts.length ? locationParts.join(', ') : profile.location

@@ -7,10 +7,11 @@ import {
   ExternalLink, FileText, ChevronDown, ChevronUp, Sparkles,
   type LucideIcon,
 } from 'lucide-react'
-import { GithubIcon, LinkedinIcon } from '@/components/ui/BrandIcons'
+import { GithubIcon, LinkedinIcon, FacebookIcon, InstagramIcon, TiktokIcon } from '@/components/ui/BrandIcons'
 import { AIProfilingSection } from './AIProfilingSection'
 import type { CandidateProfile, Skill, WorkExperienceEntry, EducationEntry, PortfolioItem } from '@/types/database'
 import { SORTED_COUNTRIES, getStatesForCountry, GENDER_OPTIONS, ETHNICITY_OPTIONS } from '@/lib/countries'
+import { toExternalHref } from '@/lib/url'
 
 type FullProfile = CandidateProfile & { skills: Skill[]; portfolio_items: PortfolioItem[] }
 
@@ -596,7 +597,12 @@ function AccountLink({ icon: Icon, label, placeholder, value, color, onChange }:
         <input className="w-full bg-transparent text-sm text-white placeholder:text-zinc-600 focus:outline-none"
           value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
       </div>
-      {value && <ExternalLink size={12} className="text-zinc-600 shrink-0" />}
+      {value && (
+        <a href={toExternalHref(value) ?? '#'} target="_blank" rel="noopener noreferrer"
+          title="Open link in new tab" className="text-zinc-600 hover:text-indigo-400 transition-colors shrink-0">
+          <ExternalLink size={12} />
+        </a>
+      )}
     </div>
   )
 }
@@ -609,6 +615,9 @@ function LinkedAccountsSection({ profile, onSave }: { profile: FullProfile; onSa
     seek_url: profile.seek_url ?? '',
     indeed_url: profile.indeed_url ?? '',
     resume_url: profile.resume_url ?? '',
+    facebook_url: profile.facebook_url ?? '',
+    instagram_url: profile.instagram_url ?? '',
+    tiktok_url: profile.tiktok_url ?? '',
   })
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -648,6 +657,20 @@ function LinkedAccountsSection({ profile, onSave }: { profile: FullProfile; onSa
         <AccountLink icon={Globe} label="Personal Website" placeholder="https://yourname.dev" value={form.personal_website_url} color="bg-violet-500/15 text-violet-400" onChange={v => set('personal_website_url', v)} />
         <AccountLink icon={ExternalLink} label="Seek Profile" placeholder="https://seek.com.au/profile/…" value={form.seek_url} color="bg-orange-500/15 text-orange-400" onChange={v => set('seek_url', v)} />
         <AccountLink icon={ExternalLink} label="Indeed Profile" placeholder="https://indeed.com/r/…" value={form.indeed_url} color="bg-blue-500/15 text-blue-400" onChange={v => set('indeed_url', v)} />
+      </div>
+
+      {/* Social — optional, for marketing / comms / media / content-creator roles */}
+      <div className="space-y-2">
+        <div className="flex items-start gap-2 px-1">
+          <Info size={12} className="text-zinc-600 shrink-0 mt-0.5" />
+          <p className="text-[11px] text-zinc-600 leading-relaxed">
+            Social accounts are optional — useful for marketing, comms, media and content-creator roles.
+            Add only <span className="text-zinc-400">public</span> profiles so viewers can open them without logging in.
+          </p>
+        </div>
+        <AccountLink icon={InstagramIcon} label="Instagram" placeholder="https://instagram.com/username" value={form.instagram_url} color="bg-pink-500/15 text-pink-400" onChange={v => set('instagram_url', v)} />
+        <AccountLink icon={TiktokIcon} label="TikTok" placeholder="https://tiktok.com/@username" value={form.tiktok_url} color="bg-zinc-500/15 text-zinc-200" onChange={v => set('tiktok_url', v)} />
+        <AccountLink icon={FacebookIcon} label="Facebook" placeholder="https://facebook.com/username" value={form.facebook_url} color="bg-blue-600/15 text-blue-400" onChange={v => set('facebook_url', v)} />
       </div>
 
       <div className="p-4 rounded-xl border border-white/8 bg-white/2">

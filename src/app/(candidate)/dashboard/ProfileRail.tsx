@@ -8,8 +8,9 @@ import {
   ChevronDown, Globe, FileText, ExternalLink,
   Plus, type LucideIcon,
 } from 'lucide-react'
-import { GithubIcon, LinkedinIcon } from '@/components/ui/BrandIcons'
+import { GithubIcon, LinkedinIcon, FacebookIcon, InstagramIcon, TiktokIcon } from '@/components/ui/BrandIcons'
 import type { CandidateProfile } from '@/types/database'
+import { toExternalHref } from '@/lib/url'
 
 // ── Linked-account banners ────────────────────────────────────────────────────
 
@@ -30,6 +31,9 @@ const ACCOUNT_DEFS: AccountDef[] = [
   { key: 'personal_website_url',icon: Globe,        label: 'Website',   color: 'border-white/8 text-zinc-600',          activeColor: 'border-violet-500/30 text-violet-400 bg-violet-500/8' },
   { key: 'seek_url',            icon: ExternalLink, label: 'Seek',      color: 'border-white/8 text-zinc-600',          activeColor: 'border-orange-500/30 text-orange-400 bg-orange-500/8' },
   { key: 'indeed_url',          icon: ExternalLink, label: 'Indeed',    color: 'border-white/8 text-zinc-600',          activeColor: 'border-blue-500/30 text-blue-400 bg-blue-500/8' },
+  { key: 'instagram_url',       icon: InstagramIcon,label: 'Instagram', color: 'border-white/8 text-zinc-600',          activeColor: 'border-pink-500/30 text-pink-400 bg-pink-500/8' },
+  { key: 'tiktok_url',          icon: TiktokIcon,   label: 'TikTok',    color: 'border-white/8 text-zinc-600',          activeColor: 'border-zinc-400/30 text-zinc-200 bg-zinc-500/8' },
+  { key: 'facebook_url',        icon: FacebookIcon, label: 'Facebook',  color: 'border-white/8 text-zinc-600',          activeColor: 'border-blue-600/30 text-blue-400 bg-blue-600/8' },
 ]
 
 function LinkedAccountBanners({ profile }: { profile: CandidateProfile | null }) {
@@ -53,9 +57,10 @@ function LinkedAccountBanners({ profile }: { profile: CandidateProfile | null })
       {connected.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {connected.map(({ key, icon: Icon, label, activeColor }) => {
-            const url = profile[key] as string
+            const href = toExternalHref(profile[key] as string)
+            if (!href) return null
             return (
-              <a key={key} href={url} target="_blank" rel="noopener noreferrer"
+              <a key={key} href={href} target="_blank" rel="noopener noreferrer"
                 className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-medium border transition-all hover:scale-105 ${activeColor}`}>
                 <Icon size={9} />{label}
               </a>

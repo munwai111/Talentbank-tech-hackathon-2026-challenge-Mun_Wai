@@ -15,7 +15,11 @@ ALTER TABLE candidate_profiles
   ADD COLUMN IF NOT EXISTS address_line2          TEXT,
   ADD COLUMN IF NOT EXISTS city                   VARCHAR(100),
   ADD COLUMN IF NOT EXISTS state_region           VARCHAR(100),
-  ADD COLUMN IF NOT EXISTS country_name           VARCHAR(100);
+  ADD COLUMN IF NOT EXISTS country_name           VARCHAR(100),
+  -- Optional public social handles (marketing / comms / content-creator roles)
+  ADD COLUMN IF NOT EXISTS facebook_url           TEXT,
+  ADD COLUMN IF NOT EXISTS instagram_url          TEXT,
+  ADD COLUMN IF NOT EXISTS tiktok_url             TEXT;
 
 -- Storage bucket for resume/CV uploads
 INSERT INTO storage.buckets (id, name, public)

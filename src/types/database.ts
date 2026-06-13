@@ -271,6 +271,9 @@ export type Database = {
           indeed_url: string | null
           personal_website_url: string | null
           resume_url: string | null
+          facebook_url: string | null
+          instagram_url: string | null
+          tiktok_url: string | null
           address_line1: string | null
           address_line2: string | null
           city: string | null
@@ -312,6 +315,9 @@ export type Database = {
           indeed_url?: string | null
           personal_website_url?: string | null
           resume_url?: string | null
+          facebook_url?: string | null
+          instagram_url?: string | null
+          tiktok_url?: string | null
           address_line1?: string | null
           address_line2?: string | null
           city?: string | null
@@ -349,6 +355,9 @@ export type Database = {
           indeed_url?: string | null
           personal_website_url?: string | null
           resume_url?: string | null
+          facebook_url?: string | null
+          instagram_url?: string | null
+          tiktok_url?: string | null
           address_line1?: string | null
           address_line2?: string | null
           city?: string | null
