@@ -112,6 +112,20 @@ export type PersonaAnalysis = {
   behaviour_and_emotion: string
   strengths: string[]
   growth_areas: string[]
+  // Workplace behavioural read (Viboscope-style validated spectrums) — oriented
+  // for hiring managers: how this person actually works and collaborates.
+  workplace_behaviour?: {
+    spectrums: { name: string; left: string; right: string; position: number; insight: string }[]  // position 0-100, 50 = balanced
+    collaboration_style: string
+    communication_style: string
+    conflict_style: string
+    decision_style: string
+    stress_response: string
+    motivation_drivers: string[]
+    ideal_environment: string
+    working_with_guide: string[]   // practical tips for a manager/teammate
+    watch_outs: string[]           // honest friction points, phrased constructively
+  } | null
   confidence: 'high' | 'medium' | 'low'
   evidence_notes: string[]             // caveats: inferred vs explicit signals
 }

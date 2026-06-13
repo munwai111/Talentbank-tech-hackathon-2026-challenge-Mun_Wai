@@ -350,8 +350,50 @@ function PersonaSection({ profile }: { profile: FullProfile }) {
             Best-fit fields: {topFit.map(f => `${f.field} (${f.fit_score})`).join(' · ')}
           </p>
         )}
+
+        {persona.workplace_behaviour && <PersonaWorkplace wb={persona.workplace_behaviour} />}
       </div>
     </section>
+  )
+}
+
+function PersonaSpectrum({ left, right, position }: { left: string; right: string; position: number }) {
+  const pos = Math.min(100, Math.max(0, position))
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-[10px] text-zinc-600 w-20 shrink-0 text-right truncate">{left}</span>
+      <div className="flex-1 relative h-1 rounded-full bg-white/6">
+        <div className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-indigo-400 ring-2 ring-[#0a0a14]"
+          style={{ left: `calc(${pos}% - 5px)` }} />
+      </div>
+      <span className="text-[10px] text-zinc-600 w-20 shrink-0 truncate">{right}</span>
+    </div>
+  )
+}
+
+function PersonaWorkplace({ wb }: { wb: NonNullable<PersonaAnalysis['workplace_behaviour']> }) {
+  return (
+    <div className="border-t border-white/6 pt-4 space-y-3">
+      {wb.spectrums?.length > 0 && (
+        <div className="space-y-2">
+          {wb.spectrums.slice(0, 8).map(s => (
+            <PersonaSpectrum key={s.name} left={s.left} right={s.right} position={s.position} />
+          ))}
+        </div>
+      )}
+      {wb.working_with_guide?.length > 0 && (
+        <div>
+          <p className="text-[10px] font-semibold tracking-widest uppercase text-zinc-600 mb-1.5">Working with them</p>
+          <ul className="space-y-1">
+            {wb.working_with_guide.map((g, i) => (
+              <li key={i} className="flex items-start gap-2 text-[11px] text-zinc-400 leading-relaxed">
+                <span className="mt-1.5 w-1 h-1 rounded-full bg-emerald-500 shrink-0" />{g}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   )
 }
 

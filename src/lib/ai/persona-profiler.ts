@@ -41,6 +41,18 @@ You apply three established lenses — always grounded in the actual evidence pr
    - Traits: dispositions — assertiveness, risk-taking, persistence, adaptability, curiosity
    - Experiences: a short narrative on the depth/breadth of formative experiences
 
+4. Workplace behavioural read (for hiring managers — how this person actually WORKS):
+   - Rate 8 validated behavioural spectrums, each 0-100 (50 = balanced). Use these poles:
+     Communication (Direct ↔ Diplomatic), Pace (Deliberate ↔ Fast-moving),
+     Structure (Improvisational ↔ Process-driven), Focus (Big-picture ↔ Detail-oriented),
+     Social energy (Independent ↔ Collaborative), Decisions (Data-driven ↔ Intuition-led),
+     Conflict (Accommodating ↔ Assertive), Change (Steady ↔ Adaptive).
+   - collaboration / communication / conflict / decision / stress-response styles: one concrete sentence each, grounded in evidence.
+   - motivation_drivers, ideal_environment: what conditions bring out their best.
+   - working_with_guide: 3-5 PRACTICAL tips for a manager to get the best from this person.
+   - watch_outs: 2-3 honest friction points, phrased constructively (development framing, never a red flag list).
+   This section is workplace-relevant ONLY. Do NOT infer or report anything about health, disability, family status, age, religion, or any protected characteristic.
+
 ## Hard rules
 
 - EVIDENCE-GROUNDED: every insight must trace to something in the materials. Quote or paraphrase the signal in rationale/insight fields. If evidence is thin, say so in evidence_notes and lower confidence.
@@ -63,6 +75,10 @@ You apply three established lenses — always grounded in the actual evidence pr
 - interests: max 6 short phrases; life_priorities: max 5 short phrases
 - drive_and_goals ≤ 60 words; behaviour_and_emotion ≤ 70 words
 - strengths / growth_areas: max 4 each, ≤ 12 words per item
+- workplace_behaviour.spectrums: exactly 8 (the listed poles); insight ≤ 14 words each
+- workplace_behaviour style fields: 1 sentence each, ≤ 22 words
+- working_with_guide: 3-5 items ≤ 16 words; watch_outs: 2-3 items ≤ 16 words
+- motivation_drivers: max 5 short phrases; ideal_environment ≤ 30 words
 - evidence_notes: max 3 items
 
 ## Output
@@ -94,6 +110,18 @@ const OUTPUT_SCHEMA = `{
   "behaviour_and_emotion": string,
   "strengths": string[],
   "growth_areas": string[],
+  "workplace_behaviour": {
+    "spectrums": [{ "name": string, "left": string, "right": string, "position": number, "insight": string }],
+    "collaboration_style": string,
+    "communication_style": string,
+    "conflict_style": string,
+    "decision_style": string,
+    "stress_response": string,
+    "motivation_drivers": string[],
+    "ideal_environment": string,
+    "working_with_guide": string[],
+    "watch_outs": string[]
+  },
   "confidence": "high"|"medium"|"low",
   "evidence_notes": string[]
 }`
@@ -124,9 +152,12 @@ function streamPersona(content: UserContent): ReadableStream<Uint8Array> {
       try {
         const stream = anthropic.messages.stream({
           model: 'claude-haiku-4-5',
-          // 4096 tokens ≈ 27s at ~150 tok/s; typical personas finish well under
-          // budget inside Vercel Hobby's 25s streaming window (see ADR-001).
-          max_tokens: 4096,
+          // 5500 tokens covers the full persona incl. the workplace-behaviour
+          // section. On Vercel Hobby's 25s window a very dense profile may not
+          // finish — repairTruncatedJson() on the client closes any open brackets
+          // so a partial persona still renders. Raise/lower with the plan's
+          // streaming limit (Pro = 60s). See ADR-001.
+          max_tokens: 5500,
           system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
           messages: [{ role: 'user', content }],
         })

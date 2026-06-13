@@ -10,6 +10,7 @@ import { useState, useRef } from 'react'
 import {
   Sparkles, Info, Upload, Loader2, Check, FileText, Link2, User,
   Trophy, Compass, HeartPulse, Target, ListChecks, AlertTriangle,
+  Users, Handshake, Lightbulb,
 } from 'lucide-react'
 import type { CandidateProfile, Skill, PortfolioItem, PersonaAnalysis, CareerData } from '@/types/database'
 import { repairTruncatedJson } from '@/lib/repair-json'
@@ -83,6 +84,98 @@ function BulletList({ items, dotColor = 'bg-emerald-500' }: { items: string[]; d
         </li>
       ))}
     </ul>
+  )
+}
+
+// ── Workplace behaviour: spectrum slider ──────────────────────────────────────
+
+function SpectrumRow({ name, left, right, position, insight }: {
+  name: string; left: string; right: string; position: number; insight: string
+}) {
+  const pos = Math.min(100, Math.max(0, position))
+  return (
+    <div>
+      <p className="text-[10px] font-semibold tracking-wider uppercase text-zinc-600 mb-1.5">{name}</p>
+      <div className="flex items-center gap-2">
+        <span className="text-[11px] text-zinc-500 w-24 shrink-0 text-right">{left}</span>
+        <div className="flex-1 relative h-1.5 rounded-full bg-white/6">
+          <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-indigo-400 ring-2 ring-[#0a0a14] shadow-[0_0_8px_rgba(129,140,248,0.6)]"
+            style={{ left: `calc(${pos}% - 6px)` }} />
+        </div>
+        <span className="text-[11px] text-zinc-500 w-24 shrink-0">{right}</span>
+      </div>
+      {insight && <p className="text-[11px] text-zinc-600 mt-1 text-center leading-snug">{insight}</p>}
+    </div>
+  )
+}
+
+function WorkplaceBehaviourCard({ wb }: { wb: NonNullable<PersonaAnalysis['workplace_behaviour']> }) {
+  const styleRows: { label: string; value?: string }[] = [
+    { label: 'Collaboration', value: wb.collaboration_style },
+    { label: 'Communication', value: wb.communication_style },
+    { label: 'Conflict', value: wb.conflict_style },
+    { label: 'Decisions', value: wb.decision_style },
+    { label: 'Under pressure', value: wb.stress_response },
+  ].filter(r => r.value)
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center gap-2 px-1">
+        <Users size={15} className="text-indigo-400" />
+        <p className="text-sm font-semibold text-white">Workplace Behaviour</p>
+        <span className="ml-auto text-[10px] text-zinc-700 uppercase tracking-wider">how they work · for hiring teams</span>
+      </div>
+
+      {wb.spectrums?.length > 0 && (
+        <ResultCard icon={Compass} title="Behavioural Spectrums">
+          <div className="space-y-4 pt-1">
+            {wb.spectrums.map(s => <SpectrumRow key={s.name} {...s} />)}
+          </div>
+        </ResultCard>
+      )}
+
+      {styleRows.length > 0 && (
+        <ResultCard icon={HeartPulse} title="Working Style">
+          <div className="space-y-2.5">
+            {styleRows.map(r => (
+              <div key={r.label} className="flex gap-3">
+                <span className="text-[11px] font-semibold text-zinc-500 w-24 shrink-0 pt-0.5">{r.label}</span>
+                <span className="text-xs text-zinc-300 leading-relaxed">{r.value}</span>
+              </div>
+            ))}
+          </div>
+          {wb.motivation_drivers?.length > 0 && (
+            <div className="mt-3 pt-3 border-t border-white/6">
+              <p className="text-[10px] font-semibold tracking-widest uppercase text-zinc-600 mb-2">Motivated by</p>
+              <div className="flex flex-wrap gap-1.5">
+                {wb.motivation_drivers.map(d => (
+                  <span key={d} className="text-[11px] px-2 py-0.5 rounded-md bg-violet-500/10 text-violet-300 border border-violet-500/20">{d}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {wb.ideal_environment && (
+            <p className="text-[11px] text-zinc-500 mt-3 leading-relaxed">
+              <span className="text-zinc-400 font-medium">Thrives in:</span> {wb.ideal_environment}
+            </p>
+          )}
+        </ResultCard>
+      )}
+
+      {(wb.working_with_guide?.length > 0 || wb.watch_outs?.length > 0) && (
+        <div className="grid grid-cols-2 gap-3">
+          {wb.working_with_guide?.length > 0 && (
+            <ResultCard icon={Handshake} title="How to Work With Them">
+              <BulletList items={wb.working_with_guide} dotColor="bg-emerald-500" />
+            </ResultCard>
+          )}
+          {wb.watch_outs?.length > 0 && (
+            <ResultCard icon={Lightbulb} title="Watch-outs">
+              <BulletList items={wb.watch_outs} dotColor="bg-amber-500" />
+            </ResultCard>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -190,6 +283,8 @@ function PersonaResults({ persona }: { persona: PersonaAnalysis }) {
           <p className="text-xs text-zinc-400 leading-relaxed">{persona.behaviour_and_emotion}</p>
         </ResultCard>
       )}
+
+      {persona.workplace_behaviour && <WorkplaceBehaviourCard wb={persona.workplace_behaviour} />}
 
       {persona.evidence_notes?.length > 0 && (
         <div className="flex items-start gap-2 px-4 py-3 rounded-xl border border-amber-500/15 bg-amber-500/5">
