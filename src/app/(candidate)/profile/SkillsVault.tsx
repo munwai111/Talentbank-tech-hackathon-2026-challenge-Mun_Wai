@@ -22,14 +22,15 @@ type SkillInsight = {
   growth_tip: string
 }
 
-type TierConfig = { level: number; name: string; prof: string; text: string; border: string; bg: string; glow: string; grad: string }
+type TierConfig = { level: number; name: string; text: string; border: string; bg: string; glow: string; grad: string }
 
+// Professional proficiency tiers (a competency framework, not game ranks).
 const TIERS: TierConfig[] = [
-  { level: 5, name: 'Master',     prof: 'Expert',       text: 'text-amber-300',   border: 'border-amber-400/40',  bg: 'bg-amber-500/10',   glow: 'rgba(251,191,36,0.45)',  grad: 'from-amber-300 to-orange-500' },
-  { level: 4, name: 'Specialist', prof: 'Advanced',     text: 'text-violet-300',  border: 'border-violet-400/40', bg: 'bg-violet-500/10',  glow: 'rgba(167,139,250,0.45)', grad: 'from-violet-300 to-fuchsia-500' },
-  { level: 3, name: 'Operator',   prof: 'Intermediate', text: 'text-emerald-300', border: 'border-emerald-400/40',bg: 'bg-emerald-500/10', glow: 'rgba(52,211,153,0.4)',   grad: 'from-emerald-300 to-teal-500' },
-  { level: 2, name: 'Builder',    prof: 'Elementary',   text: 'text-sky-300',     border: 'border-sky-400/40',    bg: 'bg-sky-500/10',     glow: 'rgba(56,189,248,0.4)',   grad: 'from-sky-300 to-blue-500' },
-  { level: 1, name: 'Initiate',   prof: 'Beginner',     text: 'text-zinc-300',    border: 'border-zinc-400/30',   bg: 'bg-zinc-500/10',    glow: 'rgba(161,161,170,0.35)', grad: 'from-zinc-300 to-zinc-500' },
+  { level: 5, name: 'Expert',       text: 'text-amber-300',   border: 'border-amber-400/40',  bg: 'bg-amber-500/10',   glow: 'rgba(251,191,36,0.45)',  grad: 'from-amber-300 to-orange-500' },
+  { level: 4, name: 'Advanced',     text: 'text-violet-300',  border: 'border-violet-400/40', bg: 'bg-violet-500/10',  glow: 'rgba(167,139,250,0.45)', grad: 'from-violet-300 to-fuchsia-500' },
+  { level: 3, name: 'Proficient',   text: 'text-emerald-300', border: 'border-emerald-400/40',bg: 'bg-emerald-500/10', glow: 'rgba(52,211,153,0.4)',   grad: 'from-emerald-300 to-teal-500' },
+  { level: 2, name: 'Developing',   text: 'text-sky-300',     border: 'border-sky-400/40',    bg: 'bg-sky-500/10',     glow: 'rgba(56,189,248,0.4)',   grad: 'from-sky-300 to-blue-500' },
+  { level: 1, name: 'Foundational', text: 'text-zinc-300',    border: 'border-zinc-400/30',   bg: 'bg-zinc-500/10',    glow: 'rgba(161,161,170,0.35)', grad: 'from-zinc-300 to-zinc-500' },
 ]
 const ROMAN = ['I', 'II', 'III', 'IV', 'V']
 const HEX = 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
@@ -80,10 +81,9 @@ function SkillNode({ skill, index, onOpen }: { skill: Skill; index: number; onOp
         ${t.bg} ${t.border} ${t.text} transition-all duration-200
         hover:-translate-y-0.5 active:translate-y-0 active:scale-95`}
       style={{ animationDelay: `${index * 45}ms`, ['--glow' as string]: t.glow }}
-      onMouseEnter={e => { e.currentTarget.style.boxShadow = `0 0 18px ${t.glow}` }}
+      onMouseEnter={e => { e.currentTarget.style.boxShadow = `0 0 14px ${t.glow}` }}
       onMouseLeave={e => { e.currentTarget.style.boxShadow = 'none' }}>
       {skill.name}
-      <Sparkles size={11} className="opacity-0 group-hover:opacity-70 transition-opacity" />
     </button>
   )
 }
@@ -117,10 +117,10 @@ function AddSkillForm({ onAdd, onClose }: { onAdd: (name: string, level: number)
         <div className="flex gap-1.5">
           {TIERS.slice().reverse().map(t => (
             <button key={t.level} onClick={() => setLevel(t.level)}
-              className={`flex-1 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
+              className={`flex-1 py-1.5 rounded-lg text-[10px] font-medium border transition-all ${
                 level === t.level ? `${t.bg} ${t.border} ${t.text}` : 'border-white/8 text-zinc-500 hover:text-zinc-300'
               }`}>
-              {t.prof}
+              {t.name}
             </button>
           ))}
         </div>
@@ -166,7 +166,7 @@ function InsightDrawer({ skill, insight, loading, error, onClose, onDelete }: {
             <TierEmblem level={skill.level} size={48} />
             <div>
               <h3 className="text-lg font-bold text-white leading-tight">{skill.name}</h3>
-              <p className={`text-xs ${t.text}`}>{cfg(skill.level).name} · {cfg(skill.level).prof}</p>
+              <p className={`text-xs ${t.text}`}>Level {skill.level} · {cfg(skill.level).name}</p>
             </div>
           </div>
           <LevelMeter level={skill.level} />
@@ -244,7 +244,7 @@ function InsightDrawer({ skill, insight, loading, error, onClose, onDelete }: {
               </InsightBlock>
 
               {insight.growth_tip && (
-                <InsightBlock icon={Sparkles} title="Level up" delay={320}>
+                <InsightBlock icon={TrendingUp} title="How to develop further" delay={320}>
                   <p className="text-xs text-zinc-400 leading-relaxed rounded-lg border border-white/7 bg-white/2 px-3 py-2.5">{insight.growth_tip}</p>
                 </InsightBlock>
               )}
@@ -393,7 +393,7 @@ export function SkillsVault({ skills: initialSkills }: { skills: Skill[] }) {
                       {tier.items.map((s, i) => <SkillNode key={s.id} skill={s} index={i} onOpen={() => openSkill(s)} />)}
                     </div>
                   ) : (
-                    <p className="text-[11px] text-zinc-700 italic">No {tier.prof.toLowerCase()} skills yet</p>
+                    <p className="text-[11px] text-zinc-700 italic">No {tier.name.toLowerCase()} skills yet</p>
                   )}
                 </div>
               </div>
