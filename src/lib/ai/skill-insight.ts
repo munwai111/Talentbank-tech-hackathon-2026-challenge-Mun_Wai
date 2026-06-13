@@ -75,8 +75,12 @@ export function streamSkillInsight(
   name: string,
   level: number,
   context: { headline: string | null; work: WorkExperienceEntry[] },
+  language?: string,
 ): ReadableStream<Uint8Array> {
-  const userPrompt = buildPrompt(name, level, context)
+  const langInstruction = language && language !== 'en'
+    ? `\n\nIMPORTANT: Write ALL text fields in ${language}. Keep JSON keys in English.`
+    : ''
+  const userPrompt = buildPrompt(name, level, context) + langInstruction
   const encoder = new TextEncoder()
 
   return new ReadableStream({

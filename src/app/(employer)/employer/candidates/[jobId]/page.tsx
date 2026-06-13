@@ -77,7 +77,7 @@ export default async function CandidatesForJobPage({
   // Note: career_data is used only for scoring — goal text is never shown to employers.
   const { data: allProfiles } = await supabase
     .from('candidate_profiles')
-    .select('id, name, headline, location, career_data, skills(*)')
+    .select('id, name, headline, location, career_data, skills(name, level, source)')
 
   if (!allProfiles || allProfiles.length === 0) {
     return (

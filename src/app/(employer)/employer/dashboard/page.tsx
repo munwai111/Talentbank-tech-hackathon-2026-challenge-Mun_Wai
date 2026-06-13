@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PlusCircle, Users, ClipboardList, Building2, ArrowRight, type LucideIcon } from 'lucide-react'
+import { DemoSetupButton } from './DemoSetupButton'
 
 export default async function EmployerDashboardPage() {
   const user = await currentUser()
@@ -80,9 +81,12 @@ export default async function EmployerDashboardPage() {
                 by what they can actually do — not their university name.
               </p>
             </div>
-            <Link href="/employer/jobs/new">
-              <Button size="sm" className="shrink-0 ml-4">Post a job <ArrowRight size={13} /></Button>
-            </Link>
+            <div className="flex gap-2 shrink-0 ml-4">
+              <DemoSetupButton />
+              <Link href="/employer/jobs/new">
+                <Button size="sm">Post a job <ArrowRight size={13} /></Button>
+              </Link>
+            </div>
           </div>
         </Card>
       )}

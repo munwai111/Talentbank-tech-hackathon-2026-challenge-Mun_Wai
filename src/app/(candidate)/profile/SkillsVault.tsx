@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import type { Skill } from '@/types/database'
 import { repairTruncatedJson } from '@/lib/repair-json'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 type SkillInsight = {
   summary: string
@@ -300,6 +301,7 @@ export function SkillsVault({ skills: initialSkills, readOnly = false }: { skill
   const [adding, setAdding] = useState(false)
   const cache = useRef<Map<string, SkillInsight>>(new Map())
   const [insight, setInsight] = useState<SkillInsight | null>(null)
+  const { language } = useLanguage()
 
   const byTier = useMemo(
     () => TIERS.map(t => ({ ...t, items: skills.filter(s => s.level === t.level) })),
@@ -317,7 +319,7 @@ export function SkillsVault({ skills: initialSkills, readOnly = false }: { skill
     try {
       const res = await fetch('/api/candidate/skill-insight', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: skill.name, level: skill.level }),
+        body: JSON.stringify({ name: skill.name, level: skill.level, language }),
       })
       if (!res.ok) throw new Error('Could not analyse this skill — try again')
       const parsed = parseInsight(await readStream(res))

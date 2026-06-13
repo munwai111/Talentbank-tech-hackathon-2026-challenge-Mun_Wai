@@ -9,14 +9,16 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
+import type { TranslationKey } from '@/lib/i18n/translations'
 
-const NAV_ITEMS: { href: string; label: string; Icon: LucideIcon }[] = [
-  { href: '/dashboard',    label: 'Home',         Icon: Zap },
-  { href: '/paths',        label: 'Navigator',    Icon: Waypoints },
-  { href: '/jobs',         label: 'Jobs',         Icon: Crosshair },
-  { href: '/applications', label: 'Applications', Icon: ClipboardList },
-  { href: '/news',         label: 'News',         Icon: Newspaper },
-  { href: '/events',       label: 'Events',       Icon: CalendarDays },
+const NAV_ITEMS: { href: string; key: TranslationKey; Icon: LucideIcon }[] = [
+  { href: '/dashboard',    key: 'nav.home',         Icon: Zap },
+  { href: '/paths',        key: 'nav.navigator',    Icon: Waypoints },
+  { href: '/jobs',         key: 'nav.jobs',         Icon: Crosshair },
+  { href: '/applications', key: 'nav.applications', Icon: ClipboardList },
+  { href: '/news',         key: 'nav.news',         Icon: Newspaper },
+  { href: '/events',       key: 'nav.events',       Icon: CalendarDays },
 ]
 
 function Brandmark() {
@@ -29,6 +31,7 @@ function Brandmark() {
 
 export function CandidateHotbar() {
   const pathname = usePathname()
+  const { t } = useLanguage()
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-sidebar/90 backdrop-blur-xl">
@@ -42,12 +45,13 @@ export function CandidateHotbar() {
 
         {/* Nav — icon over label, active gets journey accent + underline */}
         <nav className="flex items-stretch flex-1 justify-center gap-1">
-          {NAV_ITEMS.map(({ href, label, Icon }) => {
+          {NAV_ITEMS.map(({ href, key, Icon }) => {
             const isActive = pathname === href || pathname.startsWith(href + '/')
             return (
               <Link
                 key={href}
                 href={href}
+                aria-label={t(key)}
                 className={`relative flex flex-col items-center justify-center gap-0.5 px-3 min-w-[64px]
                   text-[11px] transition-colors duration-150 group ${
                   isActive
@@ -62,7 +66,7 @@ export function CandidateHotbar() {
                     isActive ? 'text-indigo-400' : 'text-muted-foreground group-hover:text-foreground'
                   }`}
                 />
-                <span className="font-medium leading-none">{label}</span>
+                <span className="font-medium leading-none">{t(key)}</span>
                 {isActive && (
                   <span className="absolute bottom-0 left-2 right-2 h-0.5 rounded-t-full bg-gradient-to-r from-violet-400 to-indigo-500" />
                 )}

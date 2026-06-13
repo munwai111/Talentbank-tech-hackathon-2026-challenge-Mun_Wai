@@ -97,7 +97,7 @@ function HeroRoute() {
   )
 }
 
-export function LandingPage() {
+export function LandingPage({ openRoles = 0 }: { openRoles?: number }) {
   return (
     <div className="flex flex-col min-h-screen bg-[#070714] text-white overflow-hidden map-grid">
 
@@ -167,7 +167,7 @@ export function LandingPage() {
           </div>
 
           <div className="mt-12 flex flex-wrap gap-x-7 gap-y-2 text-[13px] text-zinc-500 animate-fade-up animate-delay-5">
-            <span>21 open roles live</span>
+            <span>{openRoles > 0 ? `${openRoles} open roles live` : 'Open roles live'}</span>
             <span className="text-zinc-700">/</span>
             <span>Skill + goal matching</span>
             <span className="text-zinc-700">/</span>

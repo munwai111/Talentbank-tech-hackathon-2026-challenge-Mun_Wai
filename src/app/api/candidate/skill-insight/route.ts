@@ -9,6 +9,7 @@ import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { streamSkillInsight } from '@/lib/ai/skill-insight'
+import { LANGUAGE_NAMES, type Locale } from '@/lib/i18n/translations'
 import type { WorkExperienceEntry } from '@/types/database'
 
 export const dynamic = 'force-dynamic'
@@ -19,11 +20,14 @@ export async function POST(req: Request) {
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const { name, level } = await req.json() as { name?: string; level?: number }
+    const { name, level, language } = await req.json() as { name?: string; level?: number; language?: string }
     if (!name || typeof name !== 'string') {
       return NextResponse.json({ error: 'name is required' }, { status: 400 })
     }
     const safeLevel = Math.min(5, Math.max(1, Number(level) || 3))
+    const languageName = language && language in LANGUAGE_NAMES
+      ? LANGUAGE_NAMES[language as Locale]
+      : undefined
 
     const supabase = createServerClient()
     const { data: user } = await supabase
@@ -37,7 +41,7 @@ export async function POST(req: Request) {
       .single()
 
     const work = (Array.isArray(profile?.work_experience) ? profile.work_experience : []) as WorkExperienceEntry[]
-    const stream = streamSkillInsight(name, safeLevel, { headline: profile?.headline ?? null, work })
+    const stream = streamSkillInsight(name, safeLevel, { headline: profile?.headline ?? null, work }, languageName)
 
     return new Response(stream, {
       headers: {

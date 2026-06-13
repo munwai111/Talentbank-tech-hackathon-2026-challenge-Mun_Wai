@@ -12,9 +12,11 @@
 //   Step 2 — Consequence summary + type-to-confirm ("DELETE")
 //   Step 3 — Processing → done screen (redirects to sign-in)
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
+import { LOCALES, type Locale } from '@/lib/i18n/translations'
 
 // ── Deletion reasons ─────────────────────────────────────────────────────────
 
@@ -116,22 +118,7 @@ type DeleteStep = 1 | 2 | 3
 export default function SettingsPage() {
   const { user } = useUser()
   const router = useRouter()
-
-  const [language, setLanguage] = useState('en')
-  useEffect(() => {
-    fetch('/api/candidate/preferences')
-      .then(r => r.json())
-      .then(({ preferences }) => { if (preferences?.language) setLanguage(preferences.language) })
-      .catch(console.error)
-  }, [])
-  function changeLanguage(lang: string) {
-    setLanguage(lang)
-    fetch('/api/candidate/preferences', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ language: lang }),
-    }).catch(console.error)
-  }
+  const { language, setLanguage, t } = useLanguage()
 
   // Delete flow state
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -195,49 +182,44 @@ export default function SettingsPage() {
     <div className="p-8 max-w-2xl">
       {/* ── Page header ───────────────────────────────────────────── */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold">Settings</h1>
-        <p className="text-zinc-500 mt-1">Manage your account and privacy preferences.</p>
+        <h1 className="text-2xl font-bold">{t('settings.title')}</h1>
+        <p className="text-zinc-500 mt-1">{t('settings.subtitle')}</p>
       </div>
 
       {/* ── Account info (read-only) ───────────────────────────────── */}
       <div className="bg-white/4 border border-white/8 rounded-2xl p-6 mb-6">
-        <h2 className="font-semibold text-zinc-200 mb-4">Account</h2>
+        <h2 className="font-semibold text-zinc-200 mb-4">{t('settings.account')}</h2>
         <div className="space-y-3">
           <div className="flex items-center justify-between py-2 border-b border-white/8">
-            <span className="text-sm text-zinc-400">Name</span>
+            <span className="text-sm text-zinc-400">{t('account.name')}</span>
             <span className="text-sm text-zinc-200 font-medium">
               {user?.fullName ?? user?.firstName ?? '—'}
             </span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-white/8">
-            <span className="text-sm text-zinc-400">Email</span>
+            <span className="text-sm text-zinc-400">{t('account.email')}</span>
             <span className="text-sm text-zinc-300">
               {user?.primaryEmailAddress?.emailAddress ?? '—'}
             </span>
           </div>
           <div className="flex items-center justify-between py-2">
-            <span className="text-sm text-zinc-400">Account type</span>
-            <span className="text-xs bg-indigo-500/15 text-indigo-400 font-medium px-2.5 py-1 rounded-full">Candidate</span>
+            <span className="text-sm text-zinc-400">{t('account.type')}</span>
+            <span className="text-xs bg-indigo-500/15 text-indigo-400 font-medium px-2.5 py-1 rounded-full">{t('account.candidate')}</span>
           </div>
         </div>
       </div>
 
       {/* ── Privacy ───────────────────────────────────────────────── */}
       <div className="bg-white/4 border border-white/8 rounded-2xl p-6 mb-6">
-        <h2 className="font-semibold text-zinc-200 mb-2">Privacy</h2>
+        <h2 className="font-semibold text-zinc-200 mb-2">{t('settings.privacy')}</h2>
         <p className="text-sm text-zinc-500 mb-4">
           Your profile is only visible to employers when you apply to a role or activate matching.
           Your personal data — including name, DOB, and life context — is never shared with employers.
         </p>
         <div className="flex flex-wrap gap-2 text-xs">
-          {[
-            '✓ Name & DOB private',
-            '✓ Life context not shown to employers',
-            '✓ Salary preferences private',
-            '✓ Character responses not shared',
-          ].map(item => (
-            <span key={item} className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-full">
-              {item}
+          {(['privacy.nameDob', 'privacy.lifeContext', 'privacy.salary', 'privacy.character'] as const).map(key => (
+            <span key={key} className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+              {t(key)}
             </span>
           ))}
         </div>
@@ -245,50 +227,51 @@ export default function SettingsPage() {
 
       {/* ── General ───────────────────────────────────────────────── */}
       <div className="bg-white/4 border border-white/8 rounded-2xl p-6 mb-6">
-        <h2 className="font-semibold text-zinc-200 mb-4">General</h2>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-2 border-b border-white/8">
-            <div>
-              <span className="text-sm text-zinc-400">Language</span>
-              <p className="text-xs text-zinc-600 mt-0.5">Interface language for your account</p>
+        <h2 className="font-semibold text-zinc-200 mb-4">{t('settings.general')}</h2>
+        <div className="space-y-4">
+          {/* Language picker */}
+          <div className="py-2 border-b border-white/8">
+            <div className="mb-3">
+              <span className="text-sm text-zinc-400">{t('settings.language')}</span>
+              <p className="text-xs text-zinc-600 mt-0.5">{t('settings.languageDesc')}</p>
             </div>
-            <div className="flex gap-1.5">
-              {[
-                { id: 'en', label: 'English' },
-                { id: 'bm', label: 'Bahasa' },
-                { id: 'zh', label: '中文' },
-              ].map(l => (
-                <button key={l.id} onClick={() => changeLanguage(l.id)}
-                  className={`text-xs px-3 py-1.5 rounded-full border transition-colors ${
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-1.5">
+              {LOCALES.map(l => (
+                <button
+                  key={l.id}
+                  onClick={() => setLanguage(l.id as Locale)}
+                  className={`flex items-center gap-1.5 px-2.5 py-2 rounded-xl border text-left transition-colors ${
                     language === l.id
                       ? 'bg-indigo-500/15 text-indigo-300 border-indigo-500/40'
-                      : 'bg-white/4 text-zinc-500 border-white/10 hover:text-zinc-300'
-                  }`}>
-                  {l.label}
+                      : 'bg-white/4 text-zinc-500 border-white/10 hover:text-zinc-300 hover:border-white/20'
+                  }`}
+                >
+                  <span className="text-base leading-none">{l.flag}</span>
+                  <span className="text-xs font-medium leading-tight">{l.nativeLabel}</span>
                 </button>
               ))}
             </div>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-white/8">
             <div>
-              <span className="text-sm text-zinc-400">Payment methods</span>
-              <p className="text-xs text-zinc-600 mt-0.5">Career OS is free for candidates during the pilot</p>
+              <span className="text-sm text-zinc-400">{t('settings.payment')}</span>
+              <p className="text-xs text-zinc-600 mt-0.5">{t('settings.paymentDesc')}</p>
             </div>
-            <span className="text-xs text-zinc-500">None required</span>
+            <span className="text-xs text-zinc-500">{t('settings.paymentValue')}</span>
           </div>
           <div className="flex items-center justify-between py-2 border-b border-white/8">
             <div>
-              <span className="text-sm text-zinc-400">Verification &amp; uploads</span>
-              <p className="text-xs text-zinc-600 mt-0.5">Documents and imports used for AI parsing and verification</p>
+              <span className="text-sm text-zinc-400">{t('settings.verification')}</span>
+              <p className="text-xs text-zinc-600 mt-0.5">{t('settings.verificationDesc')}</p>
             </div>
-            <a href="/profile?mode=edit&section=skills" className="text-xs text-indigo-400 hover:text-indigo-300">Manage</a>
+            <a href="/profile?mode=edit&section=skills" className="text-xs text-indigo-400 hover:text-indigo-300">{t('common.manage')}</a>
           </div>
           <div className="flex items-center justify-between py-2">
             <div>
-              <span className="text-sm text-zinc-400">Account activity</span>
-              <p className="text-xs text-zinc-600 mt-0.5">Sign-in sessions and connected authentication apps</p>
+              <span className="text-sm text-zinc-400">{t('settings.activity')}</span>
+              <p className="text-xs text-zinc-600 mt-0.5">{t('settings.activityDesc')}</p>
             </div>
-            <span className="text-xs text-zinc-500">Managed via your sign-in provider</span>
+            <span className="text-xs text-zinc-500">{t('settings.activityValue')}</span>
           </div>
         </div>
       </div>
@@ -296,10 +279,8 @@ export default function SettingsPage() {
       {/* ── Danger zone ───────────────────────────────────────────── */}
       <div className="border border-red-500/20 rounded-2xl overflow-hidden">
         <div className="bg-red-500/8 px-6 py-4 border-b border-red-500/20">
-          <h2 className="font-semibold text-red-300">Danger Zone</h2>
-          <p className="text-sm text-red-400/70 mt-0.5">
-            Irreversible actions. Read carefully before proceeding.
-          </p>
+          <h2 className="font-semibold text-red-300">{t('settings.dangerZone')}</h2>
+          <p className="text-sm text-red-400/70 mt-0.5">{t('settings.dangerZoneDesc')}</p>
         </div>
 
         <div className="p-6 bg-white/3">
@@ -307,18 +288,14 @@ export default function SettingsPage() {
             /* ── Collapsed trigger ─────────────────────────────── */
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="font-medium text-zinc-200 text-sm">Delete your account</p>
-                <p className="text-zinc-400 text-sm mt-1">
-                  Removes your account and anonymises your data immediately.
-                  Personal information is permanently deleted after 6 months.
-                  You can re-register with the same email at any time.
-                </p>
+                <p className="font-medium text-zinc-200 text-sm">{t('settings.deleteAccount')}</p>
+                <p className="text-zinc-400 text-sm mt-1">{t('settings.deleteAccountDesc')}</p>
               </div>
               <button
                 onClick={() => { setDeleteOpen(true); setDeleteStep(1) }}
                 className="shrink-0 px-4 py-2 border border-red-500/30 text-red-400 rounded-xl text-sm font-medium hover:bg-red-500/8 transition"
               >
-                Delete account
+                {t('settings.deleteAccountBtn')}
               </button>
             </div>
           ) : deleteStep === 1 ? (
