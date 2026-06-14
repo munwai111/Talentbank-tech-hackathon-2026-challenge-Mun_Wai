@@ -59,9 +59,12 @@ Matching is not just "does this candidate have these keywords." Career OS scores
 **C-04 — Fair Pay Engine:**
 Salary ranges in MYR are embedded in every career path the Path Navigator generates. The AI Coach holds a full salary reference table for Malaysian tech roles at junior, mid, and senior levels — so candidates can ask "am I underpaid?" and get a specific, grounded answer, not a generic response.
 
+**Beyond the resume — whole-person profiles:**
+The product's deepest bet is that an employer should *understand* a candidate, not just scan them. Career OS builds an evidence-grounded AI persona (an MBTI-style read, Big Five / OCEAN, and a workplace behavioural profile for hiring teams) — drawn only from what the candidate actually provides, with explicit guardrails against inferring age, gender, ethnicity, religion, family status, or disability. Profiles render as an editorial "scroll journey": viewing someone feels like being walked through a person, chapter by chapter — for the candidate building it and the employer reading it. And because APAC isn't English-first, the entire experience runs through a 12-language layer (English, Bahasa Melayu/Indonesia, 中文 簡/繁, 日本語, 한국어, ไทย, Tiếng Việt, Filipino, हिंदी, தமிழ்), with AI output generated in the candidate's chosen language.
+
 ### Technical approach
 
-Next.js 16 (App Router) · Supabase + pgvector · Clerk auth · Claude Haiku 4.5 · TypeScript strict · Vercel
+Next.js 16 (App Router) · Supabase + pgvector · Clerk auth · Claude Haiku 4.5 · TypeScript strict · GSAP motion · 12-locale i18n · Vercel
 
 All AI calls are prompt-cached — static system prompts are cached across calls, reducing API latency and cost ~70–80%. Skill matching is deterministic overlap scoring with synonym normalisation, augmented by keyword-based goal alignment. The architecture is designed to run on top of an existing candidate/employer database — not just as a greenfield app. Career OS could be deployed against Talentbank's existing talent graph with configuration changes, not a rebuild.
 
@@ -112,5 +115,6 @@ This project was built with AI assistance. Claude Code (Anthropic) was used thro
 
 ## Prototype
 **Live URL:** https://career-os-dusky.vercel.app
-**Demo accounts:** Sign up at `/sign-up` — choose Candidate or Employer (15 seed jobs pre-loaded)
-**Demo video:** *(to be recorded by June 13 — Malaysian candidate persona, Shah Alam, IT diploma, career pivot scenario)*
+**Demo accounts:** Sign up at `/sign-up` — choose Candidate or Employer (15 seed jobs pre-loaded; employer side has one-click demo setup)
+**Access notes:** No credentials required — self-serve sign-up. Candidate flow: sign up → guided wizard → Skills Vault → Path Navigator → Coach → apply. Employer flow: sign up as Employer → demo setup → post a role → review ranked applicants.
+**Demo video:** *(optional supporting material — Malaysian candidate persona: Shah Alam, IT diploma, career-pivot scenario)*

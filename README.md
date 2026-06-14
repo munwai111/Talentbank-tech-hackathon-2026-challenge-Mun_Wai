@@ -1,98 +1,185 @@
-# Career OS — Skills-First Hiring for APAC
+# Career OS — Asia's Career Co-Pilot, Built for Malaysia
 
-> Built for the Talentbank Tech Hackathon 2026.
+> Skills-first hiring for APAC. Built solo for the **Talentbank Tech Hackathon 2026**.
 
-Career OS is a hiring platform that treats your **skills as your résumé** — not your degree, not your last job title, not the university name on your CV. In a region where AI automation is reshaping which skills matter year by year, we give candidates a live career GPS instead of a static job board.
+Career OS treats your **skills as your résumé** — not your degree, not your last job title, not the university name on your CV. In a region where AI automation is reshaping which skills matter year by year, we give candidates a live career GPS, and give employers a way to understand a person beyond a plain resume.
 
----
-
-## Live Demo
-
-**Vercel:** https://career-os-dusky.vercel.app
-
-**Demo accounts:**
-- Candidate: sign up at `/sign-up`, choose Candidate
-- Employer: sign up at `/sign-up`, choose Employer (15 seed jobs pre-loaded)
+- **Live demo:** https://career-os-dusky.vercel.app
+- **Repo:** https://github.com/munwai111/Talentbank-tech-hackathon-2026-challenge-Mun_Wai
+- **Status:** Demo-ready, deployed on Vercel. Built May 28 – June 14, 2026.
 
 ---
 
-## Key Features
+## Table of contents
+
+- [What it is](#what-it-is)
+- [Module coverage](#module-coverage)
+- [Feature map](#feature-map)
+- [AI features & disclosure](#ai-features--disclosure)
+- [Tech stack](#tech-stack)
+- [Architecture](#architecture)
+- [Local setup](#local-setup)
+- [Malaysian market context](#malaysian-market-context)
+- [Companion docs](#companion-docs)
+
+---
+
+## What it is
+
+Career OS is a **dual-sided career marketplace**:
+
+- **Candidates** build a living, sourced profile (skills, work history, portfolio, AI persona), get AI-powered career navigation, and apply to skills-first roles.
+- **Employers** post roles by required vs. nice-to-have skills, and see talent ranked by genuine fit — skill overlap *and* career-goal alignment.
+
+The product's thesis: hiring in Asia is broken because it filters on credentials and keywords. Career OS filters on **demonstrated capability** and **trajectory**.
+
+---
+
+## Module coverage
+
+Compulsory module plus six optional Challenge Modules:
+
+| Module | Status | Where it lives |
+|---|---|---|
+| **Career OS / Marketplace** (compulsory) | ✅ Full | Dual-sided platform, end-to-end apply→review loop |
+| **C-01 Career Path Navigator** | ✅ Full | `/paths` · `lib/ai/path-navigator.ts` |
+| **C-02 Living Portfolio** | ✅ Full | `/portfolio`, Skills Vault · GitHub + PDF import |
+| **C-03 AI Career Coach** | ✅ Full | `/coach`, Floating AI orb · `lib/ai/coach.ts` |
+| **C-05 Life Chapter Designer** | ✅ Full | Step 5 of Career Identity (`/discover`) |
+| **C-04 Fair Pay Engine** | ⚡ Embedded | MYR bands in paths + coach salary reference |
+| **E-01 Smart Talent Matching** | ⚡ Live | Skill overlap (70%) + goal alignment (30%) |
+
+---
+
+## Feature map
 
 ### Candidate side
+
 | Feature | What it does |
 |---|---|
-| **Skills Vault** | Manually add skills + import from GitHub (AI extracts your stack from repos) |
-| **AI Resume Import** | Upload PDF or paste LinkedIn/Seek text — Claude extracts structured profile |
-| **Career Identity** | 4-step guided form → Claude writes your professional narrative |
-| **Path Navigator** | 3 navigation paths (strong / emerging / stretch) based on your actual skills |
-| **Job Matches** | Every open role ranked by skill overlap — matched skills ✓, gaps ✗, in plain view |
-| **AI Coach** | Live streaming chat that knows your skills, goals, and APAC market context |
-| **Portfolio** | Project showcase with GitHub import and AI-generated summaries |
+| **Guided registration wizard** | 5-phase onboarding that builds a real profile, not just an account |
+| **AI Resume / PDF / URL import** | Upload a CV or paste LinkedIn/Seek text — Claude extracts structured profile, work history, and skills |
+| **Skills Vault (gamified)** | A 5-tier mastery ladder. Each skill opens an AI "professional read" — which roles need it, real use cases + impact, and where it shows in *your own* work history |
+| **GitHub import** | Claude reads your repos' languages + READMEs to infer verified skills |
+| **Career Identity** | Guided form → Claude writes your professional narrative (`career_identity_summary`) |
+| **AI Persona engine** | Whole-person, evidence-grounded persona: MBTI-style read, Big Five (OCEAN), and a workplace behavioural profile for hiring teams (indicative, with disclaimers) |
+| **Path Navigator** | Three realistic directions — Strong Match (1–6 mo), Emerging (6–18 mo), Stretch (18–36 mo) — in navigation language, never prediction |
+| **Job matches** | Every open role ranked by skill overlap; matched ✓ and missing ✗ skills in plain view |
+| **Application loop** | Apply, track status (applied → reviewing → interview → offer / rejected) |
+| **AI Coach + Floating AI orb** | Streaming chat that knows your live profile and APAC market context, reachable anywhere via a floating orb |
+| **News & Events** | Followed channels feed, saved items, event discovery/tickets/hosting (Supabase-backed preferences) |
+| **Profile view/edit** | A "scroll journey" public profile (Hinge-style) with linked accounts (GitHub, LinkedIn, website, FB/IG/TikTok), theme-aware |
+| **Settings + 12-language support** | APAC language switcher (see below); account & privacy controls; PDPA-aligned account deletion |
 
 ### Employer side
+
 | Feature | What it does |
 |---|---|
-| **Job posting** | Skills-first job creation (required vs nice-to-have) |
-| **Talent pool** | All candidates ranked by skill match for each open role |
-| **Culture identity** | AI-generated employer brand from culture questionnaire |
+| **Skills-first job posting** | Required vs. nice-to-have skills, MYR salary bands, remote/location |
+| **Ranked candidates per role** | Talent pool scored by combined skill + goal-alignment match |
+| **Applicants panel** | See who actually applied, their match %, matched/missing skills, and advance/reject through the pipeline |
+| **Company + Culture identity** | AI-generated employer brand from a culture questionnaire |
+| **Demo setup** | One-click seeding of a ready-to-explore employer workspace |
 
 ---
 
-## Stack
+## AI features & disclosure
+
+All in-product AI runs on **Anthropic Claude (Haiku 4.5)**. Every Claude integration is isolated in `src/lib/ai/` — never called directly from a route handler.
+
+| Library | Feature | How AI is used |
+|---|---|---|
+| `profile-extractor.ts` | Resume / PDF / URL import | Extracts structured profile from raw documents (native document blocks + text fallback) |
+| `career-synthesizer.ts` | Career & employer identity | Writes the candidate narrative and employer culture brand |
+| `persona-profiler.ts` | AI Persona engine | MBTI-style + Big Five + workplace behavioural read, evidence-grounded with calibrated confidence |
+| `skill-insight.ts` | Skills Vault | Per-skill recruiter-grade read, grounded in the candidate's own work history |
+| `path-navigator.ts` | Path Navigator | Three contextual career paths in JSON, grounded in APAC market data |
+| `coach.ts` | AI Coach | Streaming, personalised career advice with a Malaysian salary reference table |
+| `minutes.ts` | Conversation minutes | Summary + key points + action items from a contact conversation |
+
+**Responsible-AI practices baked in:**
+- **Navigation framing** — Claude says *"professionals with similar profiles typically…"*, never *"you will…"*. Outcomes are ranges, not predictions.
+- **Evidence-grounded** — persona/skill insights cite only what the candidate actually provided; empty when there's no evidence, never fabricated.
+- **No protected characteristics** — the persona and (planned) hiring-council prompts are explicitly barred from inferring age, gender, ethnicity, religion, family status, or disability.
+- **Prompt caching** on all static system prompts → ~70–80% latency/cost reduction on repeat calls.
+- **User-triggered** — no AI output is stored unless the user explicitly generates it; everything is regenerable.
+- **Localised output** — AI content (e.g. skill insights) generates in the user's selected language.
+
+> **Build-time AI:** This project was built with **Claude Code** (Anthropic) for code generation, debugging, architecture review, and documentation. Disclosed in full.
+
+### Multi-language (APAC)
+
+A real i18n layer (`src/lib/i18n/`) ships **12 APAC locales**: English, Bahasa Melayu, Bahasa Indonesia, 中文(简体), 中文(繁體), 日本語, 한국어, ภาษาไทย, Tiếng Việt, Filipino, हिंदी, தமிழ். A `LanguageProvider` hydrates instantly from `localStorage`, syncs from the user's saved preference, and exposes a `t()` helper. UI strings (nav, settings) switch instantly; AI-generated content is requested in the active language. Coverage is expanding across the app (see [ROADMAP.md](ROADMAP.md)).
+
+---
+
+## Tech stack
 
 | Layer | Technology |
 |---|---|
 | Framework | Next.js 16.2.6 (App Router, Turbopack) |
 | Auth | Clerk v7 |
-| Database | Supabase (PostgreSQL + pgvector for embeddings) |
-| AI | Anthropic Claude claude-haiku-4-5 |
-| UI | shadcn/ui + Tailwind CSS |
+| Database | Supabase (PostgreSQL + pgvector) |
+| AI inference | Anthropic Claude Haiku 4.5 |
+| UI | Tailwind CSS v4 + shadcn/ui + Base UI |
+| Motion | GSAP 3 + ScrollTrigger + `@gsap/react` |
+| Theming | `next-themes` (dark "Aurora-Navy" + light), semantic tokens |
 | Language | TypeScript (strict) |
 | Deploy | Vercel |
 
 ---
 
-## AI Disclosure
+## Architecture
 
-All AI features use **Anthropic's Claude claude-haiku-4-5** model:
+```
+src/
+├── app/
+│   ├── (auth)/                # sign-in, sign-up
+│   ├── onboarding/            # 5-phase registration wizard
+│   ├── (candidate)/           # candidate pages
+│   │   ├── dashboard/  coach/  discover/  paths/
+│   │   ├── profile/    portfolio/  jobs/  applications/
+│   │   ├── news/  events/  settings/
+│   ├── (employer)/employer/   # employer pages
+│   │   ├── dashboard/  jobs/  candidates/[jobId]/
+│   │   ├── company/   culture/  talent/
+│   └── api/                   # ~33 route handlers
+│       ├── candidate/         # profile, skills, matches, paths, coach, ai-profile, …
+│       └── employer/          # jobs, company, culture, applications, demo-setup
+├── lib/
+│   ├── ai/                    # 7 Claude integrations (isolated from routes)
+│   ├── i18n/                  # 12-locale translation layer + LanguageProvider
+│   ├── matching.ts            # deterministic skill + goal-alignment scoring
+│   └── supabase/              # server (service_role) + browser (anon) clients
+├── components/                # UI, animations, shared, floating-ai
+└── types/database.ts          # full DB schema as TypeScript types
 
-| Feature | How AI is used |
-|---|---|
-| Resume/PDF import | Claude extracts structured profile (name, skills, experience) from raw text |
-| Career Identity synthesis | Claude writes a narrative paragraph from structured form answers |
-| Path Navigator | Claude generates 3 contextualised career paths in JSON, grounded in APAC market data |
-| AI Coach | Claude streams conversational career advice, personalised to the candidate's live profile |
-| GitHub skill extraction | Claude reads repo READMEs and languages to infer verified skills |
-| Portfolio summaries | Claude summarises what each project demonstrates professionally |
+supabase/                      # 11 SQL files — schema, migrations, seeds
+```
 
-**Prompt caching** is used on all static system prompts to reduce latency and API cost ~70–80% on repeat calls.
-
-**Navigation framing** is enforced in all AI outputs: Claude is instructed to say "professionals with similar profiles typically…" not "you will…". Outcomes are shown as ranges, not predictions.
-
-No AI output is stored without the user explicitly triggering it. Users can regenerate any AI feature at any time.
+**Architectural decisions** (full rationale in [DECISIONS.md](DECISIONS.md)):
+- Server Components for data fetching; Client Components only where interactivity is required.
+- `createServerClient()` (service_role) server-side; `createBrowserClient()` (anon) client-side.
+- All AI calls go through `src/lib/ai/` — never inline in routes.
+- Skill matching is **deterministic** overlap scoring with synonym normalisation — no embeddings required for the core match path; pgvector available for semantic extensions.
+- JSONB blobs (`career_data`, `culture_data`) keep schema migrations minimal as the product evolves.
+- Query standards enforced: no `SELECT *`, explicit columns, composite indexes on every query pattern.
 
 ---
 
-## Local Setup
+## Local setup
 
 ### Prerequisites
-- Node.js 18+
-- Supabase project (free tier works)
-- Clerk account (free tier works)
-- Anthropic API key
+Node.js 18+ · a Supabase project · a Clerk app · an Anthropic API key.
 
 ### 1. Install
-
 ```bash
-git clone <repo>
+git clone https://github.com/munwai111/Talentbank-tech-hackathon-2026-challenge-Mun_Wai.git
 cd career-os
 npm install
 ```
 
-### 2. Environment variables
-
-Create `.env.local`:
-
+### 2. Environment variables — `.env.local`
 ```bash
 # Clerk
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_...
@@ -111,110 +198,59 @@ SUPABASE_SERVICE_ROLE_KEY=eyJ...
 # Anthropic
 ANTHROPIC_API_KEY=sk-ant-...
 
-# App URL (for internal server-to-server calls)
+# App URL (server-to-server calls)
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
-### 3. Database setup
-
-Run these SQL files in Supabase SQL editor **in order**:
-
+### 3. Database — run in Supabase SQL editor, in order
 ```
-supabase/schema.sql                  # Tables, indexes, pgvector functions
-supabase/add-career-data-columns.sql # JSONB career_data column
-supabase/add-performance-indexes.sql # Query performance indexes
-supabase/seed-jobs.sql               # 15 seed jobs for demo
+supabase/schema.sql
+supabase/add-career-data-columns.sql
+supabase/add-work-experience-columns.sql
+supabase/add-registration-columns.sql
+supabase/add-user-preferences.sql
+supabase/add-profile-extended.sql
+supabase/add-deletion-columns.sql
+supabase/add-performance-indexes.sql
+supabase/seed-jobs.sql          # 15 demo jobs
+supabase/seed-candidates.sql    # demo candidates (optional)
 ```
+> Shortcut: `supabase/run-all-migrations.sql` bundles the migrations.
 
 ### 4. Clerk webhook
-
-In Clerk Dashboard → Webhooks, create an endpoint:
-`https://your-domain.com/api/webhooks`
-
-Events: `user.created` · Copy signing secret → `CLERK_WEBHOOK_SECRET`
+Clerk Dashboard → Webhooks → endpoint `https://<your-domain>/api/webhooks`, event `user.created`. Copy the signing secret to `CLERK_WEBHOOK_SECRET`.
 
 ### 5. Run
-
 ```bash
-npm run dev
-# http://localhost:3000
+npm run dev   # http://localhost:3000
 ```
 
 ---
 
-## Architecture
+## Malaysian market context
 
-```
-src/
-├── app/
-│   ├── (candidate)/          # Candidate-facing pages
-│   │   ├── dashboard/        # Home screen with profile completeness
-│   │   ├── discover/         # Career Identity 4-step form
-│   │   ├── paths/            # Career Path Navigator (AI-generated)
-│   │   ├── profile/          # Skills Vault + GitHub/PDF import
-│   │   ├── portfolio/        # Living Portfolio (project showcase)
-│   │   ├── jobs/             # Ranked job matches
-│   │   └── coach/            # AI Career Coach (streaming chat)
-│   ├── (employer)/employer/  # Employer-facing pages
-│   │   ├── dashboard/        # Company overview + job stats
-│   │   ├── jobs/             # Post and manage job listings
-│   │   ├── candidates/       # Ranked candidates per role
-│   │   ├── company/          # Company profile
-│   │   └── culture/          # Culture identity form + AI synthesis
-│   └── api/                  # Route handlers
-│       ├── candidate/        # Profile, skills, matches, paths, coach
-│       └── employer/         # Company, jobs, culture
-├── lib/
-│   ├── ai/                   # All Claude integrations (never called directly from routes)
-│   │   ├── career-synthesizer.ts   # Career + employer identity narratives
-│   │   ├── path-navigator.ts       # 3-path career navigation
-│   │   ├── profile-extractor.ts    # Resume/URL/PDF import
-│   │   └── coach.ts               # Streaming coaching chat
-│   └── supabase/             # DB client factories (server + browser)
-└── types/
-    └── database.ts           # Full DB schema as TypeScript types
-```
-
-**Architectural decisions:**
-- Server Components for all data fetching; Client Components only for interactive UI
-- `createServerClient()` (service_role) server-side; `createBrowserClient()` (anon key) client-side
-- All AI calls go through `src/lib/ai/` — never called directly from route handlers
-- Skill matching is deterministic overlap scoring — no OpenAI embeddings required for basic matching
-- JSONB blobs (`career_data`, `culture_data`) keep schema migrations minimal as the product evolves
-- Query standards enforced: no `SELECT *`, composite indexes on all query patterns, columns named explicitly
-
----
-
-## Malaysian Market Context
-
-Career OS is built for Malaysia's actual talent pool — not the LinkedIn-native, English-fluent developer demographic. Several design decisions reflect this directly:
+Career OS is built for Malaysia's actual talent pool — not the LinkedIn-native, English-fluent demographic.
 
 | Decision | Why it matters for Malaysia |
 |---|---|
-| MYR salary ranges throughout | Most Malaysian candidates have no market salary data. Guessing costs them. |
-| TVET/diploma-aware framing | Malaysia's graduate pipeline is heavily diploma and TVET — not degree-first. |
-| B40/M40 income bracket awareness | Coach references SOCSO, PERKESO, and JKM reskilling grants where relevant. |
-| HRDC-funded upskilling | Employer-funded training is widely available in Malaysia — Coach surfaces this when recommending skills. |
-| MYSkills alignment (planned) | Malaysia's national skills recognition framework (MYSkills) is the intended credential backbone for verified skills in a production deployment. |
-| MQF integration path (planned) | Malaysian Qualifications Framework credential verification would replace self-reported education levels. |
-| TalentCorp / MDEC awareness | Career paths reference government workforce initiatives and digital economy programs where relevant. |
+| MYR salary ranges throughout | Most candidates have no market salary data — guessing costs them. |
+| TVET/diploma-aware framing | Malaysia's graduate pipeline is heavily diploma + TVET, not degree-first. |
+| B40/M40 awareness | Coach references SOCSO, PERKESO, JKM reskilling grants where relevant. |
+| HRDC-funded upskilling | Employer-funded training is widely available — Coach surfaces it. |
+| 12-language APAC support | The region is multilingual; the product shouldn't assume English. |
+| MYSkills / MQF alignment (planned) | National skills + qualification frameworks as the verified-credential backbone. |
 
-### Integration Story
-
-Career OS is not built to replace Talentbank — it's built to run on top of it. The database schema maps directly to candidate profiles, employer companies, and job listings. The AI layer (path navigator, coach, profile extractor) is modular and callable via API. A Talentbank integration path would involve pointing the auth layer at Talentbank's existing user database, mapping the candidate and employer profile schemas, and activating the AI features against existing data. No rebuild required — configuration changes and data migration.
+**Integration story:** Career OS is built to run *on top of* Talentbank, not replace it. The schema maps directly to candidate profiles, employer companies, and job listings; the AI layer is modular and API-callable. Adoption is a configuration + data-migration exercise, not a rebuild.
 
 ---
 
-## Judging Criteria Alignment
+## Companion docs
 
-| Criterion | Weight | How we address it |
-|---|---|---|
-| Product & UX | 30% | Navigation metaphor, no jargon, demo-ready end-to-end flow, Life Chapter Designer |
-| System Design | 25% | pgvector matching, prompt caching, typed schema, shared matching lib, performance indexes |
-| Completeness | 20% | Both candidate and employer flows fully functional, 7 AI features, C-01/C-02/C-03/C-04/C-05/E-01 covered |
-| AI Craft | 15% | Streaming chat, prompt caching, navigation framing, salary reference, goal-alignment scoring |
-| Code Quality | 10% | TypeScript strict, shared utility extraction, CLAUDE.md code review standards |
+- **[BUILD-JOURNAL.md](BUILD-JOURNAL.md)** — what we built, when, and *why* (phase-by-phase, grounded in git history).
+- **[ROADMAP.md](ROADMAP.md)** — what's next, and the future vision if this is adopted.
+- **[DECISIONS.md](DECISIONS.md)** — architectural decision records.
+- **[HACKATHON-INTENT-FORM.md](HACKATHON-INTENT-FORM.md)** — the hackathon submission content.
 
 ---
 
-*Solo submission — Talentbank Tech Hackathon 2026.*
+*Solo submission — Talentbank Tech Hackathon 2026. Built by Looi Mun Wai.*
