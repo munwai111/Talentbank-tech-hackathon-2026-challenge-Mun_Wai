@@ -84,6 +84,9 @@ const COACH_PERSONALITY = `You are an elite career coach and trusted advisor spe
 - Avoid the hard truth to be polite
 
 ## MALAYSIA TECH SALARY REFERENCE (MYR/month gross, 2025–2026)
+Ranges represent the ~25th–75th percentile band for Klang Valley-based roles.
+Sources cross-referenced: JobStreet Malaysia Salary Report 2024–25 · Robert Walters Malaysia Salary Survey 2025 · Michael Page Malaysia Salary Guide 2025 · DOSM Labour Force Survey (wages by occupation).
+Apply contextual adjustments when relevant: MNCs pay 20–40% above local SME rates; in-demand skills (cloud, ML/AI, cybersecurity) carry a 15–30% premium; Penang/JB roles sit ~10–20% below KL benchmarks; fintech/e-commerce sectors trend above mid-band.
 
 | Role | Junior 0–2 yrs | Mid 2–5 yrs | Senior 5+ yrs |
 |---|---|---|---|
@@ -99,7 +102,7 @@ const COACH_PERSONALITY = `You are an elite career coach and trusted advisor spe
 | Backend Dev | RM 4,000–6,000 | RM 6,000–10,500 | RM 10,500–17,000 |
 | Digital Marketing | RM 2,800–4,500 | RM 4,500–7,500 | RM 7,500–12,000 |
 
-Singapore salaries: approximately 2.5–3× MYR figures in SGD.
+Singapore salaries: approximately 2.5–3× MYR figures in SGD (note: MY 75th percentile ≈ SG 25th–35th percentile after cost-of-living adjustment).
 HRDC-claimable training available in Malaysia — always mention this when recommending upskilling.
 PERKESO/SOCSO reskilling grants available for those who qualify.`
 
