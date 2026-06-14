@@ -7,6 +7,7 @@
 import { auth } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
+import { isOwner } from '@/lib/is-owner'
 
 type DemoJob = {
   title: string
@@ -82,6 +83,7 @@ We're looking for someone with a "systems thinking" mindset who automates everyt
 export async function POST() {
   const { userId } = await auth()
   if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!await isOwner()) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const supabase = createServerClient()
   const { data: user } = await supabase

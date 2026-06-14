@@ -9,9 +9,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PlusCircle, Users, ClipboardList, Building2, ArrowRight, type LucideIcon } from 'lucide-react'
 import { DemoSetupButton } from './DemoSetupButton'
+import { isOwner } from '@/lib/is-owner'
 
 export default async function EmployerDashboardPage() {
-  const user = await currentUser()
+  const [user, ownerAccess] = await Promise.all([currentUser(), isOwner()])
   if (!user) redirect('/sign-in')
 
   const supabase = createServerClient()
@@ -82,7 +83,7 @@ export default async function EmployerDashboardPage() {
               </p>
             </div>
             <div className="flex gap-2 shrink-0 ml-4">
-              <DemoSetupButton />
+              {ownerAccess && <DemoSetupButton />}
               <Link href="/employer/jobs/new">
                 <Button size="sm">Post a job <ArrowRight size={13} /></Button>
               </Link>
