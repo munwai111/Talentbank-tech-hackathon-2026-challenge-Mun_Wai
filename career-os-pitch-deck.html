@@ -123,12 +123,12 @@
     font-weight: 600;
     border: 1px solid;
   }
-  .badge-violet { background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.35); color: #a78bfa; }
-  .badge-indigo { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.35); color: var(--indigo-light); }
-  .badge-teal   { background: rgba(20,184,166,0.15); border-color: rgba(20,184,166,0.35); color: #2dd4bf; }
-  .badge-amber  { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.35); color: #fbbf24; }
-  .badge-emerald{ background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.3);  color: #34d399; }
-  .badge-rose   { background: rgba(244,63,94,0.12);  border-color: rgba(244,63,94,0.3);   color: #fb7185; }
+  .badge-violet  { background: rgba(124,58,237,0.15); border-color: rgba(124,58,237,0.35); color: #a78bfa; }
+  .badge-indigo  { background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.35); color: var(--indigo-light); }
+  .badge-teal    { background: rgba(20,184,166,0.15); border-color: rgba(20,184,166,0.35); color: #2dd4bf; }
+  .badge-amber   { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.35); color: #fbbf24; }
+  .badge-emerald { background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.3);  color: #34d399; }
+  .badge-rose    { background: rgba(244,63,94,0.12);  border-color: rgba(244,63,94,0.3);   color: #fb7185; }
 
   /* ── Feature list ── */
   ul.feature-list { list-style: none; padding: 0; }
@@ -211,6 +211,57 @@
     color: rgba(255,255,255,0.8);
   }
 
+  /* ── Module table ── */
+  .module-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .module-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .module-table td {
+    padding: 13px 16px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.75);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: top;
+  }
+  .module-table tr:last-child td { border-bottom: none; }
+  .module-table td:first-child { color: var(--white); font-weight: 600; }
+  .status-done {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 700;
+    color: #34d399; background: rgba(16,185,129,0.12);
+    border: 1px solid rgba(16,185,129,0.3);
+    padding: 2px 10px; border-radius: 9999px;
+  }
+  .status-embedded {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 700;
+    color: #fbbf24; background: rgba(245,158,11,0.12);
+    border: 1px solid rgba(245,158,11,0.3);
+    padding: 2px 10px; border-radius: 9999px;
+  }
+
+  /* ── Source card (for salary engine) ── */
+  .source-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+  .source-card h4 { color: var(--white); font-size: 14px; margin-bottom: 4px; }
+  .source-card p  { font-size: 12px; color: var(--muted); }
+
+  /* ── Confidence pills ── */
+  .conf-high    { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.35); color: #34d399; padding: 4px 14px; border-radius: 9999px; font-size: 13px; font-weight: 700; }
+  .conf-medium  { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.35); color: #fbbf24; padding: 4px 14px; border-radius: 9999px; font-size: 13px; font-weight: 700; }
+  .conf-volatile{ background: rgba(244,63,94,0.12);  border: 1px solid rgba(244,63,94,0.3);   color: #fb7185; padding: 4px 14px; border-radius: 9999px; font-size: 13px; font-weight: 700; }
+
   @media print {
     .slide { min-height: 100vh; page-break-after: always; }
   }
@@ -219,15 +270,15 @@
 <body>
 
 <!-- ══════════════════════════════════════════════════════════
-     SLIDE 1 — COVER
+     SLIDE 01 — COVER
 ═══════════════════════════════════════════════════════════ -->
 <section class="slide">
-  <span class="slide-num">01 / 12</span>
+  <span class="slide-num">01 / 14</span>
   <div class="cover-logo">C</div>
 
-  <div class="eyebrow">Talentbank Tech Hackathon 2026</div>
+  <div class="eyebrow">Talentbank Tech Hackathon 2026 · Solo Submission</div>
   <h1><span class="gradient-text">Career OS</span></h1>
-  <h3 style="color: rgba(255,255,255,0.5); font-weight: 400; margin-top: 16px; max-width: 560px;">
+  <h3 style="color: rgba(255,255,255,0.5); font-weight: 400; margin-top: 16px; max-width: 580px;">
     Your career GPS — not a job board.<br/>
     Skills-first hiring built for APAC.
   </h3>
@@ -235,23 +286,35 @@
   <div class="divider" style="max-width: 480px; margin: 40px 0;"></div>
 
   <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-    <span class="badge badge-violet">🤖 Claude Haiku AI</span>
-    <span class="badge badge-indigo">🧠 Skills Matching</span>
-    <span class="badge badge-teal">🌏 Malaysia · APAC</span>
-    <span class="badge badge-amber">🏆 Hackathon 2026</span>
+    <span class="badge badge-violet">Claude Haiku 4.5</span>
+    <span class="badge badge-indigo">Skills-First Matching</span>
+    <span class="badge badge-teal">Malaysia · APAC</span>
+    <span class="badge badge-amber">7 Modules Delivered</span>
+    <span class="badge badge-emerald">Live on Vercel</span>
   </div>
 
-  <div style="margin-top: 60px;">
-    <p style="font-size: 14px;">Mun Wai Looi &nbsp;·&nbsp; <a href="https://career-os-dusky.vercel.app" style="color: var(--indigo-light);">career-os-dusky.vercel.app</a></p>
+  <div style="margin-top: 60px; display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap;">
+    <div>
+      <p style="font-size: 13px; color: var(--muted);">Submitted by</p>
+      <p style="font-size: 15px; color: rgba(255,255,255,0.85); font-weight: 600;">Looi Mun Wai</p>
+    </div>
+    <div>
+      <p style="font-size: 13px; color: var(--muted);">Live demo</p>
+      <a href="https://career-os-dusky.vercel.app" style="font-size: 15px; color: var(--indigo-light); font-weight: 600; text-decoration: none;">career-os-dusky.vercel.app</a>
+    </div>
+    <div>
+      <p style="font-size: 13px; color: var(--muted);">Source code</p>
+      <p style="font-size: 13px; color: rgba(255,255,255,0.5);">github.com/munwai111/Talentbank-tech-hackathon-2026-challenge-Mun_Wai</p>
+    </div>
   </div>
 </section>
 
 
 <!-- ══════════════════════════════════════════════════════════
-     SLIDE 2 — THE PROBLEM
+     SLIDE 02 — THE PROBLEM
 ═══════════════════════════════════════════════════════════ -->
 <section class="slide">
-  <span class="slide-num">02 / 12</span>
+  <span class="slide-num">02 / 14</span>
   <div class="eyebrow">The Problem</div>
   <h2>Malaysia's workforce is <span class="gradient-text">invisible</span> to employers.</h2>
 
@@ -259,7 +322,7 @@
     <div class="card accent-rose">
       <div class="problem-stat" style="color: #fb7185;">12M+</div>
       <h4 style="margin-top: 12px;">Underserved Professionals</h4>
-      <p>B40/M40 Malaysians abandoned by LinkedIn — no overseas degree, no corporate network, plenty of real skill.</p>
+      <p>B40/M40 Malaysians abandoned by LinkedIn — no overseas degree, no corporate network, but plenty of real skill.</p>
     </div>
     <div class="card accent-amber">
       <div class="problem-stat" style="color: #fbbf24;">87%</div>
@@ -281,15 +344,15 @@
 
 
 <!-- ══════════════════════════════════════════════════════════
-     SLIDE 3 — THE SOLUTION
+     SLIDE 03 — THE SOLUTION
 ═══════════════════════════════════════════════════════════ -->
 <section class="slide">
-  <span class="slide-num">03 / 12</span>
+  <span class="slide-num">03 / 14</span>
   <div class="eyebrow">The Solution</div>
-  <h2>A <span class="gradient-text">skills-first</span> hiring OS for APAC.</h2>
+  <h2>A <span class="gradient-text">skills-first</span> career OS for APAC.</h2>
 
   <p class="lead" style="max-width: 640px; margin-top: 20px;">
-    Career OS replaces keyword matching with real skill evidence. Every match explains exactly why — not a black box.
+    Career OS replaces keyword matching with real skill evidence. Every match explains exactly why — not a black box. Every piece of AI advice is grounded in the candidate's actual profile and real Malaysian market data.
   </p>
 
   <div class="grid-2" style="margin-top: 48px;">
@@ -298,19 +361,20 @@
       <ul class="feature-list">
         <li><span class="bullet">→</span>Skills Vault: evidence base built from resume, GitHub, and self-assessment</li>
         <li><span class="bullet">→</span>Job Matches: ranked by 70% skills + 30% career goal alignment</li>
-        <li><span class="bullet">→</span>AI Coach: context-aware career advice calibrated to your profile</li>
-        <li><span class="bullet">→</span>Career Path Navigator: 3 realistic directions mapped from real skills</li>
-        <li><span class="bullet">→</span>Living Portfolio: show what you've built, not just what you claim</li>
+        <li><span class="bullet">→</span>AI Coach: streaming, personalised advice with persistent memory across sessions</li>
+        <li><span class="bullet">→</span>Career Path Navigator: 3 realistic directions with MYR salary ranges</li>
+        <li><span class="bullet">→</span>Fair Pay Engine: live market data cross-referenced from 4 APAC salary sources</li>
+        <li><span class="bullet">→</span>Life Chapter Designer: personal context shaping every AI output</li>
       </ul>
     </div>
     <div>
       <h3 style="color: rgba(255,255,255,0.8); margin-bottom: 24px;">For Employers</h3>
       <ul class="feature-list">
-        <li><span class="bullet">→</span>Post jobs with skill requirements — not just a description</li>
-        <li><span class="bullet">→</span>Ranked candidate list with transparent skill match scores</li>
+        <li><span class="bullet">→</span>Post jobs with required vs. nice-to-have skills — not just a description</li>
+        <li><span class="bullet">→</span>Ranked candidate list: transparent skill match + goal alignment scores</li>
         <li><span class="bullet">→</span>See exactly which skills match and which are gaps per candidate</li>
-        <li><span class="bullet">→</span>Stop filtering in ATS — start finding talent on proven ability</li>
-        <li><span class="bullet">→</span>Culture fit scoring integrated with skills matching</li>
+        <li><span class="bullet">→</span>AI-generated employer brand from culture questionnaire</li>
+        <li><span class="bullet">→</span>Full application pipeline: applied → reviewing → interview → offer / rejected</li>
       </ul>
     </div>
   </div>
@@ -318,75 +382,244 @@
 
 
 <!-- ══════════════════════════════════════════════════════════
-     SLIDE 4 — WHAT WE BUILT
+     SLIDE 04 — MODULE COVERAGE
 ═══════════════════════════════════════════════════════════ -->
 <section class="slide">
-  <span class="slide-num">04 / 12</span>
-  <div class="eyebrow">What's Been Built</div>
-  <h2>A <span class="gradient-text">complete</span> dual-sided platform.</h2>
+  <span class="slide-num">04 / 14</span>
+  <div class="eyebrow">Hackathon Requirements</div>
+  <h2>Compulsory module + <span class="gradient-text">six challenge modules</span> — all delivered.</h2>
 
-  <div class="grid-3" style="margin-top: 40px;">
+  <div style="margin-top: 36px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 16px; overflow: hidden;">
+    <table class="module-table">
+      <thead>
+        <tr>
+          <th style="width: 28%;">Module</th>
+          <th style="width: 12%;">Status</th>
+          <th style="width: 60%;">What's built</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Career OS Marketplace<br/><span style="font-size: 12px; color: var(--muted); font-weight: 400;">Compulsory</span></td>
+          <td><span class="status-done">Full</span></td>
+          <td>Dual-sided platform — candidate profile, skills vault, job matching, employer dashboard, full apply→review pipeline, company + culture identity</td>
+        </tr>
+        <tr style="background: rgba(255,255,255,0.01);">
+          <td>C-01 Career Path Navigator</td>
+          <td><span class="status-done">Full</span></td>
+          <td>Claude generates 3 paths (Strong/Emerging/Stretch) in streaming JSON. Salary anchors from the Fair Pay Engine. Navigation framing — "professionals like you typically…" never "you will…"</td>
+        </tr>
+        <tr>
+          <td>C-02 Living Portfolio</td>
+          <td><span class="status-done">Full</span></td>
+          <td>Skills Vault (5-tier mastery, bubble visualisation), GitHub AI import (reads repos + READMEs), PDF/resume Claude extraction, AI skill insights per skill grounded in your work history</td>
+        </tr>
+        <tr style="background: rgba(255,255,255,0.01);">
+          <td>C-03 AI Career Coach</td>
+          <td><span class="status-done">Full</span></td>
+          <td>Streaming Claude Haiku coach. Persistent session sidebar (saved to Supabase). Evolving memory — compresses conversation history into a running summary injected into every future call. Floating AI orb reachable anywhere in the app</td>
+        </tr>
+        <tr>
+          <td>C-04 Fair Pay Engine</td>
+          <td><span class="status-done">Full</span></td>
+          <td>4-source cross-reference: JobStreet, Robert Walters, Michael Page, DOSM. Pairwise convergence algorithm outputs HIGH / MEDIUM / VOLATILE confidence. Contextual adjustments for MNC, location, premium skills. Embedded in Coach + Path Navigator</td>
+        </tr>
+        <tr style="background: rgba(255,255,255,0.01);">
+          <td>C-05 Life Chapter Designer</td>
+          <td><span class="status-done">Full</span></td>
+          <td>Step 5 of the Career Identity form. Candidate selects their life context (e.g. "returning from career break", "supporting elderly parent"). Persisted to Supabase, injected into coach + path navigator prompts — advice reflects real constraints, not an idealised profile</td>
+        </tr>
+        <tr>
+          <td>E-01 Smart Talent Matching</td>
+          <td><span class="status-done">Live</span></td>
+          <td>Deterministic scoring: 70% skill overlap + 30% career goal alignment. Case-insensitive synonym normalisation. Every match shows matched skills (✓) and gaps (✗) explicitly — zero black box</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 05 — WHAT'S BEEN BUILT
+═══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <span class="slide-num">05 / 14</span>
+  <div class="eyebrow">Platform Features</div>
+  <h2>A <span class="gradient-text">complete</span> dual-sided platform — both sides fully built.</h2>
+
+  <div class="grid-3" style="margin-top: 36px;">
     <div class="card accent-amber">
-      <div style="font-size: 28px; margin-bottom: 12px;">🗂️</div>
       <h4>Skills Vault</h4>
-      <p>Visual bubble-bank for 5 skill levels. Stats bar, pie chart, AI top-5 in-demand skills. Resume + GitHub AI import.</p>
+      <p>5-tier mastery ladder (Foundational → Expert). Bubble visualisation. Resume + GitHub AI import. Per-skill AI insight grounded in your own work history. Top-5 in-demand skills from your current stack.</p>
     </div>
     <div class="card accent-rose">
-      <div style="font-size: 28px; margin-bottom: 12px;">🎯</div>
-      <h4>Job Matches (E-01)</h4>
-      <p>20 live roles ranked by the E-01 algorithm (70% skills + 30% goal). Transparent ✓/✗ skill gap per role.</p>
+      <h4>E-01 Job Matching</h4>
+      <p>15 live seeded roles ranked by 70% skills + 30% goal alignment. Exact skill gap shown per role. Case-insensitive matching with synonym normalisation.</p>
     </div>
     <div class="card accent-indigo">
-      <div style="font-size: 28px; margin-bottom: 12px;">🤖</div>
-      <h4>AI Coach</h4>
-      <p>Streaming Claude Haiku. Knows your full profile — UNIQLO role, RMIT background, salary benchmarks in MYR.</p>
+      <h4>AI Coach + Memory</h4>
+      <p>Streaming Claude coach. Session sidebar — every conversation saved. Evolving memory summariser runs off-path and injects context into every future call. Floating AI orb accessible anywhere.</p>
     </div>
     <div class="card accent-violet">
-      <div style="font-size: 28px; margin-bottom: 12px;">🧭</div>
-      <h4>Path Navigator</h4>
-      <p>3 career directions (strong/emerging/stretch) generated by Claude. Salaries in MYR. Real trade-offs named.</p>
+      <h4>Career Path Navigator</h4>
+      <p>3 navigation paths: Strong Match (1–6 mo), Emerging (6–18 mo), Stretch (18–36 mo). MYR salary ranges from Fair Pay Engine. Real trade-offs named explicitly.</p>
     </div>
     <div class="card accent-teal">
-      <div style="font-size: 28px; margin-bottom: 12px;">📁</div>
-      <h4>Living Portfolio</h4>
-      <p>Show employers what you've built. AI-summarised project descriptions. GitHub verified skill extraction.</p>
+      <h4>AI Persona Engine</h4>
+      <p>Whole-person profile: MBTI-style read, Big Five (OCEAN), and workplace behavioural profile. Evidence-grounded — cites only what the candidate actually provided. Exportable for employers.</p>
     </div>
     <div class="card accent-emerald">
-      <div style="font-size: 28px; margin-bottom: 12px;">🏢</div>
       <h4>Employer Dashboard</h4>
-      <p>Job posting, ranked candidate pipeline with skill scores, company profile + culture data input.</p>
+      <p>Job posting by required vs. nice-to-have skills, MYR salary bands. Ranked candidate pipeline with skill scores. Company + culture identity from AI questionnaire. Full application pipeline.</p>
+    </div>
+  </div>
+
+  <div class="metric-row">
+    <span class="metric-pill">36 API route handlers</span>
+    <span class="metric-pill">8 Claude AI integrations</span>
+    <span class="metric-pill">12 APAC languages</span>
+    <span class="metric-pill">11 SQL migrations</span>
+    <span class="metric-pill">Deployed on Vercel</span>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 06 — THE AI BRAIN
+═══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <span class="slide-num">06 / 14</span>
+  <div class="eyebrow">AI Architecture</div>
+  <h2>Eight Claude integrations — <span class="gradient-text">all isolated, all purposeful.</span></h2>
+
+  <p style="max-width: 640px; margin-top: 12px; margin-bottom: 36px;">
+    Every AI call lives in <code style="font-size: 13px; background: rgba(255,255,255,0.07); padding: 2px 8px; border-radius: 4px;">src/lib/ai/</code> — never inline in a route handler. Prompt caching on all static system prompts cuts latency and cost by ~75%.
+  </p>
+
+  <div class="grid-2" style="gap: 20px;">
+    <div class="card accent-indigo">
+      <h4>profile-extractor.ts</h4>
+      <p style="margin-top: 6px;">Resume / PDF / LinkedIn text → structured profile. Uses Claude's native document blocks. Extracts work history, education, and skills; normalises before inserting to vault.</p>
+    </div>
+    <div class="card accent-violet">
+      <h4>path-navigator.ts</h4>
+      <p style="margin-top: 6px;">Streams 3 career paths as JSON. Fair Pay Engine salary anchors injected as authoritative ground truth so Claude never hallucinates MYR figures outside the cross-referenced bands.</p>
+    </div>
+    <div class="card accent-teal">
+      <h4>coach.ts</h4>
+      <p style="margin-top: 6px;">Streaming coach with prompt-cached personality + dynamic profile context. Salary Engine block injected per call. Life Chapter context shapes every piece of advice naturally.</p>
+    </div>
+    <div class="card accent-amber">
+      <h4>coach-memory.ts</h4>
+      <p style="margin-top: 6px;">Off-path memory summariser. After each session, Haiku compresses conversation turns into a running summary stored in Supabase — the coach builds a deepening understanding of the candidate across sessions.</p>
+    </div>
+    <div class="card accent-rose">
+      <h4>persona-profiler.ts</h4>
+      <p style="margin-top: 6px;">MBTI-style + Big Five (OCEAN) + workplace behavioural profile. Evidence-grounded — no inference without supporting data. No protected characteristics (age, gender, ethnicity) ever inferred.</p>
+    </div>
+    <div class="card accent-emerald">
+      <h4>skill-insight.ts + career-synthesizer.ts + minutes.ts</h4>
+      <p style="margin-top: 6px;">Per-skill recruiter-grade insight citing your own work history. AI career identity narrative. Conversation minutes (summary + action items) for candidate interactions.</p>
     </div>
   </div>
 </section>
 
 
 <!-- ══════════════════════════════════════════════════════════
-     SLIDE 5 — HOW THE AI WORKS
+     SLIDE 07 — C-04 FAIR PAY ENGINE
 ═══════════════════════════════════════════════════════════ -->
 <section class="slide">
-  <span class="slide-num">05 / 12</span>
-  <div class="eyebrow">AI Craft</div>
-  <h2>Four AI systems working <span class="gradient-text">together.</span></h2>
+  <span class="slide-num">07 / 14</span>
+  <div class="eyebrow">C-04 Fair Pay Engine</div>
+  <h2>Salary truth from <span class="gradient-text">four independent sources.</span></h2>
 
-  <div class="grid-2" style="margin-top: 44px; gap: 40px;">
-    <div>
-      <div class="card accent-indigo" style="margin-bottom: 20px;">
-        <h4>🎯 E-01 Matching Algorithm</h4>
-        <p style="margin-top: 8px;">Every job match is scored: <strong style="color: rgba(255,255,255,0.8);">70% skills overlap + 30% goal alignment.</strong> A candidate sees exactly which skills match, which are gaps, and a combined score. Not a black box — fully explained.</p>
+  <p class="lead" style="max-width: 700px; margin-top: 16px;">
+    A deterministic, LLM-free cross-reference engine. No hallucinated figures — only cross-validated market data with an explicit confidence signal.
+  </p>
+
+  <div style="margin-top: 36px;">
+    <div class="grid-4" style="gap: 16px; margin-bottom: 28px;">
+      <div class="source-card">
+        <h4>JobStreet Malaysia</h4>
+        <p>Volume source. Strong on junior and mid-level roles across broad market.</p>
+      </div>
+      <div class="source-card">
+        <h4>Robert Walters</h4>
+        <p>Specialist + senior salary survey 2025. Weighted up at senior seniority tier.</p>
+      </div>
+      <div class="source-card">
+        <h4>Michael Page</h4>
+        <p>Premium MNC-oriented guide 2025. Used for MNC contextual adjustments.</p>
+      </div>
+      <div class="source-card">
+        <h4>DOSM</h4>
+        <p>National floor only (Labour Force Survey). Excluded from convergence; used as hard minimum.</p>
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap: 24px;">
+      <div class="card accent-teal">
+        <h4>Pairwise Convergence Algorithm</h4>
+        <p style="margin-top: 8px;">JS, RW, and MP midpoints are compared pairwise. A pair "converges" when midpoints sit within 10% of each other. Output: a market band, a convergence factor, and a spread penalty.</p>
+        <div style="margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap;">
+          <span class="conf-high">HIGH — ≥2 pairs within 10%, spread ≤20%</span>
+        </div>
+        <div style="margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap;">
+          <span class="conf-medium">MEDIUM — partial agreement</span>
+        </div>
+        <div style="margin-top: 8px; display: flex; gap: 10px; flex-wrap: wrap;">
+          <span class="conf-volatile">VOLATILE — spread >25%, ≤1 pair agrees</span>
+        </div>
       </div>
       <div class="card accent-violet">
-        <h4>🤖 Claude Haiku — AI Coach</h4>
-        <p style="margin-top: 8px;">Streaming conversational coach. Prompt-cached personality + dynamic profile context. <strong style="color: rgba(255,255,255,0.8);">Knows your actual job, salary, skills, and goals</strong> — gives APAC-specific advice in MYR benchmarks.</p>
+        <h4>Contextual Adjustments Applied</h4>
+        <p style="margin-top: 8px;">The engine adjusts dynamically based on context:</p>
+        <ul class="feature-list" style="margin-top: 12px;">
+          <li style="font-size: 13px; padding: 5px 0;"><span class="bullet" style="font-size:11px;">+</span>MNC employer &nbsp;+25%</li>
+          <li style="font-size: 13px; padding: 5px 0;"><span class="bullet" style="font-size:11px;">+</span>Premium skills (AWS, Kubernetes, TensorFlow…) &nbsp;+12–20%</li>
+          <li style="font-size: 13px; padding: 5px 0;"><span class="bullet" style="font-size:11px;">−</span>Startup environment &nbsp;−10%</li>
+          <li style="font-size: 13px; padding: 5px 0;"><span class="bullet" style="font-size:11px;">−</span>Penang / Johor Bahru &nbsp;−15% vs KL baseline</li>
+          <li style="font-size: 13px; padding: 5px 0;"><span class="bullet" style="font-size:11px;">×</span>Singapore &nbsp;×2.7 SGD conversion</li>
+        </ul>
       </div>
     </div>
+  </div>
+
+  <div style="margin-top: 20px; padding: 14px 20px; background: rgba(13,148,136,0.08); border: 1px solid rgba(13,148,136,0.2); border-radius: 12px;">
+    <p style="font-size: 14px; color: rgba(255,255,255,0.7);">Covers 11 roles × 3 seniority levels. REST endpoint at <code style="font-size: 12px; background: rgba(255,255,255,0.07); padding: 1px 6px; border-radius: 4px;">GET /api/candidate/salary-confidence</code>. Embedded in Coach and Path Navigator — Claude uses engine figures as authoritative ground truth and cannot override them.</p>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 08 — C-03 AI COACH + MEMORY
+═══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <span class="slide-num">08 / 14</span>
+  <div class="eyebrow">C-03 AI Career Coach</div>
+  <h2>A coach that <span class="gradient-text">remembers you</span> — session to session.</h2>
+
+  <div class="grid-2" style="margin-top: 40px; gap: 40px;">
     <div>
-      <div class="card accent-teal" style="margin-bottom: 20px;">
-        <h4>🧭 Path Navigator</h4>
-        <p style="margin-top: 8px;">Claude generates 3 career navigation paths from your skill profile. True streaming — fast responses. <strong style="color: rgba(255,255,255,0.8);">Strong match (1–6 months), Emerging (6–18 months), Stretch goal (18–36 months)</strong> with realistic salary ranges.</p>
+      <h3 style="color: rgba(255,255,255,0.8); margin-bottom: 20px;">What makes it different</h3>
+      <ul class="feature-list">
+        <li><span class="bullet">→</span><strong style="color: rgba(255,255,255,0.85);">Persistent sessions</strong> — every conversation saved to Supabase with a session sidebar. Switch between past sessions like tabs.</li>
+        <li><span class="bullet">→</span><strong style="color: rgba(255,255,255,0.85);">Evolving memory</strong> — after each session, an off-path Haiku summariser compresses conversation turns into a running summary. Injected into every future call — the coach builds up knowledge of who you are over time.</li>
+        <li><span class="bullet">→</span><strong style="color: rgba(255,255,255,0.85);">Knows your actual profile</strong> — skills, work history, salary aspirations, life context, and dream role are all in the dynamic context block.</li>
+        <li><span class="bullet">→</span><strong style="color: rgba(255,255,255,0.85);">Fair Pay Engine embedded</strong> — salary questions get cross-referenced MYR ranges with a confidence signal, not a guess.</li>
+        <li><span class="bullet">→</span><strong style="color: rgba(255,255,255,0.85);">Life Chapter aware</strong> — advice accounts for real constraints (career break, eldercare, study) without making them the focus.</li>
+        <li><span class="bullet">→</span><strong style="color: rgba(255,255,255,0.85);">12 APAC languages</strong> — coach responds in the candidate's selected language; proper nouns, salary figures, and role titles stay in English.</li>
+      </ul>
+    </div>
+    <div>
+      <div class="card accent-indigo" style="margin-bottom: 20px;">
+        <h4>Prompt Caching Architecture</h4>
+        <p style="margin-top: 8px;">The 1,000-word coaching personality prompt is marked <code style="font-size: 12px; background: rgba(255,255,255,0.07); padding: 1px 6px; border-radius: 4px;">cache_control: ephemeral</code> — cached by Anthropic for up to 5 minutes. The dynamic profile context block is passed uncached per call. This gives ~75% latency and token-cost reduction on the cached portion.</p>
       </div>
-      <div class="card accent-amber">
-        <h4>📥 AI Profile Import</h4>
-        <p style="margin-top: 8px;">Upload resume PDF, paste LinkedIn text, or connect GitHub. <strong style="color: rgba(255,255,255,0.8);">Claude extracts skills, work history, and education</strong> — normalises and cross-references before adding to vault.</p>
+      <div class="card accent-teal">
+        <h4>Floating AI Orb</h4>
+        <p style="margin-top: 8px;">A persistent floating orb sits in the bottom-right corner of every candidate page. Opens a full-screen coaching panel without leaving the current page — the coach is never more than one click away, regardless of where the candidate is in the app.</p>
       </div>
     </div>
   </div>
@@ -394,10 +627,10 @@
 
 
 <!-- ══════════════════════════════════════════════════════════
-     SLIDE 6 — TECH STACK
+     SLIDE 09 — TECH STACK
 ═══════════════════════════════════════════════════════════ -->
 <section class="slide">
-  <span class="slide-num">06 / 12</span>
+  <span class="slide-num">09 / 14</span>
   <div class="eyebrow">System Design</div>
   <h2>Production-grade stack, <span class="gradient-text">built to scale.</span></h2>
 
@@ -405,139 +638,183 @@
     <div class="card">
       <h4 style="color: #60a5fa;">Frontend</h4>
       <ul class="feature-list" style="margin-top: 12px;">
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Next.js 16 App Router</li>
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>TypeScript strict</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Next.js 16.2.6 App Router</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>TypeScript (strict mode)</li>
         <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Tailwind CSS v4</li>
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>shadcn/ui</li>
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Dark/light mode</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>shadcn/ui + Base UI</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>GSAP 3 + ScrollTrigger</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Dark + light mode</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>12-language i18n (APAC)</li>
       </ul>
     </div>
     <div class="card">
       <h4 style="color: #34d399;">Backend</h4>
       <ul class="feature-list" style="margin-top: 12px;">
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Supabase + pgvector</li>
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Clerk v7 auth + MFA</li>
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Server Components</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Supabase (PostgreSQL)</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>pgvector (semantic search)</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Clerk v7 auth</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Row Level Security</li>
         <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>RBAC (employer/candidate)</li>
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Vercel Edge deploy</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>36 API route handlers</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>11 SQL migrations</li>
       </ul>
     </div>
     <div class="card">
       <h4 style="color: #a78bfa;">AI Layer</h4>
       <ul class="feature-list" style="margin-top: 12px;">
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Anthropic Claude Haiku</li>
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>OpenAI embeddings</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Anthropic Claude Haiku 4.5</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>8 isolated AI modules</li>
         <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Streaming responses</li>
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Prompt caching</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Prompt caching (~75% saving)</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Coach memory (Supabase)</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Fair Pay Engine (no LLM)</li>
         <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>E-01 scoring engine</li>
       </ul>
     </div>
     <div class="card">
       <h4 style="color: #fbbf24;">Architecture</h4>
       <ul class="feature-list" style="margin-top: 12px;">
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Route group isolation</li>
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>JSONB skills storage</li>
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Vector similarity search</li>
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Zero-downtime deploy</li>
-        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>GitHub → Vercel CI/CD</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Server/Client component split</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>JSONB for career/culture data</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Composite indexes (all paths)</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Owner-gated dev controls</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>No SELECT * anywhere</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>Vercel CI/CD from GitHub</li>
+        <li style="border:none; padding: 4px 0; font-size: 13px;"><span class="bullet" style="font-size:10px;">▸</span>PDPA-aligned deletion</li>
       </ul>
     </div>
   </div>
 
   <div class="metric-row">
-    <span class="metric-pill">🔐 MFA enabled</span>
-    <span class="metric-pill">⚡ Streaming AI responses</span>
-    <span class="metric-pill">🧩 Dual-sided marketplace</span>
-    <span class="metric-pill">🌙 Dark + light mode</span>
-    <span class="metric-pill">📱 Responsive design</span>
+    <span class="metric-pill">Anthropic Claude Haiku 4.5 — sole AI provider</span>
+    <span class="metric-pill">Streaming AI on every interactive surface</span>
+    <span class="metric-pill">Zero black-box scoring</span>
+    <span class="metric-pill">Responsible AI practices built in</span>
   </div>
 </section>
 
 
 <!-- ══════════════════════════════════════════════════════════
-     SLIDE 7 — DEMO HIGHLIGHTS
+     SLIDE 10 — DEMO JOURNEYS
 ═══════════════════════════════════════════════════════════ -->
 <section class="slide">
-  <span class="slide-num">07 / 12</span>
+  <span class="slide-num">10 / 14</span>
   <div class="eyebrow">Live Demo</div>
-  <h2>Two journeys. One <span class="gradient-text">complete platform.</span></h2>
+  <h2>Two complete journeys. <span class="gradient-text">Try it now.</span></h2>
 
-  <div class="grid-2" style="margin-top: 44px; gap: 40px;">
+  <div class="grid-2" style="margin-top: 40px; gap: 40px;">
     <div>
-      <h3 style="color: rgba(255,255,255,0.8); margin-bottom: 20px;">🎓 Candidate Journey</h3>
+      <h3 style="color: rgba(255,255,255,0.8); margin-bottom: 20px;">Candidate Journey</h3>
       <div class="timeline-item">
         <div class="timeline-dot"></div>
         <div>
-          <h4 style="color: rgba(255,255,255,0.8);">1. Onboard in 2 steps</h4>
-          <p style="font-size: 14px;">Select role (candidate/employer) → import resume or connect GitHub</p>
+          <h4 style="color: rgba(255,255,255,0.8);">1. Register + import resume or GitHub</h4>
+          <p style="font-size: 14px;">Claude extracts structured work history, education, and skills in seconds. Or build your profile manually through the 5-step Career Identity wizard.</p>
         </div>
       </div>
       <div class="timeline-item">
         <div class="timeline-dot"></div>
         <div>
-          <h4 style="color: rgba(255,255,255,0.8);">2. Build Skills Vault</h4>
-          <p style="font-size: 14px;">AI extracts skills from resume. Bubble visualization shows your skill distribution.</p>
+          <h4 style="color: rgba(255,255,255,0.8);">2. Explore Skills Vault</h4>
+          <p style="font-size: 14px;">Bubble visualisation of your skill distribution. AI insight per skill — which roles need it, your own usage evidence, and what to learn next.</p>
         </div>
       </div>
       <div class="timeline-item">
         <div class="timeline-dot"></div>
         <div>
-          <h4 style="color: rgba(255,255,255,0.8);">3. Get ranked matches</h4>
-          <p style="font-size: 14px;">20 roles ranked by 86%, 80%, 76%… Each shows exact skill gap.</p>
+          <h4 style="color: rgba(255,255,255,0.8);">3. See ranked job matches</h4>
+          <p style="font-size: 14px;">Every open role ranked with a combined score. Matched skills (✓) and gaps (✗) shown for each — no guessing why you're a good fit.</p>
         </div>
       </div>
       <div class="timeline-item">
         <div class="timeline-dot"></div>
         <div>
-          <h4 style="color: rgba(255,255,255,0.8);">4. Talk to your coach</h4>
-          <p style="font-size: 14px;">"Am I underpaid?" → gets APAC-specific answer in MYR with actionable next steps.</p>
+          <h4 style="color: rgba(255,255,255,0.8);">4. Generate career paths + coach</h4>
+          <p style="font-size: 14px;">Path Navigator gives 3 directions with MYR salary ranges (cross-referenced, not guessed). Coach session starts — it will remember this conversation next time.</p>
         </div>
       </div>
     </div>
     <div>
-      <h3 style="color: rgba(255,255,255,0.8); margin-bottom: 20px;">🏢 Employer Journey</h3>
+      <h3 style="color: rgba(255,255,255,0.8); margin-bottom: 20px;">Employer Journey</h3>
       <div class="timeline-item">
         <div class="timeline-dot" style="background: #34d399;"></div>
         <div>
-          <h4 style="color: rgba(255,255,255,0.8);">1. Post a job with skills</h4>
-          <p style="font-size: 14px;">Define required skills, not just a job description. Set company culture data.</p>
+          <h4 style="color: rgba(255,255,255,0.8);">1. Build company profile + culture</h4>
+          <p style="font-size: 14px;">AI generates your employer brand from a culture questionnaire. Candidates see a richer picture than a logo and two sentences.</p>
         </div>
       </div>
       <div class="timeline-item">
         <div class="timeline-dot" style="background: #34d399;"></div>
         <div>
-          <h4 style="color: rgba(255,255,255,0.8);">2. See ranked candidates</h4>
-          <p style="font-size: 14px;">Every applicant shown with skill match score, gap analysis, verified skills.</p>
+          <h4 style="color: rgba(255,255,255,0.8);">2. Post a skills-first job</h4>
+          <p style="font-size: 14px;">Required skills vs. nice-to-have skills, MYR salary band, remote/hybrid/onsite. No keyword-stuffed description required.</p>
         </div>
       </div>
       <div class="timeline-item">
         <div class="timeline-dot" style="background: #34d399;"></div>
         <div>
-          <h4 style="color: rgba(255,255,255,0.8);">3. Filter by ability</h4>
-          <p style="font-size: 14px;">Sort by combined score. See which candidates have verified vs. self-reported skills.</p>
+          <h4 style="color: rgba(255,255,255,0.8);">3. See ranked candidates per role</h4>
+          <p style="font-size: 14px;">Every candidate scored by combined skill + goal alignment match. Which skills they have, which are gaps — visible at a glance.</p>
         </div>
       </div>
       <div class="timeline-item">
         <div class="timeline-dot" style="background: #34d399;"></div>
         <div>
-          <h4 style="color: rgba(255,255,255,0.8);">4. Reduce time-to-hire</h4>
-          <p style="font-size: 14px;">No ATS keyword filtering. The right candidate surfaces immediately, with evidence.</p>
+          <h4 style="color: rgba(255,255,255,0.8);">4. Advance through the pipeline</h4>
+          <p style="font-size: 14px;">Applied → Reviewing → Interview → Offer / Rejected. Status visible to both employer and candidate in real time.</p>
         </div>
       </div>
     </div>
   </div>
 
-  <div style="text-align: center; margin-top: 40px; padding: 16px; border: 1px solid rgba(99,102,241,0.3); border-radius: 12px; background: rgba(99,102,241,0.06);">
-    <p style="font-size: 16px; color: rgba(255,255,255,0.7);">🔗 Live at: <strong style="color: var(--indigo-light);">https://career-os-dusky.vercel.app</strong></p>
+  <div style="text-align: center; margin-top: 36px; padding: 18px; border: 1px solid rgba(99,102,241,0.3); border-radius: 12px; background: rgba(99,102,241,0.06);">
+    <p style="font-size: 16px; color: rgba(255,255,255,0.75);">Live at: <strong style="color: var(--indigo-light);">https://career-os-dusky.vercel.app</strong> &nbsp;·&nbsp; Both journeys available for judges to explore</p>
   </div>
 </section>
 
 
 <!-- ══════════════════════════════════════════════════════════
-     SLIDE 8 — MARKET OPPORTUNITY
+     SLIDE 11 — MALAYSIA CONTEXT
 ═══════════════════════════════════════════════════════════ -->
 <section class="slide">
-  <span class="slide-num">08 / 12</span>
+  <span class="slide-num">11 / 14</span>
+  <div class="eyebrow">Built for Malaysia</div>
+  <h2>Not a global product <span class="gradient-text">localised for Malaysia.</span><br/>A Malaysian product from the ground up.</h2>
+
+  <div class="grid-3" style="margin-top: 40px;">
+    <div class="card accent-amber">
+      <h4>MYR salary data throughout</h4>
+      <p>Every salary figure is in Malaysian Ringgit, cross-referenced from 4 local sources (JobStreet, Robert Walters, Michael Page, DOSM). Candidates get real market context, not USD-converted guesses.</p>
+    </div>
+    <div class="card accent-violet">
+      <h4>12 APAC languages</h4>
+      <p>English, Bahasa Melayu, Bahasa Indonesia, 中文(简体 + 繁體), 日本語, 한국어, ภาษาไทย, Tiếng Việt, Filipino, हिंदी, தமிழ். UI switches instantly; AI-generated content requested in the active language.</p>
+    </div>
+    <div class="card accent-teal">
+      <h4>Malaysian policy-aware AI</h4>
+      <p>Coach references HRDC-funded training, PERKESO/SOCSO reskilling grants, EPF considerations, and halal economy sectors when relevant. B40/M40 context built into advice framing.</p>
+    </div>
+    <div class="card accent-rose">
+      <h4>TVET + diploma first</h4>
+      <p>Malaysia's graduate pipeline is heavily diploma + TVET, not degree-first. Career OS doesn't filter on degree — it surfaces what the candidate can actually do.</p>
+    </div>
+    <div class="card accent-indigo">
+      <h4>PDPA-aligned</h4>
+      <p>No protected characteristics (age, gender, ethnicity, religion, disability) inferred or stored. Account and data deletion built in. Life Chapter context not visible to employers.</p>
+    </div>
+    <div class="card accent-emerald">
+      <h4>Talentbank integration path</h4>
+      <p>Schema maps directly to candidate profiles, employer companies, and job listings. The AI layer is modular and API-callable. Adoption is a configuration + migration exercise, not a rebuild.</p>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     SLIDE 12 — MARKET OPPORTUNITY
+═══════════════════════════════════════════════════════════ -->
+<section class="slide">
+  <span class="slide-num">12 / 14</span>
   <div class="eyebrow">Market Opportunity</div>
   <h2>APAC's <span class="gradient-text">skills gap</span> is a RM billion opportunity.</h2>
 
@@ -563,108 +840,17 @@
     </div>
     <div class="card accent-teal">
       <h4>Why Career OS wins?</h4>
-      <p style="margin-top: 8px;">No other platform in Malaysia combines AI coaching + skills-first matching + dual-sided marketplace in a single product built specifically for the APAC market and MQF framework.</p>
+      <p style="margin-top: 8px;">No other platform in Malaysia combines AI coaching with persistent memory + skills-first matching + a cross-referenced pay engine + dual-sided marketplace — built specifically for the APAC market and MQF framework.</p>
     </div>
   </div>
 </section>
 
 
 <!-- ══════════════════════════════════════════════════════════
-     SLIDE 9 — THE VISION
+     SLIDE 13 — WHY TALENTBANK
 ═══════════════════════════════════════════════════════════ -->
 <section class="slide">
-  <span class="slide-num">09 / 12</span>
-  <div class="eyebrow">The Vision</div>
-  <h2>From job board to <span class="gradient-text">national skills OS.</span></h2>
-
-  <p class="lead" style="max-width: 640px; margin-top: 20px;">
-    Career OS isn't trying to be LinkedIn. It's trying to become the operating system for how APAC understands, values, and deploys human skills.
-  </p>
-
-  <div class="grid-3" style="margin-top: 44px;">
-    <div class="card accent-violet">
-      <div style="font-size: 24px; margin-bottom: 12px;">🗺️</div>
-      <h4>Year 1 — Platform</h4>
-      <p>Hire the first 10,000 candidates through skills-first matching in Malaysia. Onboard 500 SME employers. Prove the E-01 algorithm produces better hires.</p>
-    </div>
-    <div class="card accent-indigo">
-      <div style="font-size: 24px; margin-bottom: 12px;">🌏</div>
-      <h4>Year 2–3 — APAC</h4>
-      <p>Expand to Singapore, Indonesia, Philippines. Integrate with HRDC Malaysia for CPD tracking. License the SAQ psychometric data to workforce development bodies.</p>
-    </div>
-    <div class="card accent-teal">
-      <div style="font-size: 24px; margin-bottom: 12px;">🏛️</div>
-      <h4>Year 3–5 — Infrastructure</h4>
-      <p>Become the national skills taxonomy backbone. Partner with MOHR/MQF. The SAQ dataset becomes a moat no competitor can replicate — APAC's skills graph.</p>
-    </div>
-  </div>
-
-  <div class="quote" style="margin-top: 40px; max-width: 700px;">
-    <p>"The goal isn't to help people find jobs. It's to build the infrastructure that makes skills — not credentials — the currency of APAC's labour market."</p>
-    <div class="quote-attr">— Career OS founding vision</div>
-  </div>
-</section>
-
-
-<!-- ══════════════════════════════════════════════════════════
-     SLIDE 10 — NEXT STEPS / ROADMAP
-═══════════════════════════════════════════════════════════ -->
-<section class="slide">
-  <span class="slide-num">10 / 12</span>
-  <div class="eyebrow">What's Next</div>
-  <h2>From prototype to <span class="gradient-text">product.</span></h2>
-
-  <div class="grid-2" style="margin-top: 44px; gap: 40px;">
-    <div>
-      <h3 style="color: rgba(255,255,255,0.8); margin-bottom: 24px;">🔧 Immediate (0–3 months)</h3>
-      <ul class="feature-list">
-        <li><span class="badge badge-rose" style="font-size:10px; padding: 2px 8px;">Critical</span>&nbsp;Onboard first 100 beta users (candidate + employer)</li>
-        <li><span class="badge badge-amber" style="font-size:10px; padding: 2px 8px;">High</span>&nbsp;Mobile-first responsive redesign</li>
-        <li><span class="badge badge-amber" style="font-size:10px; padding: 2px 8px;">High</span>&nbsp;Real job postings from partner employers</li>
-        <li><span class="badge badge-indigo" style="font-size:10px; padding: 2px 8px;">Medium</span>&nbsp;SAQ (psychometric assessment) full integration</li>
-        <li><span class="badge badge-indigo" style="font-size:10px; padding: 2px 8px;">Medium</span>&nbsp;LinkedIn profile direct import</li>
-      </ul>
-    </div>
-    <div>
-      <h3 style="color: rgba(255,255,255,0.8); margin-bottom: 24px;">🚀 Growth (3–12 months)</h3>
-      <ul class="feature-list">
-        <li><span class="badge badge-violet" style="font-size:10px; padding: 2px 8px;">Strategic</span>&nbsp;HRDC CPD points integration for verified skills</li>
-        <li><span class="badge badge-violet" style="font-size:10px; padding: 2px 8px;">Strategic</span>&nbsp;University partnership for fresh grad onboarding</li>
-        <li><span class="badge badge-teal" style="font-size:10px; padding: 2px 8px;">Expansion</span>&nbsp;Singapore market entry</li>
-        <li><span class="badge badge-teal" style="font-size:10px; padding: 2px 8px;">Expansion</span>&nbsp;API for third-party ATS integration</li>
-        <li><span class="badge badge-emerald" style="font-size:10px; padding: 2px 8px;">Revenue</span>&nbsp;Employer SaaS subscription model</li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top: 32px; background: rgba(99,102,241,0.06); border-color: rgba(99,102,241,0.2);">
-    <div class="grid-4">
-      <div style="text-align: center;">
-        <div style="font-size: 28px; font-weight: 800; color: var(--indigo-light);">100</div>
-        <div style="font-size: 12px; color: var(--muted);">Beta users by month 3</div>
-      </div>
-      <div style="text-align: center;">
-        <div style="font-size: 28px; font-weight: 800; color: #34d399;">50</div>
-        <div style="font-size: 12px; color: var(--muted);">Employer partners by month 6</div>
-      </div>
-      <div style="text-align: center;">
-        <div style="font-size: 28px; font-weight: 800; color: #fbbf24;">10K</div>
-        <div style="font-size: 12px; color: var(--muted);">Registered users by year 1</div>
-      </div>
-      <div style="text-align: center;">
-        <div style="font-size: 28px; font-weight: 800; color: #fb7185;">RM 1M</div>
-        <div style="font-size: 12px; color: var(--muted);">ARR target by year 2</div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ══════════════════════════════════════════════════════════
-     SLIDE 11 — WHY TALENTBANK
-═══════════════════════════════════════════════════════════ -->
-<section class="slide">
-  <span class="slide-num">11 / 12</span>
+  <span class="slide-num">13 / 14</span>
   <div class="eyebrow">Why Talentbank</div>
   <h2>We're not just submitting to a hackathon. <br/><span class="gradient-text">We're asking to build this together.</span></h2>
 
@@ -673,20 +859,20 @@
       <h3 style="color: rgba(255,255,255,0.8); margin-bottom: 20px;">What Talentbank brings</h3>
       <ul class="feature-list">
         <li><span class="bullet">→</span>12+ years of Malaysia recruitment market expertise and relationships</li>
-        <li><span class="bullet">→</span>Existing employer network to seed the marketplace with real jobs</li>
+        <li><span class="bullet">→</span>Existing employer network to seed the marketplace with real jobs from day one</li>
         <li><span class="bullet">→</span>HRDC/MQF regulatory relationships for skills taxonomy integration</li>
         <li><span class="bullet">→</span>Distribution to Malaysian job seekers who already trust the Talentbank brand</li>
-        <li><span class="bullet">→</span>R&D infrastructure to take this from prototype to production</li>
+        <li><span class="bullet">→</span>R&D infrastructure to take Career OS from hackathon build to production scale</li>
       </ul>
     </div>
     <div>
       <h3 style="color: rgba(255,255,255,0.8); margin-bottom: 20px;">What Career OS brings</h3>
       <ul class="feature-list">
-        <li><span class="bullet">→</span>Working AI-powered skills matching engine (not a concept)</li>
-        <li><span class="bullet">→</span>Transparent E-01 algorithm that explains every match</li>
-        <li><span class="bullet">→</span>Full dual-sided marketplace — candidate AND employer portals built</li>
-        <li><span class="bullet">→</span>Claude AI integration for coaching, path navigation, and profile extraction</li>
-        <li><span class="bullet">→</span>A founder who understands both the technical and human sides of this problem</li>
+        <li><span class="bullet">→</span>Working platform — not a concept deck. Live, deployed, both sides functional today.</li>
+        <li><span class="bullet">→</span>7 delivered modules: compulsory marketplace + C-01, C-02, C-03, C-04, C-05, E-01</li>
+        <li><span class="bullet">→</span>Transparent E-01 algorithm — every match score is explainable, not a black box</li>
+        <li><span class="bullet">→</span>8 isolated Claude AI integrations — modular, API-callable, replaceable individually</li>
+        <li><span class="bullet">→</span>Schema designed for Talentbank adoption: direct mapping, config + migration, not a rebuild</li>
       </ul>
     </div>
   </div>
@@ -699,10 +885,10 @@
 
 
 <!-- ══════════════════════════════════════════════════════════
-     SLIDE 12 — CALL TO ACTION
+     SLIDE 14 — CALL TO ACTION
 ═══════════════════════════════════════════════════════════ -->
 <section class="slide">
-  <span class="slide-num">12 / 12</span>
+  <span class="slide-num">14 / 14</span>
   <div class="eyebrow">The Ask</div>
   <h2>Give skills-first hiring a <span class="gradient-text">real chance.</span></h2>
 
@@ -714,28 +900,29 @@
     <div class="card" style="text-align: center; padding: 32px 20px; background: rgba(124,58,237,0.08); border-color: rgba(124,58,237,0.2);">
       <div style="font-size: 32px; margin-bottom: 12px;">🏆</div>
       <h4>Win the hackathon</h4>
-      <p style="font-size: 13px; margin-top: 8px;">Use Career OS to demonstrate what skills-first hiring looks like in practice — a live, working product, not a slide deck.</p>
+      <p style="font-size: 13px; margin-top: 8px;">Use Career OS to demonstrate what skills-first hiring looks like in practice — a live, working product with 7 delivered modules, not a slide deck.</p>
     </div>
     <div class="card" style="text-align: center; padding: 32px 20px; background: rgba(99,102,241,0.08); border-color: rgba(99,102,241,0.2);">
       <div style="font-size: 32px; margin-bottom: 12px;">🤝</div>
       <h4>Partner to build it</h4>
-      <p style="font-size: 13px; margin-top: 8px;">License the platform as Talentbank's R&D foundation. Accelerate the skills-first transformation of Malaysian hiring.</p>
+      <p style="font-size: 13px; margin-top: 8px;">License the platform as Talentbank's R&D foundation. Accelerate the skills-first transformation of Malaysian hiring with an engine that's already running.</p>
     </div>
     <div class="card" style="text-align: center; padding: 32px 20px; background: rgba(13,148,136,0.08); border-color: rgba(13,148,136,0.2);">
       <div style="font-size: 32px; margin-bottom: 12px;">🚀</div>
       <h4>Launch it together</h4>
-      <p style="font-size: 13px; margin-top: 8px;">With Talentbank's network and Career OS's engine, we can be live with real users within 90 days of a partnership.</p>
+      <p style="font-size: 13px; margin-top: 8px;">With Talentbank's network and Career OS's engine, we can be live with real users within 90 days of a partnership decision.</p>
     </div>
   </div>
 
-  <div style="margin-top: 48px; padding: 28px 32px; border: 1px solid rgba(129,140,248,0.3); border-radius: 16px; background: rgba(99,102,241,0.07); display: flex; align-items: center; justify-content: space-between; gap: 24px;">
+  <div style="margin-top: 40px; padding: 28px 32px; border: 1px solid rgba(129,140,248,0.3); border-radius: 16px; background: rgba(99,102,241,0.07); display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;">
     <div>
       <h3 style="color: rgba(255,255,255,0.9);">Try it live right now</h3>
-      <p style="font-size: 15px; margin-top: 4px;">Full candidate and employer journeys available.</p>
+      <p style="font-size: 15px; margin-top: 4px;">Full candidate and employer journeys available. Both sides fully functional.</p>
     </div>
-    <div style="text-align: right; flex-shrink: 0;">
-      <div style="font-size: 20px; font-weight: 700; color: var(--indigo-light);">career-os-dusky.vercel.app</div>
-      <div style="font-size: 13px; color: var(--muted); margin-top: 4px;">github.com/munwai111/Talentbank-tech-hackathon-2026-challenge-Mun_Wai</div>
+    <div style="flex-shrink: 0;">
+      <div style="font-size: 18px; font-weight: 700; color: var(--indigo-light);">career-os-dusky.vercel.app</div>
+      <div style="font-size: 13px; color: var(--muted); margin-top: 6px;">github.com/munwai111/Talentbank-tech-hackathon-2026-challenge-Mun_Wai</div>
+      <div style="font-size: 13px; color: var(--muted); margin-top: 2px;">Built May 28 – June 14, 2026 · Solo submission · Looi Mun Wai</div>
     </div>
   </div>
 </section>
