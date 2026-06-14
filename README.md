@@ -44,7 +44,7 @@ Compulsory module plus six optional Challenge Modules:
 | **Career OS / Marketplace** (compulsory) | ✅ Full | Dual-sided platform, end-to-end apply→review loop |
 | **C-01 Career Path Navigator** | ✅ Full | `/paths` · `lib/ai/path-navigator.ts` |
 | **C-02 Living Portfolio** | ✅ Full | `/portfolio`, Skills Vault · GitHub + PDF import |
-| **C-03 AI Career Coach** | ✅ Full | `/coach`, Floating AI orb · `lib/ai/coach.ts` |
+| **C-03 AI Career Coach** | ✅ Full | `/coach`, Floating AI orb · `lib/ai/coach.ts` · persistent sessions + evolving memory |
 | **C-05 Life Chapter Designer** | ✅ Full | Step 5 of Career Identity (`/discover`) |
 | **C-04 Fair Pay Engine** | ⚡ Embedded | MYR bands in paths + coach salary reference |
 | **E-01 Smart Talent Matching** | ⚡ Live | Skill overlap (70%) + goal alignment (30%) |
@@ -66,7 +66,7 @@ Compulsory module plus six optional Challenge Modules:
 | **Path Navigator** | Three realistic directions — Strong Match (1–6 mo), Emerging (6–18 mo), Stretch (18–36 mo) — in navigation language, never prediction |
 | **Job matches** | Every open role ranked by skill overlap; matched ✓ and missing ✗ skills in plain view |
 | **Application loop** | Apply, track status (applied → reviewing → interview → offer / rejected) |
-| **AI Coach + Floating AI orb** | Streaming chat that knows your live profile and APAC market context, reachable anywhere via a floating orb |
+| **AI Coach + Floating AI orb** | Streaming chat that knows your live profile and APAC market context, reachable anywhere via a floating orb. ChatGPT-style **session sidebar** saves every conversation to Supabase — switch between past sessions, rename, or start fresh. An **evolving memory** layer compresses recent turns into a running summary and injects it into every subsequent call, so the coach deepens its understanding of the candidate across sessions (goals, blockers, progress) — exactly as a real mentor would |
 | **News & Events** | Followed channels feed, saved items, event discovery/tickets/hosting (Supabase-backed preferences) |
 | **Profile view/edit** | A "scroll journey" public profile (Hinge-style) with linked accounts (GitHub, LinkedIn, website, FB/IG/TikTok), theme-aware |
 | **Settings + 12-language support** | APAC language switcher (see below); account & privacy controls; PDPA-aligned account deletion |
@@ -95,6 +95,7 @@ All in-product AI runs on **Anthropic Claude (Haiku 4.5)**. Every Claude integra
 | `skill-insight.ts` | Skills Vault | Per-skill recruiter-grade read, grounded in the candidate's own work history |
 | `path-navigator.ts` | Path Navigator | Three contextual career paths in JSON, grounded in APAC market data |
 | `coach.ts` | AI Coach | Streaming, personalised career advice with a Malaysian salary reference table |
+| `coach-memory.ts` | Coach evolving memory | Off-path Haiku summariser: compresses recent conversation turns into a compact memory, stored per candidate and injected into every future coach call — the coach builds context over time |
 | `minutes.ts` | Conversation minutes | Summary + key points + action items from a contact conversation |
 
 **Responsible-AI practices baked in:**
@@ -143,11 +144,13 @@ src/
 │   ├── (employer)/employer/   # employer pages
 │   │   ├── dashboard/  jobs/  candidates/[jobId]/
 │   │   ├── company/   culture/  talent/
-│   └── api/                   # ~33 route handlers
-│       ├── candidate/         # profile, skills, matches, paths, coach, ai-profile, …
+│   └── api/                   # ~36 route handlers
+│       ├── candidate/         # profile, skills, matches, paths, ai-profile, …
+│       │   └── coach/         # chat stream · sessions (GET/POST) · sessions/[id] (GET/POST/PATCH/DELETE)
 │       └── employer/          # jobs, company, culture, applications, demo-setup
 ├── lib/
-│   ├── ai/                    # 7 Claude integrations (isolated from routes)
+│   ├── ai/                    # 8 Claude integrations (isolated from routes)
+│   │   └── coach-memory.ts    # evolving memory summariser (Haiku, off-path, prompt-cached)
 │   ├── i18n/                  # 12-locale translation layer + LanguageProvider
 │   ├── matching.ts            # deterministic skill + goal-alignment scoring
 │   └── supabase/              # server (service_role) + browser (anon) clients
@@ -212,10 +215,11 @@ supabase/add-user-preferences.sql
 supabase/add-profile-extended.sql
 supabase/add-deletion-columns.sql
 supabase/add-performance-indexes.sql
+supabase/add-coach-memory.sql   # coach_sessions + coach_messages tables + coach_memory field
 supabase/seed-jobs.sql          # 15 demo jobs
 supabase/seed-candidates.sql    # demo candidates (optional)
 ```
-> Shortcut: `supabase/run-all-migrations.sql` bundles the migrations.
+> Shortcut: `supabase/run-all-migrations.sql` bundles **all** migrations including coach memory.
 
 ### 4. Clerk webhook
 Clerk Dashboard → Webhooks → endpoint `https://<your-domain>/api/webhooks`, event `user.created`. Copy the signing secret to `CLERK_WEBHOOK_SECRET`.
@@ -246,10 +250,12 @@ Career OS is built for Malaysia's actual talent pool — not the LinkedIn-native
 
 ## Companion docs
 
-- **[BUILD-JOURNAL.md](BUILD-JOURNAL.md)** — what we built, when, and *why* (phase-by-phase, grounded in git history).
-- **[ROADMAP.md](ROADMAP.md)** — what's next, and the future vision if this is adopted.
-- **[DECISIONS.md](DECISIONS.md)** — architectural decision records.
-- **[HACKATHON-INTENT-FORM.md](HACKATHON-INTENT-FORM.md)** — the hackathon submission content.
+- **[HACKATHON-INTENT-FORM.md](HACKATHON-INTENT-FORM.md)** — the full hackathon submission content (concept brief, module coverage, team info).
+- **[BUILD-JOURNAL.md](BUILD-JOURNAL.md)** — what was built, when, and *why* (phase-by-phase, grounded in git history). 8 phases, May 28 – June 14.
+- **[ROADMAP.md](ROADMAP.md)** — what's next, and the vision if Career OS is adopted on top of Talentbank.
+- **[DECISIONS.md](DECISIONS.md)** — architectural decision records (why certain patterns were chosen over alternatives).
+- **[career-os-pitch-deck.html](career-os-pitch-deck.html)** — open in any browser for a visual overview of the product.
+- **[specs/](specs/)** — module design specs (C-04 Fair Pay, C-05 Life Chapter, E-01 Matching, UX copy, demo persona).
 
 ---
 

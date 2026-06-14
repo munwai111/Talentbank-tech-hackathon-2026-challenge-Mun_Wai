@@ -88,6 +88,20 @@ This is the honest story of the build: the order decisions were made, the proble
 
 ---
 
+## Phase 8 — Coach Persistence & Evolving Memory (June 14)
+
+**Built:** ChatGPT-style session sidebar for the AI Coach; full conversation persistence to Supabase (`coach_sessions` + `coach_messages` tables); an evolving memory layer (`coach_memory` JSONB in `career_data`) that accumulates across sessions; a `coach-memory.ts` Haiku summariser that compresses recent conversation turns off the streaming hot path; and four new CRUD API routes for session management.
+
+**Why:** A coach that forgets every conversation isn't a coach — it's a fresh chatbot every time. The most valuable thing a real mentor has is *context accumulated over time*: understanding where you started, what you tried, what you're afraid of, and where you're heading. The session sidebar solves the immediate UX gap ("where did that conversation go?"); the evolving memory solves the deeper one — every future coaching session, path generation, and job match benefits from what the coach already knows about this person.
+
+**Hard calls:**
+- **Off-path memory update.** Refreshing memory during the streaming response would add latency the user feels. Solution: fire-and-forget fetch *after* the reply is already streaming to the client — no wait, no backpressure, zero UX impact.
+- **Progressive enhancement.** The migration (new tables) may not have run on a fresh deploy. All session routes return `{ unavailable: true }` when the tables are absent; the coach UI detects this and stays in localStorage mode silently. No broken state, no error UI.
+- **Ownership scoping.** Every session route verifies `user_id` matches the authenticated caller. Cross-user data access is impossible, not just unlikely.
+- **Memory cap.** The summariser caps its output at 2000 characters and reads only the 12 most recent messages — enough to be meaningful, not enough to run away with context or cost.
+
+---
+
 ## Cross-cutting principles (held throughout)
 
 1. **The platform constraint wins.** The 25s Vercel limit shaped the entire AI architecture. Design to the real runtime, not the ideal one.

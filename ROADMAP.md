@@ -8,9 +8,9 @@
 
 A demo-ready, dual-sided career marketplace, deployed on Vercel:
 
-- **Candidates** build a living profile (skills, work history, portfolio, AI persona), navigate three realistic career paths, chat with an AI coach that knows their profile, and apply to skills-first roles.
+- **Candidates** build a living profile (skills, work history, portfolio, AI persona), navigate three realistic career paths, chat with an AI coach that knows their profile, and apply to skills-first roles. The coach now persists: a **ChatGPT-style session sidebar** saves every conversation to Supabase, and an **evolving memory** compresses each session into a running summary that deepens the coach's understanding of the person over time.
 - **Employers** post skills-first roles, see talent ranked by skill + goal fit, and move applicants through a real review pipeline.
-- **Foundations** in place for what comes next: a 12-locale i18n layer, an evidence-grounded AI persona engine, a deterministic+explainable matching core, and a conversation-minutes AI.
+- **Foundations** in place for what comes next: a 12-locale i18n layer, an evidence-grounded AI persona engine, a deterministic+explainable matching core, coach memory infrastructure, and a conversation-minutes AI.
 
 This solves the core problem: **hiring on demonstrated capability and trajectory, not credentials and keywords.**
 
@@ -22,7 +22,7 @@ Recording these openly — knowing the gap is part of the craft.
 
 | Area | Current state | Why it's not done |
 |---|---|---|
-| Multi-language coverage | Layer + 12 locales built; nav/settings switch live; AI output localised | Full string extraction across every page is in progress |
+| Multi-language coverage | Layer + 12 locales built; nav/settings/dashboard/coach/paths/jobs/apps/news/events all wired; AI content generated in selected language | Minor gaps remain: some static strings on employer pages still in English |
 | Employer deep-view of applicants | Ranked panel + advance/reject pipeline live | The full scroll-journey applicant view + AI Hiring Council is **designed, not yet built** (see below) |
 | AI Career Pathway Generator (deep) | Path Navigator gives 3 directions today | The fully detailed, resourced, blocker-aware version is next (see below) |
 | Achievement & event posts with photos | Events/News pages exist (follow/save/tickets) | Media-rich posting is roadmap |

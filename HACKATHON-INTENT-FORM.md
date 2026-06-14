@@ -46,6 +46,8 @@ A candidate's skills don't live in a CV — they live in GitHub repositories, pa
 **C-03 — AI Career Coach:**
 A streaming chat interface powered by Claude that knows the candidate's actual profile — skills, work history, education, career goals. It gives APAC-specific advice: real MYR salary bands, honest assessments of whether a goal is realistic, concrete skill recommendations based on what the KL market actually demands. Not a chatbot. A senior mentor.
 
+The coach now persists. A **ChatGPT-style session sidebar** saves every conversation to Supabase — candidates can return to any past session, rename it, or start a fresh one. More significantly, the coach builds an **evolving memory**: after each conversation, a compact summary is updated and stored per candidate in their profile (`career_data.coach_memory`). Every future session begins with the coach already aware of who this person is, what they've worked through, and where they're heading. The memory fires off the streaming hot path (zero latency impact) and deepens the coach's understanding across weeks of use — exactly the quality that makes a mentor valuable over time.
+
 **C-05 — Life Chapter Designer:**
 Career planning that fits actual life. A new step in the Career Identity flow asks candidates about life context: caregiving responsibilities, planned career breaks, location constraints, health, return after a gap. The Path Navigator and AI Coach use this context to give advice grounded in the candidate's reality — not just their skills.
 
@@ -62,7 +64,7 @@ The product's deepest bet is that an employer should *understand* a candidate, n
 
 Next.js 16 (App Router) · Supabase + pgvector · Clerk auth · Claude Haiku 4.5 · TypeScript strict · GSAP motion · 12-locale i18n · Vercel
 
-All AI calls are prompt-cached — static system prompts are cached across calls, reducing API latency and cost ~70–80%. Skill matching is deterministic overlap scoring with synonym normalisation, augmented by keyword-based goal alignment. The architecture is designed to run on top of an existing candidate/employer database — not just as a greenfield app. Career OS could be deployed against Talentbank's existing talent graph with configuration changes, not a rebuild.
+All AI calls are prompt-cached — static system prompts are cached across calls, reducing API latency and cost ~70–80%. Skill matching is deterministic overlap scoring with synonym normalisation, augmented by keyword-based goal alignment. Coach sessions and messages persist to Supabase (`coach_sessions`, `coach_messages`); an evolving memory summary is maintained per candidate (`career_data.coach_memory`) and updated off the streaming hot path by a second Haiku call — adding zero latency to the conversation while accumulating meaningful context over time. The architecture is designed to run on top of an existing candidate/employer database — not just as a greenfield app. Career OS could be deployed against Talentbank's existing talent graph with configuration changes, not a rebuild.
 
 ### Malaysian market context
 
