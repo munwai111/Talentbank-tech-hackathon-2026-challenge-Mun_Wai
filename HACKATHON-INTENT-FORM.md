@@ -74,6 +74,32 @@ Career OS is built for Malaysia's actual talent pool — not the LinkedIn-native
 
 A space like this only works if it runs where the people already are. Career OS is built to run *on top of* Talentbank, not beside it. The schema maps one-to-one onto candidate profiles, employer companies, and job listings; every AI capability lives behind a modular `src/lib/ai/` boundary and is callable as a service. Adoption is therefore a configuration-and-data-migration exercise, not a rebuild — point auth at Talentbank's existing user base, map the profiles, and switch the AI on against the live talent graph. Scalability is engineered in from day one: static system prompts are prompt-cached (~70–80% latency and cost reduction), matching is deterministic and explainable (so it stays cheap and auditable at millions of rows), and the whole experience already speaks 12 APAC languages. Talentbank brings the trust, the reach, and the employer network; Career OS brings the connective intelligence that turns that network into individual journeys.
 
+**The 28-day roadmap to v1**
+
+What you are looking at today — a demo-ready, dual-sided platform with 7 modules, 8 AI integrations, a 12-language layer, persistent coach memory, and a live Vercel deployment — was built in 18 days, evenings and weekends, around a full-time job. That is not a claim about how hard the work was. It is a signal about what focused, motivated effort on a problem you believe in actually produces. The gap between what exists today and a production-deployable v1 — something Talentbank could switch on against its live candidate graph — is a 28-day sprint:
+
+*Week 1–2 — depth layer:* Employer applicant deep-view (the candidate's full scroll-journey profile rendered inside the employer's account, with an AI Hiring Council briefing — multi-perspective read across skills fit, trajectory, gaps, and team add — and a clear hire/progress/reject decision surface). Full i18n rollout to employer pages and locale-aware date and currency formatting.
+
+*Week 3 — intelligence layer:* Deep AI Career Pathway Generator — current state to milestones to stretch goal, with concrete resources (HRDC-funded training, communities, courses) and realistic blocker forecasts grounded in the candidate's actual life context. AI Job-Match consultation — a conversational breakdown of exactly why a match score is what it is, and the specific steps to close the gap.
+
+*Week 4 — integration and handoff:* Schema mapping against Talentbank's existing data model, load testing, security review, and a handoff package an engineering team can pick up and run with.
+
+Under the constraint of a full-time job, I built what you see. With dedicated time — even part-time and collaborative — this roadmap is a month of work, not a quarter.
+
+**On commitment — and a direct signal of intent**
+
+I want to be transparent about something, because this submission is also, honestly, a statement of direction.
+
+I am currently a Senior Assistant in Store Development and Design at UNIQLO Malaysia HQ. I am good at that work — it demands spatial thinking, project execution, stakeholder management, and brand discipline across multiple sites. But Career OS represents where I am genuinely trying to go. I built this platform because I believe in the problem, not because a hackathon prompted me to care about it. The 18 days of evenings and weekends that produced it were not an obligation. They were a deliberate choice about where to spend my most energised hours.
+
+If Talentbank sees in Career OS what I see — a real product with a real architecture and a real integration path, not a polished demo that falls apart under inspection — I am open to a conversation about what a transition looks like. Not as a condition of this submission, but as a clear and honest signal: I am ready and willing to move into this field, in a role that aligns with what I have demonstrated I can build, under conditions that work for both sides. This is not a backup plan. This is the plan.
+
+**On alignment — values, not just stack**
+
+What Talentbank is building and what Career OS is are, at their core, the same thing — approached from different starting positions. Talentbank has the reach, the institutional depth, and the trust of Malaysia's employers and candidates at scale. Career OS has the AI intelligence layer, the product thinking, and the user experience that turns raw talent data into something a person can actually navigate their life with.
+
+But the alignment runs deeper than product. The belief that a person's trajectory matters more than their most recent job title. The belief that guidance should be in the language the person actually thinks in, calibrated to the market they are actually entering, and honest about the timelines they are actually facing. The belief that the hiring market's trust problem cannot be solved with better filters — it has to be solved with better connection, better transparency, and better signal. That is why Talentbank exists. It is also, exactly and only, why Career OS exists. The ambition, the values, and the intended impact are not running in parallel — they are the same line.
+
 ### Why now
 
 The need is foundational and the timing is exact. Every person carries the same deep desires — to be seen for what they can truly do, to grow, to belong to a community that values their direction, and to trust that the system is not rigged against them. Those desires are going unmet at scale: APAC's graduate pipeline (TVET, diploma, and degree holders), mid-career pivoters, and the quietly disengaged are entering a market that is being reshaped faster than anyone can read it. Two forces make *now* the moment. First, the trust crisis is real — phantom jobs, opaque filters, and a relentless feed of rejection and chaos have made people cynical precisely when they most need to act with confidence. Second, for the first time, the technology to give every individual personalised, grounded, in-language guidance — at the cost of a few cents per interaction — actually exists. The gap between what people need and what is now technically possible has never been smaller. Waiting only deepens the disengagement.
@@ -81,6 +107,14 @@ The need is foundational and the timing is exact. Every person carries the same 
 ### The north star
 
 The ultimate impact we are reaching for: that every person in Asia has a lifelong career co-pilot and a living space that promotes who they are becoming — connecting their growth, phase by phase, to the right opportunities, mentors, and communities — so that no capable person is ever unknowingly filtered out again. A market where trust is the default, because connection, not noise, decides careers.
+
+### What this is, and what it was always for
+
+Before closing: a return to the beginning. Career OS was not built to win a hackathon. It was built because the problem it addresses is real, personal, and urgent — and because the technology to actually respond to that problem, meaningfully and at scale, has only just arrived.
+
+Every feature in it was chosen because it directly responds to a specific failure in how people experience the career market today. The skills-first match, because credentials misrepresent more people than they reveal. The Life Chapter Designer, because careers happen inside real lives, not around them. The AI Coach with memory, because advice only compounds when it builds on itself over time. The 12-language layer, because the people most affected by this problem are largely not being served in English. The whole-person profile, because a resume is a document, and a person is not.
+
+The intent was never to build a better job board. It was to build a space — one that treats the individual's growth as the primary signal, that places it in front of the right people with the right context, and that earns back, over time, the trust that the current system has spent years burning through. That is what Career OS is for. That is what it has been for since the first line of code. Everything else — the architecture, the AI integrations, the design system, the 82 commits — was in service of that single, clear aim.
 
 ### The resolution
 
