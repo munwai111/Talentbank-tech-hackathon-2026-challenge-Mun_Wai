@@ -10,6 +10,8 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 import type { CareerData, WorkExperienceEntry, EducationEntry } from '@/types/database'
+import { buildSalaryReferenceBlock, classifyRole } from '@/lib/salary-confidence-engine'
+import type { Seniority } from '@/lib/salary-confidence-engine'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -30,6 +32,14 @@ export type CareerPath = {
   skills_to_develop: string[]
   trade_off: string
   navigation_note: string
+  // Engine-computed salary confidence — injected after Claude generates the path
+  salary_confidence?: {
+    confidence_level: 'HIGH' | 'MEDIUM' | 'VOLATILE'
+    confidence_score: number
+    engine_min: number
+    engine_max: number
+    market_insights_text: string
+  }
 }
 
 // ── Inputs ───────────────────────────────────────────────────────────────────
@@ -81,6 +91,60 @@ OUTPUT: Return ONLY valid JSON — no markdown fences, no commentary, no text be
     { "id": "stretch", ... }
   ]
 }`
+
+// ── Salary context builder ────────────────────────────────────────────────────
+// Pre-computes engine-grounded salary ranges for this candidate's profile.
+// Injected into the Claude prompt as authoritative anchors so the AI doesn't
+// hallucinate figures that drift from cross-referenced market data.
+
+function buildSalaryContext(input: PathInput): string {
+  const cd = input.career_data
+  const location = input.location ?? undefined
+
+  // Infer candidate seniority from years_experience
+  const yrs = cd?.years_experience ?? 0
+  const currentSeniority: Seniority = yrs < 2 ? 'junior' : yrs < 5 ? 'mid' : 'senior'
+  const nextSeniority: Seniority = currentSeniority === 'junior' ? 'mid' : 'senior'
+
+  // Collect role signals from career data and work history
+  const roleSources: string[] = [
+    cd?.current_or_last_role,
+    cd?.dream_role,
+    cd?.goal_1_year,
+    ...input.work_experience.slice(0, 2).map(e => e.title),
+    ...(cd?.preferred_job_functions ?? []),
+  ].filter((r): r is string => typeof r === 'string' && r.trim().length > 0)
+
+  if (roleSources.length === 0) return ''
+
+  // Classify to unique role keys (de-duplicate)
+  const seenKeys = new Set<string>()
+  const uniqueRoles = roleSources.filter(r => {
+    const k = classifyRole(r).key
+    if (seenKeys.has(k)) return false
+    seenKeys.add(k)
+    return true
+  })
+
+  const skillNames = input.skills.map(s => s.name)
+  const ctx = { location, skills: skillNames }
+
+  const currentBlock = buildSalaryReferenceBlock(uniqueRoles.slice(0, 4), currentSeniority, ctx)
+  const nextBlock = buildSalaryReferenceBlock(uniqueRoles.slice(0, 4), nextSeniority, ctx)
+
+  return [
+    ``,
+    `SALARY ANCHORS — use these engine-computed ranges as authoritative ground truth for salary_min_myr and salary_max_myr in your output. Do not invent figures outside these bands without strong contextual justification.`,
+    ``,
+    `At current seniority (${currentSeniority} — for strong-match path):`,
+    currentBlock,
+    ``,
+    `At next seniority (${nextSeniority} — for emerging/stretch paths):`,
+    nextBlock,
+    ``,
+    `Confidence levels: HIGH = ≥2 sources agree within 10%; MEDIUM = partial agreement; VOLATILE = wide market spread (show wider bands in your output when VOLATILE).`,
+  ].join('\n')
+}
 
 // ── Prompt builder ────────────────────────────────────────────────────────────
 
@@ -155,9 +219,12 @@ export function streamCareerPaths(input: PathInput, languageName?: string): Read
   // Localise the human-readable fields when a non-English language is selected.
   // JSON keys and the "id" values stay English so the client can map them; the
   // candidate's own skill names (skills_you_have) are preserved verbatim.
+  const salaryContext = buildSalaryContext(input)
+  const basePrompt = `${buildPathPrompt(input)}${salaryContext}`
+
   const userContent = languageName
-    ? `${buildPathPrompt(input)}\n\nIMPORTANT: Write every human-readable text value (title, match_label, company_types, trade_off, navigation_note, skills_to_develop) in ${languageName}. Keep all JSON keys and the "id" values ("strong", "emerging", "stretch") in English. Keep "skills_you_have" exactly as the candidate listed them.`
-    : buildPathPrompt(input)
+    ? `${basePrompt}\n\nIMPORTANT: Write every human-readable text value (title, match_label, company_types, trade_off, navigation_note, skills_to_develop) in ${languageName}. Keep all JSON keys and the "id" values ("strong", "emerging", "stretch") in English. Keep "skills_you_have" exactly as the candidate listed them.`
+    : basePrompt
 
   return new ReadableStream({
     async start(controller) {

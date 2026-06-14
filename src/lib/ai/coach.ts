@@ -6,6 +6,7 @@
 
 import Anthropic from '@anthropic-ai/sdk'
 import type { WorkExperienceEntry, EducationEntry } from '@/types/database'
+import { computeSalaryConfidence, classifyRole } from '@/lib/salary-confidence-engine'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -106,6 +107,22 @@ Singapore salaries: approximately 2.5–3× MYR figures in SGD (note: MY 75th pe
 HRDC-claimable training available in Malaysia — always mention this when recommending upskilling.
 PERKESO/SOCSO reskilling grants available for those who qualify.`
 
+// ── Short role labels for the salary engine note ──────────────────────────────
+const ROLE_LABELS_SHORT: Record<string, string> = {
+  software_engineer:  'Software Engineer',
+  data_analyst:       'Data Analyst',
+  data_engineer:      'Data Engineer',
+  data_scientist_ml:  'Data Scientist / ML',
+  product_manager:    'Product Manager',
+  ux_ui_designer:     'UX/UI Designer',
+  devops_cloud:       'DevOps / Cloud',
+  business_analyst:   'Business Analyst',
+  frontend_developer: 'Frontend Developer',
+  backend_developer:  'Backend Developer',
+  digital_marketing:  'Digital Marketing',
+  general_tech:       'Tech roles',
+}
+
 // ── Profile context builder ───────────────────────────────────────────────────
 
 function buildProfileContext(ctx: CoachContext): string {
@@ -149,6 +166,32 @@ function buildProfileContext(ctx: CoachContext): string {
     ctx.professionalInterests?.length ? `Professional interests: ${ctx.professionalInterests.join(', ')}` : '',
   ].filter(Boolean).join('\n')
 
+  // Engine-computed salary context for the candidate's target role.
+  // Uses their dream role (or current role as fallback) so the coach gives
+  // evidence-grounded salary guidance rather than relying solely on the static table.
+  const targetRole = ctx.dreamRole ?? ctx.goal1Year ?? ctx.currentRole
+  let salaryEngineBlock = ''
+  if (targetRole) {
+    const { key } = classifyRole(targetRole)
+    const yrs = ctx.yearsExperience ?? 0
+    const seniority = yrs < 2 ? 'junior' as const : yrs < 5 ? 'mid' as const : 'senior' as const
+    const skillNames = ctx.skills.map(s => s.name)
+    const engine = computeSalaryConfidence({
+      role: targetRole,
+      seniority,
+      location: ctx.location ?? undefined,
+      skills: skillNames,
+    })
+    salaryEngineBlock = [
+      ``,
+      `SALARY ENGINE — target role: ${engine.role_label} (${seniority})`,
+      `  Market range: RM ${engine.min_salary.toLocaleString()}–${engine.max_salary.toLocaleString()}/month`,
+      `  Confidence: ${engine.confidence_level} (score: ${engine.confidence_score}/100)`,
+      `  Context: ${engine.market_insights_text}`,
+      `  Note: this supersedes the static salary table above for ${ROLE_LABELS_SHORT[key] ?? engine.role_label} at the ${seniority} tier.`,
+    ].join('\n')
+  }
+
   return [
     `=== CANDIDATE PROFILE ===`,
     `Name: ${ctx.name}`,
@@ -176,12 +219,14 @@ function buildProfileContext(ctx: CoachContext): string {
     `• Dream role: ${ctx.dreamRole ?? 'not specified'}`,
     `• Preferred industries: ${ctx.preferredIndustries.join(', ') || 'not specified'}`,
     ...(ctx.lifeChapterContext ? [``, `LIFE CONTEXT`, ctx.lifeChapterContext] : []),
+    ...(salaryEngineBlock ? [salaryEngineBlock] : []),
     ``,
     `=== COACHING INSTRUCTIONS ===`,
     `Reference the above profile throughout your response. Be specific — name their actual skills, companies, and goals.`,
     `Calibrate your communication depth and style to match this person's evident background and experience level.`,
     ...(ctx.characterResponses ? [`Use their character responses to shape your tone — match their natural working style.`] : []),
     ...(ctx.lifeChapterContext ? [`Factor life context into advice naturally — acknowledge real-world constraints without making them the focus.`] : []),
+    ...(salaryEngineBlock ? [`When discussing salary, use the SALARY ENGINE figures above as your primary reference — they are cross-referenced from 4 sources and supersede the static table for this candidate's specific role and tier.`] : []),
   ].filter(s => s !== undefined).join('\n')
 }
 
