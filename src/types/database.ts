@@ -169,6 +169,8 @@ export type CareerData = {
   synthesized_at: string | null
   // AI persona profiling (AI Profiling section in profile edit mode)
   ai_persona?: PersonaAnalysis | null
+  // AI Coach memory — compact, evolving summary accumulated across conversations
+  coach_memory?: string | null
   persona_generated_at?: string | null
   // Awards & certifications (managed in profile edit mode)
   awards?: { title: string; issuer: string; date: string; description: string; url: string }[]
@@ -676,6 +678,57 @@ export type Database = {
         }
         Relationships: [
           { foreignKeyName: 'user_preferences_user_id_fkey'; columns: ['user_id']; isOneToOne: true; referencedRelation: 'users'; referencedColumns: ['id'] }
+        ]
+      }
+
+      // ── coach_sessions ───────────────────────────────────────────
+      // One row per AI Coach conversation thread (ChatGPT-style history).
+      coach_sessions: {
+        Row: {
+          id: string
+          user_id: string
+          title: string
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          title?: string
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          { foreignKeyName: 'coach_sessions_user_id_fkey'; columns: ['user_id']; isOneToOne: false; referencedRelation: 'users'; referencedColumns: ['id'] }
+        ]
+      }
+
+      // ── coach_messages ───────────────────────────────────────────
+      // Every user/assistant message, linked to a coach_sessions row.
+      coach_messages: {
+        Row: {
+          id: string
+          session_id: string
+          role: 'user' | 'assistant'
+          content: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          session_id: string
+          role: 'user' | 'assistant'
+          content: string
+          created_at?: string
+        }
+        Update: {
+          content?: string
+        }
+        Relationships: [
+          { foreignKeyName: 'coach_messages_session_id_fkey'; columns: ['session_id']; isOneToOne: false; referencedRelation: 'coach_sessions'; referencedColumns: ['id'] }
         ]
       }
     }

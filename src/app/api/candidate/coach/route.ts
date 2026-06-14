@@ -17,6 +17,7 @@ export const maxDuration = 30
 type RequestBody = {
   messages: CoachMessage[]
   language?: string
+  sessionId?: string
 }
 
 export async function POST(req: Request) {
@@ -62,9 +63,33 @@ export async function POST(req: Request) {
       ? LANGUAGE_NAMES[body.language as Locale]
       : undefined
 
+    // Persist the user's message to its session (best-effort, ownership-scoped).
+    // Wrapped so a missing migration / DB error never breaks the chat stream.
+    if (body.sessionId && messages.length > 0) {
+      const last = messages[messages.length - 1]
+      if (last?.role === 'user') {
+        try {
+          const { data: owned } = await supabase
+            .from('coach_sessions')
+            .select('id')
+            .eq('id', body.sessionId)
+            .eq('user_id', user.id)
+            .maybeSingle()
+          if (owned) {
+            await supabase.from('coach_messages')
+              .insert({ session_id: body.sessionId, role: 'user', content: last.content })
+            await supabase.from('coach_sessions')
+              .update({ updated_at: new Date().toISOString() })
+              .eq('id', body.sessionId)
+          }
+        } catch { /* tables absent or transient error — degrade silently */ }
+      }
+    }
+
     const ctx: CoachContext = {
       name: profile?.name ?? 'there',
       languageName: langName,
+      memory: profile?.career_data?.coach_memory ?? null,
       location: profile?.location ?? null,
       skills: skillsData ?? [],
       currentRole: profile?.career_data?.current_or_last_role ?? null,

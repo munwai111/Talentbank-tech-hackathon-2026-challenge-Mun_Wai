@@ -67,5 +67,44 @@ $$;
 ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
 
 -- ═══════════════════════════════════════════════════════════════
+-- AI Coach chat sessions + persistent memory (add-coach-memory.sql)
+-- ═══════════════════════════════════════════════════════════════
+CREATE TABLE IF NOT EXISTS coach_sessions (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id     uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title       text NOT NULL DEFAULT 'New conversation',
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  updated_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS coach_messages (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  session_id  uuid NOT NULL REFERENCES coach_sessions(id) ON DELETE CASCADE,
+  role        text NOT NULL CHECK (role IN ('user', 'assistant')),
+  content     text NOT NULL,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_coach_sessions_user
+  ON coach_sessions (user_id, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_coach_messages_session
+  ON coach_messages (session_id, created_at);
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_trigger WHERE tgname = 'trg_coach_sessions_updated_at'
+  ) THEN
+    CREATE TRIGGER trg_coach_sessions_updated_at
+      BEFORE UPDATE ON coach_sessions
+      FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+  END IF;
+END
+$$;
+
+ALTER TABLE coach_sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE coach_messages ENABLE ROW LEVEL SECURITY;
+
+-- ═══════════════════════════════════════════════════════════════
 -- Done.
 -- ═══════════════════════════════════════════════════════════════

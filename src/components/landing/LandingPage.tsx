@@ -143,8 +143,12 @@ export function LandingPage({ openRoles = 0 }: { openRoles?: number }) {
             stagger={0.06}
             scrollTrigger={false}
           >
-            No one tells you what&apos;s next. This does.
+            the YOU beyond resume
           </AnimatedHeading>
+
+          <p className="text-xl md:text-2xl text-zinc-200 font-medium max-w-xl mb-6 leading-snug animate-fade-up animate-delay-2">
+            Careers, matched with clarity. Community, found with purpose. Futures, guided and built with trust.
+          </p>
 
           <p className="text-lg text-zinc-400 max-w-lg mb-9 leading-relaxed animate-fade-up animate-delay-3">
             Career OS reads your real skills — from GitHub, your CV, your work history —

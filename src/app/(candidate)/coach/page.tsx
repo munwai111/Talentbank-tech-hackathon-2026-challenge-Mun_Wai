@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import type { CoachMessage } from '@/lib/ai/coach'
 import type { CoachCalibration } from '@/app/api/candidate/coach-calibration/route'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
+import { Plus, MessageSquare, Trash2 } from 'lucide-react'
 
 // ── Starter prompts shown before first message ────────────────────────────────
 
@@ -279,6 +280,8 @@ function StarterButton({ text, onClick }: { text: string; onClick: () => void })
 const COACH_STORAGE_KEY = 'career_os_coach_messages'
 const MAX_STORED_MESSAGES = 40
 
+type CoachSession = { id: string; title: string; updated_at: string }
+
 function loadStoredMessages(): CoachMessage[] {
   if (typeof window === 'undefined') return []
   try {
@@ -303,19 +306,76 @@ function CoachPageInner() {
   const nudgeFiredRef = useRef(false)
   const { language } = useLanguage()
 
+  // ── Persistent sessions (progressive enhancement) ────────────────────────
+  // Active only when the coach tables exist. Until then the page behaves
+  // exactly as before (single local thread), so the demo never breaks.
+  const [sessions, setSessions] = useState<CoachSession[]>([])
+  const [activeId, setActiveId] = useState<string | null>(null)
+  const [dbReady, setDbReady] = useState(false)
+
   // Load persisted messages on mount
   useEffect(() => {
     const stored = loadStoredMessages()
     if (stored.length > 0) setMessages(stored)
   }, [])
 
-  // Persist messages to localStorage on every change
+  // Persist messages to localStorage on every change (only in local mode).
   useEffect(() => {
-    if (messages.length === 0) return
+    if (dbReady || messages.length === 0) return
     try {
       localStorage.setItem(COACH_STORAGE_KEY, JSON.stringify(messages.slice(-MAX_STORED_MESSAGES)))
     } catch { /* storage full or unavailable */ }
-  }, [messages])
+  }, [messages, dbReady])
+
+  // Detect persistent storage; if available, switch to session mode and load
+  // the most recent conversation. setState happens inside callbacks (lint-safe).
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/candidate/coach/sessions')
+      .then(r => r.json())
+      .then(async (data: { sessions?: CoachSession[]; unavailable?: boolean }) => {
+        if (cancelled || data.unavailable || !Array.isArray(data.sessions)) return
+        setDbReady(true)
+        setSessions(data.sessions)
+        if (data.sessions.length > 0) {
+          const recent = data.sessions[0]
+          setActiveId(recent.id)
+          const mres = await fetch(`/api/candidate/coach/sessions/${recent.id}`)
+          const mdata = await mres.json() as { messages?: { role: 'user' | 'assistant'; content: string }[] }
+          if (!cancelled && Array.isArray(mdata.messages)) {
+            setMessages(mdata.messages.map(m => ({ role: m.role, content: m.content })))
+          }
+        } else {
+          setMessages([])
+        }
+      })
+      .catch(() => { /* stay in local mode */ })
+    return () => { cancelled = true }
+  }, [])
+
+  const newChat = useCallback(() => {
+    setActiveId(null)
+    setMessages([])
+    inputRef.current?.focus()
+  }, [])
+
+  const switchSession = useCallback(async (id: string) => {
+    setActiveId(id)
+    try {
+      const res = await fetch(`/api/candidate/coach/sessions/${id}`)
+      const data = await res.json() as { messages?: { role: 'user' | 'assistant'; content: string }[] }
+      setMessages(Array.isArray(data.messages) ? data.messages.map(m => ({ role: m.role, content: m.content })) : [])
+    } catch { setMessages([]) }
+  }, [])
+
+  const deleteSession = useCallback(async (id: string) => {
+    setSessions(prev => prev.filter(s => s.id !== id))
+    setActiveId(prev => {
+      if (prev === id) { setMessages([]); return null }
+      return prev
+    })
+    try { await fetch(`/api/candidate/coach/sessions/${id}`, { method: 'DELETE' }) } catch { /* ignore */ }
+  }, [])
 
   // Auto-scroll to latest message
   useEffect(() => {
@@ -353,11 +413,29 @@ function CoachPageInner() {
       { role: 'assistant', content: '', streaming: true } as CoachMessage & { streaming: boolean },
     ])
 
+    // In session mode, ensure a session exists (lazily titled from this message).
+    let sid = activeId
+    if (dbReady && !sid) {
+      try {
+        const sres = await fetch('/api/candidate/coach/sessions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: text.trim().slice(0, 60) }),
+        })
+        const sdata = await sres.json() as { session?: CoachSession }
+        if (sdata.session) {
+          sid = sdata.session.id
+          setActiveId(sid)
+          setSessions(prev => [sdata.session as CoachSession, ...prev])
+        }
+      } catch { /* fall back to ephemeral */ }
+    }
+
     try {
       const res = await fetch('/api/candidate/coach', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: nextMessages, language }),
+        body: JSON.stringify({ messages: nextMessages, language, sessionId: sid ?? undefined }),
       })
 
       if (!res.ok || !res.body) throw new Error('Coach unavailable')
@@ -382,6 +460,15 @@ function CoachPageInner() {
         updated[updated.length - 1] = { role: 'assistant', content: accumulated }
         return updated
       })
+
+      // Persist the assistant reply + refresh coach memory (off the hot path).
+      if (dbReady && sid && accumulated.trim()) {
+        fetch(`/api/candidate/coach/sessions/${sid}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ role: 'assistant', content: accumulated }),
+        }).catch(() => { /* best-effort */ })
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Something went wrong'
       setMessages(prev => {
@@ -393,7 +480,7 @@ function CoachPageInner() {
       setStreaming(false)
       inputRef.current?.focus()
     }
-  }, [messages, streaming, language])
+  }, [messages, streaming, language, dbReady, activeId])
 
   useEffect(() => { sendMessageRef.current = sendMessage }, [sendMessage])
 
@@ -413,7 +500,51 @@ function CoachPageInner() {
   const hasMessages = messages.length > 0
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex h-screen">
+      {/* Conversation history sidebar — only in persistent (migrated) mode */}
+      {dbReady && (
+        <aside className="hidden md:flex flex-col w-60 shrink-0 border-r border-white/7 bg-[#08081a]/60">
+          <div className="p-3 border-b border-white/7">
+            <button
+              onClick={newChat}
+              className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium
+                bg-indigo-600 hover:bg-indigo-500 text-white transition"
+            >
+              <Plus size={14} /> New chat
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
+            {sessions.length === 0 && (
+              <p className="text-xs text-zinc-600 px-2 py-3 text-center">No conversations yet</p>
+            )}
+            {sessions.map(s => (
+              <div
+                key={s.id}
+                className={`group flex items-center gap-1 rounded-lg pr-1 transition-colors ${
+                  s.id === activeId ? 'bg-white/8' : 'hover:bg-white/4'
+                }`}
+              >
+                <button
+                  onClick={() => switchSession(s.id)}
+                  className="flex-1 min-w-0 flex items-center gap-2 px-2.5 py-2 text-left"
+                >
+                  <MessageSquare size={13} className="shrink-0 text-zinc-500" />
+                  <span className={`truncate text-xs ${s.id === activeId ? 'text-white' : 'text-zinc-400'}`}>{s.title}</span>
+                </button>
+                <button
+                  onClick={() => deleteSession(s.id)}
+                  aria-label="Delete conversation"
+                  className="shrink-0 p-1.5 rounded-md text-zinc-600 opacity-0 group-hover:opacity-100 hover:text-red-400 hover:bg-white/6 transition"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </aside>
+      )}
+
+      <div className="flex flex-col flex-1 min-w-0 h-screen">
       {/* Calibration panel */}
       <CalibrationPanel
         open={calibrationOpen}
@@ -557,6 +688,7 @@ function CoachPageInner() {
         <p className="text-center text-xs text-zinc-600 mt-2 max-w-3xl mx-auto">
           Shift+Enter for newline · Advice is personalised to your profile
         </p>
+      </div>
       </div>
     </div>
   )
