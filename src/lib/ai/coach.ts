@@ -18,6 +18,7 @@ export type CoachMessage = {
 
 export type CoachContext = {
   name: string
+  languageName?: string
   location: string | null
   skills: { name: string; level: number }[]
   currentRole: string | null
@@ -198,6 +199,9 @@ export function streamCoachResponse(
           system: [
             { type: 'text', text: COACH_PERSONALITY, cache_control: { type: 'ephemeral' } },
             { type: 'text', text: profileContext },
+            ...(ctx.languageName
+              ? [{ type: 'text' as const, text: `Always reply in ${ctx.languageName}. Keep proper nouns (company names, role titles, technologies, and MYR figures) as-is.` }]
+              : []),
           ],
           messages,
         })

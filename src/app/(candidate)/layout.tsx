@@ -1,5 +1,6 @@
 import { CandidateHotbar } from './CandidateHotbar'
 import { FloatingAIOrb } from '@/components/floating-ai/FloatingAIOrb'
+import { OnboardingGuide } from '@/components/onboarding/OnboardingGuide'
 
 export default function CandidateLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -11,6 +12,7 @@ export default function CandidateLayout({ children }: { children: React.ReactNod
         </div>
       </main>
       <FloatingAIOrb />
+      <OnboardingGuide />
     </div>
   )
 }

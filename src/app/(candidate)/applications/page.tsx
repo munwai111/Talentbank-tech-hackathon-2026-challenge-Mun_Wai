@@ -5,7 +5,9 @@ import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { FadeUp } from '@/components/animations/FadeUp'
-import { StatusChip, WorkModeMeta, LocationMeta, SalaryMeta } from '@/components/shared/meta'
+import { WorkModeMeta, LocationMeta, SalaryMeta } from '@/components/shared/meta'
+import { StatusChip } from '@/components/shared/StatusChip'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 import { Inbox, ArrowRight } from 'lucide-react'
 
 type ApplicationRow = {
@@ -27,6 +29,7 @@ type ApplicationRow = {
 }
 
 export default function ApplicationsPage() {
+  const { t } = useLanguage()
   const [applications, setApplications] = useState<ApplicationRow[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -43,7 +46,7 @@ export default function ApplicationsPage() {
     return (
       <div className="p-8 flex items-center gap-3 text-zinc-400">
         <div className="w-5 h-5 border-2 border-white/20 border-t-indigo-400 rounded-full animate-spin" />
-        Loading your applications…
+        {t('common.loading')}
       </div>
     )
   }
@@ -54,10 +57,10 @@ export default function ApplicationsPage() {
   return (
     <div className="px-8 py-6 max-w-3xl">
       <FadeUp className="mb-8" scrollTrigger={false}>
-        <p className="section-label mb-2">Your journey</p>
-        <h1 className="text-2xl font-bold text-white">Applications</h1>
+        <p className="section-label mb-2">{t('apps.eyebrow')}</p>
+        <h1 className="text-2xl font-bold text-white">{t('apps.title')}</h1>
         <p className="text-zinc-400 mt-1">
-          Every role you&apos;ve applied to, and exactly where you stand.
+          {t('apps.subtitle')}
         </p>
       </FadeUp>
 
@@ -79,7 +82,7 @@ export default function ApplicationsPage() {
 
       {active.length > 0 && (
         <section className="mb-8">
-          <p className="section-label mb-3">Active · {active.length}</p>
+          <p className="section-label mb-3">{t('apps.active')} · {active.length}</p>
           <div className="space-y-3">
             {active.map(app => <ApplicationCard key={app.id} app={app} />)}
           </div>
@@ -88,7 +91,7 @@ export default function ApplicationsPage() {
 
       {closed.length > 0 && (
         <section>
-          <p className="section-label mb-3">Closed · {closed.length}</p>
+          <p className="section-label mb-3">{t('apps.closed')} · {closed.length}</p>
           <div className="space-y-3 opacity-60">
             {closed.map(app => <ApplicationCard key={app.id} app={app} />)}
           </div>
@@ -99,6 +102,7 @@ export default function ApplicationsPage() {
 }
 
 function ApplicationCard({ app }: { app: ApplicationRow }) {
+  const { t } = useLanguage()
   const job = app.jobs
   const appliedDate = new Date(app.created_at).toLocaleDateString('en-MY', {
     day: 'numeric', month: 'short', year: 'numeric',
@@ -132,16 +136,16 @@ function ApplicationCard({ app }: { app: ApplicationRow }) {
 
       <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/6">
         <div className="flex gap-3 items-center text-xs text-zinc-500">
-          <span>Applied {appliedDate}</span>
-          {wasUpdated && <span>· Updated {updatedDate}</span>}
+          <span>{t('apps.appliedOn')} {appliedDate}</span>
+          {wasUpdated && <span>· {t('apps.updated')} {updatedDate}</span>}
           {job.status === 'closed' && (
             <Badge className="bg-zinc-500/15 text-zinc-400 border-zinc-500/25 text-xs font-normal">
-              Role closed
+              {t('apps.closed')}
             </Badge>
           )}
         </div>
         <Link href="/jobs" className="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-indigo-400 transition-colors">
-          See all matches
+          {t('apps.seeMatches')}
           <ArrowRight size={12} />
         </Link>
       </div>

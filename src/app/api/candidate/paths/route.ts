@@ -13,11 +13,12 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { streamCareerPaths } from '@/lib/ai/path-navigator'
 import type { PathInput } from '@/lib/ai/path-navigator'
+import { LANGUAGE_NAMES, type Locale } from '@/lib/i18n/translations'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 25
 
-export async function GET() {
+export async function GET(req: Request) {
   const { userId } = await auth()
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -62,9 +63,13 @@ export async function GET() {
       education: (profile.education ?? []) as PathInput['education'],
     }
 
+    // Resolve the requested language (?lang=zh) → full language name for the prompt.
+    const lang = new URL(req.url).searchParams.get('lang')
+    const languageName = lang && lang in LANGUAGE_NAMES ? LANGUAGE_NAMES[lang as Locale] : undefined
+
     // Stream Claude's token output directly to the client.
     // Client accumulates all chunks and parses the JSON at the end.
-    const stream = streamCareerPaths(input)
+    const stream = streamCareerPaths(input, languageName)
 
     return new Response(stream, {
       headers: {

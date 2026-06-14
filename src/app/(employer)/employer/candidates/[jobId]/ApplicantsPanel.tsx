@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
-import { StatusChip } from '@/components/shared/meta'
+import { StatusChip } from '@/components/shared/StatusChip'
 import { Check, X, MapPin } from 'lucide-react'
 
 type Applicant = {

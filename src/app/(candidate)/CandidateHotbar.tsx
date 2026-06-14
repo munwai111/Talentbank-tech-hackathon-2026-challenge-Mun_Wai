@@ -5,12 +5,13 @@ import { usePathname } from 'next/navigation'
 import { UserButton } from '@clerk/nextjs'
 import {
   Zap, Waypoints, Crosshair, ClipboardList,
-  Newspaper, CalendarDays,
+  Newspaper, CalendarDays, HelpCircle,
   type LucideIcon,
 } from 'lucide-react'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 import type { TranslationKey } from '@/lib/i18n/translations'
+import { OPEN_GUIDE_EVENT } from '@/components/onboarding/OnboardingGuide'
 
 const NAV_ITEMS: { href: string; key: TranslationKey; Icon: LucideIcon }[] = [
   { href: '/dashboard',    key: 'nav.home',         Icon: Zap },
@@ -79,6 +80,17 @@ export function CandidateHotbar() {
         <div className="flex items-center gap-3 pl-3 shrink-0 border-l border-border">
           <ThemeToggle size="sm" />
           <UserButton />
+          {/* Guide / help — reopens the onboarding tour */}
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event(OPEN_GUIDE_EVENT))}
+            aria-label={t('help.guide')}
+            title={t('help.guide')}
+            className="flex items-center justify-center w-8 h-8 rounded-full text-muted-foreground
+              hover:text-foreground hover:bg-muted transition-colors"
+          >
+            <HelpCircle size={18} strokeWidth={1.75} />
+          </button>
         </div>
       </div>
     </header>

@@ -9,12 +9,14 @@ import { NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase/server'
 import { streamCoachResponse } from '@/lib/ai/coach'
 import type { CoachMessage, CoachContext } from '@/lib/ai/coach'
+import { LANGUAGE_NAMES, type Locale } from '@/lib/i18n/translations'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
 type RequestBody = {
   messages: CoachMessage[]
+  language?: string
 }
 
 export async function POST(req: Request) {
@@ -56,8 +58,13 @@ export async function POST(req: Request) {
           .eq('candidate_id', profile.id)
       : { data: [] }
 
+    const langName = body.language && body.language in LANGUAGE_NAMES
+      ? LANGUAGE_NAMES[body.language as Locale]
+      : undefined
+
     const ctx: CoachContext = {
       name: profile?.name ?? 'there',
+      languageName: langName,
       location: profile?.location ?? null,
       skills: skillsData ?? [],
       currentRole: profile?.career_data?.current_or_last_role ?? null,

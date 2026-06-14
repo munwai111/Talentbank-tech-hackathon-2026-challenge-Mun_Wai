@@ -51,14 +51,5 @@ export function SalaryMeta({ min, max }: { min: number; max: number | null }) {
   )
 }
 
-/** Application status chip with icon */
-export function StatusChip({ status }: { status: string }) {
-  const cfg = APP_STATUS[status] ?? APP_STATUS.applied
-  const { Icon } = cfg
-  return (
-    <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-0.5 rounded-full border ${cfg.classes}`}>
-      <Icon size={11} strokeWidth={2} />
-      {cfg.label}
-    </span>
-  )
-}
+// StatusChip lives in ./StatusChip (a client component) so its label can be
+// translated. APP_STATUS above stays here as the shared icon/colour config.

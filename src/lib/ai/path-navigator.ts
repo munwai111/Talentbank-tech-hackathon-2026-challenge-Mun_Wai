@@ -149,8 +149,15 @@ function buildPathPrompt(input: PathInput): string {
 // True streaming keeps bytes flowing to Vercel so the 25s Hobby timeout
 // is never triggered. The client accumulates chunks and parses JSON at the end.
 
-export function streamCareerPaths(input: PathInput): ReadableStream<Uint8Array> {
+export function streamCareerPaths(input: PathInput, languageName?: string): ReadableStream<Uint8Array> {
   const encoder = new TextEncoder()
+
+  // Localise the human-readable fields when a non-English language is selected.
+  // JSON keys and the "id" values stay English so the client can map them; the
+  // candidate's own skill names (skills_you_have) are preserved verbatim.
+  const userContent = languageName
+    ? `${buildPathPrompt(input)}\n\nIMPORTANT: Write every human-readable text value (title, match_label, company_types, trade_off, navigation_note, skills_to_develop) in ${languageName}. Keep all JSON keys and the "id" values ("strong", "emerging", "stretch") in English. Keep "skills_you_have" exactly as the candidate listed them.`
+    : buildPathPrompt(input)
 
   return new ReadableStream({
     async start(controller) {
@@ -159,7 +166,7 @@ export function streamCareerPaths(input: PathInput): ReadableStream<Uint8Array> 
           model: 'claude-haiku-4-5',
           max_tokens: 2000,
           system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
-          messages: [{ role: 'user', content: buildPathPrompt(input) }],
+          messages: [{ role: 'user', content: userContent }],
         })
 
         for await (const event of stream) {

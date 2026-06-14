@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label'
 import type { CoachMessage } from '@/lib/ai/coach'
 import type { CoachCalibration } from '@/app/api/candidate/coach-calibration/route'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 // ── Starter prompts shown before first message ────────────────────────────────
 
@@ -300,6 +301,7 @@ function CoachPageInner() {
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const nudgeFiredRef = useRef(false)
+  const { language } = useLanguage()
 
   // Load persisted messages on mount
   useEffect(() => {
@@ -355,7 +357,7 @@ function CoachPageInner() {
       const res = await fetch('/api/candidate/coach', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: nextMessages }),
+        body: JSON.stringify({ messages: nextMessages, language }),
       })
 
       if (!res.ok || !res.body) throw new Error('Coach unavailable')
@@ -391,7 +393,7 @@ function CoachPageInner() {
       setStreaming(false)
       inputRef.current?.focus()
     }
-  }, [messages, streaming])
+  }, [messages, streaming, language])
 
   useEffect(() => { sendMessageRef.current = sendMessage }, [sendMessage])
 

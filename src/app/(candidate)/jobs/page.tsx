@@ -13,6 +13,7 @@ import type { MatchResult } from '@/app/api/candidate/matches/route'
 import { FadeUp } from '@/components/animations/FadeUp'
 import { StaggerContainer } from '@/components/animations/StaggerContainer'
 import { WorkModeMeta, LocationMeta, SalaryMeta } from '@/components/shared/meta'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 import {
   Check, X, Vault, ArrowRight, ChevronDown, ChevronUp,
   Crosshair, Compass, CircleAlert,
@@ -40,6 +41,7 @@ function ScoreAnatomy({ skillPct, goalPct, combinedPct }: {
   goalPct: number
   combinedPct: number
 }) {
+  const { t } = useLanguage()
   const hasGoals = goalPct > 0
   const skillPts = hasGoals ? skillPct * 0.7 : skillPct
   const goalPts = hasGoals ? goalPct * 0.3 : 0
@@ -61,21 +63,22 @@ function ScoreAnatomy({ skillPct, goalPct, combinedPct }: {
       <div className="flex items-center gap-4 mt-1.5 text-[11px] text-zinc-500">
         <span className="inline-flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-indigo-400" />
-          Skill fit {skillPct}%
+          {t('jobs.skillFit')} {skillPct}%
         </span>
         {hasGoals && (
           <span className="inline-flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-violet-400/80" />
-            Goal pull {goalPct}%
+            {t('jobs.goalPull')} {goalPct}%
           </span>
         )}
-        <span className="ml-auto text-zinc-600">= {combinedPct} combined</span>
+        <span className="ml-auto text-zinc-600">= {combinedPct} {t('jobs.combined')}</span>
       </div>
     </div>
   )
 }
 
 export default function JobsPage() {
+  const { t } = useLanguage()
   const [matches, setMatches] = useState<MatchResult[]>([])
   const [loading, setLoading] = useState(true)
   const [reason, setReason] = useState<string | null>(null)
@@ -113,7 +116,7 @@ export default function JobsPage() {
     return (
       <div className="p-8 flex items-center gap-3 text-zinc-400">
         <div className="w-5 h-5 border-2 border-white/20 border-t-indigo-400 rounded-full animate-spin" />
-        Calculating your matches…
+        {t('common.loading')}
       </div>
     )
   }
@@ -124,10 +127,10 @@ export default function JobsPage() {
   return (
     <div className="px-8 py-6 max-w-5xl">
       <FadeUp className="mb-7" scrollTrigger={false}>
-        <p className="section-label mb-2">Destinations</p>
-        <h1 className="text-2xl font-bold text-white">Job Matches</h1>
+        <p className="section-label mb-2">{t('jobs.eyebrow')}</p>
+        <h1 className="text-2xl font-bold text-white">{t('jobs.title')}</h1>
         <p className="text-zinc-400 mt-1">
-          Ranked by skill fit and goal alignment — not keywords. Every score shows exactly why.
+          {t('jobs.subtitle')}
         </p>
       </FadeUp>
 
@@ -161,10 +164,10 @@ export default function JobsPage() {
       {/* ── Match summary strip ───────────────────────────────────────────── */}
       {matches.length > 0 && (
         <div className="flex gap-5 mb-6 text-sm">
-          <span className="text-zinc-400">{matches.length} open roles</span>
-          <span className="text-emerald-400 font-medium">{strong} strong</span>
-          <span className="text-amber-400">{partial} partial</span>
-          <span className="text-zinc-500">{matches.length - strong - partial} stretch</span>
+          <span className="text-zinc-400">{matches.length} {t('jobs.openRoles')}</span>
+          <span className="text-emerald-400 font-medium">{strong} {t('jobs.strong')}</span>
+          <span className="text-amber-400">{partial} {t('jobs.partial')}</span>
+          <span className="text-zinc-500">{matches.length - strong - partial} {t('jobs.stretchN')}</span>
         </div>
       )}
 
@@ -247,8 +250,8 @@ export default function JobsPage() {
                            border-t border-white/7 text-left hover:bg-white/3 transition-colors flex items-center gap-2"
               >
                 {isExpanded
-                  ? <><ChevronUp size={13} /> Show less</>
-                  : <><ChevronDown size={13} /> Full role + gap analysis</>}
+                  ? <><ChevronUp size={13} /> {t('common.back')}</>
+                  : <><ChevronDown size={13} /> {t('jobs.fullAnalysis')}</>}
               </button>
 
               {isExpanded && (
@@ -299,7 +302,7 @@ export default function JobsPage() {
                     {appliedIds.has(match.job.id) ? (
                       <div className="flex-1 flex items-center justify-center gap-2 text-sm font-medium
                         text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 rounded-md px-3 py-1.5">
-                        <Check size={14} strokeWidth={2.5} /> Applied
+                        <Check size={14} strokeWidth={2.5} /> {t('jobs.applied')}
                       </div>
                     ) : (
                       <Button
@@ -311,9 +314,9 @@ export default function JobsPage() {
                         {applying === match.job.id ? (
                           <span className="flex items-center gap-2">
                             <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            Applying…
+                            {t('common.loading')}
                           </span>
-                        ) : <>Apply now <ArrowRight size={14} /></>}
+                        ) : <>{t('jobs.apply')} <ArrowRight size={14} /></>}
                       </Button>
                     )}
                     <Link href="/profile">

@@ -5,6 +5,7 @@ import { Send, Loader2 } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { CoachMessage } from '@/lib/ai/coach'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 const STARTERS = [
   'What should I focus on for a Senior role in 12 months?',
@@ -67,6 +68,7 @@ function StarterPrompts({ onSelect }: { onSelect: (s: string) => void }) {
 // ── Hook ───────────────────────────────────────────────────────────────────────
 
 function useCoachStream() {
+  const { language } = useLanguage()
   const [messages, setMessages] = useState<CoachMessage[]>([])
   const [streaming, setStreaming] = useState(false)
 
@@ -81,7 +83,7 @@ function useCoachStream() {
       const res = await fetch('/api/candidate/coach', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: thread }),
+        body: JSON.stringify({ messages: thread, language }),
       })
       if (!res.ok || !res.body) throw new Error('Stream failed')
 
@@ -102,7 +104,7 @@ function useCoachStream() {
     } finally {
       setStreaming(false)
     }
-  }, [messages, streaming])
+  }, [messages, streaming, language])
 
   return { messages, streaming, send }
 }

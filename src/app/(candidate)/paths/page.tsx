@@ -4,6 +4,14 @@ import { useCallback, useEffect, useState } from 'react'
 import type { CareerPath, PathMatchType } from '@/lib/ai/path-navigator'
 import { StaggerContainer } from '@/components/animations/StaggerContainer'
 import { FadeUp } from '@/components/animations/FadeUp'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
+import type { TranslationKey } from '@/lib/i18n/translations'
+
+const MATCH_LABEL_KEY: Record<PathMatchType, TranslationKey> = {
+  strong: 'paths.strongMatch',
+  emerging: 'paths.emergingPath',
+  stretch: 'paths.stretchGoal',
+}
 
 // ── Pure utilities (outside component — no closure over state) ────────────────
 
@@ -14,8 +22,8 @@ function extractJSON(raw: string): string {
   return raw.slice(start, end + 1)
 }
 
-async function readStreamedPaths(): Promise<{ paths?: CareerPath[]; error?: string }> {
-  const res = await fetch('/api/candidate/paths')
+async function readStreamedPaths(lang: string): Promise<{ paths?: CareerPath[]; error?: string }> {
+  const res = await fetch(`/api/candidate/paths?lang=${encodeURIComponent(lang)}`)
   if (!res.ok || !res.body) {
     const data = await res.json().catch(() => ({})) as { error?: string }
     throw new Error(data.error ?? 'Generation failed')
@@ -104,6 +112,7 @@ function SkillChip({ name, variant }: { name: string; variant: 'have' | 'develop
 }
 
 function PathCard({ path }: { path: CareerPath }) {
+  const { t } = useLanguage()
   const cfg = MATCH_CONFIG[path.id] ?? MATCH_CONFIG.emerging
   const salary = path.salary_min_myr > 0
     ? `RM ${path.salary_min_myr.toLocaleString()} – ${path.salary_max_myr.toLocaleString()}/mo`
@@ -127,7 +136,7 @@ function PathCard({ path }: { path: CareerPath }) {
         <div>
           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${cfg.badge} mb-2.5`}>
             <span className={`w-1.5 h-1.5 rounded-full ${cfg.badgeDot}`} />
-            {cfg.label}
+            {t(MATCH_LABEL_KEY[path.id] ?? 'paths.emergingPath')}
           </span>
           <h3 className="text-base font-bold text-white leading-snug">{path.title}</h3>
           <p className="text-xs text-zinc-500 mt-1 leading-relaxed">{path.match_label}</p>
@@ -138,10 +147,10 @@ function PathCard({ path }: { path: CareerPath }) {
 
         {/* Salary highlight */}
         <div className="rounded-xl px-4 py-3" style={{ background: cfg.salaryBg, border: `1px solid ${cfg.cardBorder}` }}>
-          <p className="text-[10px] font-semibold tracking-wider uppercase text-zinc-500 mb-0.5">Market Salary</p>
+          <p className="text-[10px] font-semibold tracking-wider uppercase text-zinc-500 mb-0.5">{t('paths.marketSalary')}</p>
           <p className="text-lg font-bold tracking-tight" style={{ color: cfg.salaryText }}>{salary}</p>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-[10px] text-zinc-600">Timeline:</span>
+            <span className="text-[10px] text-zinc-600">{t('paths.timeline')}:</span>
             <span className="text-[10px] font-semibold text-zinc-400">{timeline}</span>
           </div>
         </div>
@@ -150,7 +159,7 @@ function PathCard({ path }: { path: CareerPath }) {
         <div className="space-y-2">
           {path.skills_you_have.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold tracking-wider uppercase text-zinc-600 mb-1.5">You have</p>
+              <p className="text-[10px] font-semibold tracking-wider uppercase text-zinc-600 mb-1.5">{t('paths.youHave')}</p>
               <div className="flex flex-wrap gap-1">
                 {path.skills_you_have.map(s => <SkillChip key={s} name={s} variant="have" />)}
               </div>
@@ -158,7 +167,7 @@ function PathCard({ path }: { path: CareerPath }) {
           )}
           {path.skills_to_develop.length > 0 && (
             <div>
-              <p className="text-[10px] font-semibold tracking-wider uppercase text-zinc-600 mb-1.5">To develop</p>
+              <p className="text-[10px] font-semibold tracking-wider uppercase text-zinc-600 mb-1.5">{t('paths.toDevelop')}</p>
               <div className="flex flex-wrap gap-1">
                 {path.skills_to_develop.map(s => <SkillChip key={s} name={s} variant="develop" />)}
               </div>
@@ -207,6 +216,7 @@ function EmptyState() {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function PathsPage() {
+  const { t, language } = useLanguage()
   const [paths, setPaths] = useState<CareerPath[]>([])
   const [loading, setLoading] = useState(true)  // true = skeleton visible on mount
   const [error, setError] = useState<string | null>(null)
@@ -217,7 +227,7 @@ export default function PathsPage() {
   const fetchPaths = useCallback(() => {
     setLoading(true)
     setError(null)
-    readStreamedPaths()
+    readStreamedPaths(language)
       .then(parsed => {
         if (parsed.error) throw new Error(parsed.error)
         setPaths(parsed.paths ?? [])
@@ -227,15 +237,14 @@ export default function PathsPage() {
         setError(err instanceof Error ? err.message : 'Something went wrong')
         setLoading(false)
       })
-  }, [])
+  }, [language])
 
-  // Initial load: inline Promise chain so all setState calls happen inside
-  // callbacks (.then / .catch), never synchronously in the effect body.
-  // This satisfies react-hooks/set-state-in-effect.
-  // `loading` is already true from initial state — no setLoading(true) needed.
+  // Initial load + re-generation whenever the selected language changes, so
+  // AI-written path content always renders in the user's chosen language.
+  // All setState calls happen inside callbacks to satisfy set-state-in-effect.
   useEffect(() => {
     let cancelled = false
-    readStreamedPaths()
+    readStreamedPaths(language)
       .then(parsed => {
         if (cancelled) return
         if (parsed.error) throw new Error(parsed.error)
@@ -248,17 +257,17 @@ export default function PathsPage() {
         setLoading(false)
       })
     return () => { cancelled = true }
-  }, [])
+  }, [language])
 
   return (
     <div className="max-w-5xl mx-auto px-6 py-10">
       {/* Page header */}
       <FadeUp className="flex items-start justify-between mb-8" scrollTrigger={false}>
         <div>
-          <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-zinc-600 mb-1">Navigation</p>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Career Path Navigator</h1>
+          <p className="text-[11px] font-semibold tracking-[0.15em] uppercase text-zinc-600 mb-1">{t('paths.eyebrow')}</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">{t('paths.title')}</h1>
           <p className="text-sm text-zinc-500 mt-1">
-            3 directions mapped from your skills — not predictions, navigation.
+            {t('paths.subtitle')}
           </p>
         </div>
         <button
@@ -268,7 +277,7 @@ export default function PathsPage() {
             rounded-xl px-4 py-2.5 hover:bg-white/6 hover:border-white/15 hover:text-zinc-200 disabled:opacity-40 transition"
         >
           <span className={loading ? 'animate-spin' : ''}>↺</span>
-          {loading ? 'Generating…' : 'Refresh paths'}
+          {loading ? t('common.loading') : t('paths.refresh')}
         </button>
       </FadeUp>
 

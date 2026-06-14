@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { FadeUp } from '@/components/animations/FadeUp'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 import { Bookmark, BookmarkCheck, Building2, ArrowRight, Newspaper } from 'lucide-react'
 
 type Post = {
@@ -70,6 +71,7 @@ function patchPreferences(updates: Record<string, unknown>) {
 }
 
 function NewsContent() {
+  const { t } = useLanguage()
   const searchParams = useSearchParams()
   const initialTab = searchParams.get('tab') === 'saved' ? 'saved' : 'following'
   const [tab, setTab] = useState<'following' | 'saved'>(initialTab)
@@ -117,22 +119,22 @@ function NewsContent() {
   return (
     <div className="px-6 py-6 max-w-3xl">
       <FadeUp className="mb-6" scrollTrigger={false}>
-        <p className="section-label mb-2">Market signal</p>
-        <h1 className="text-2xl font-bold text-white">News</h1>
+        <p className="section-label mb-2">{t('news.eyebrow')}</p>
+        <h1 className="text-2xl font-bold text-white">{t('news.title')}</h1>
         <p className="text-zinc-400 mt-1">
-          Movement from the companies and channels you follow.
+          {t('news.subtitle')}
         </p>
       </FadeUp>
 
       {/* Tabs */}
       <div className="flex gap-1 mb-5 border-b border-white/8">
-        {(['following', 'saved'] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)}
-            className={`relative px-4 py-2.5 text-sm font-medium capitalize transition-colors ${
-              tab === t ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
+        {(['following', 'saved'] as const).map(tabId => (
+          <button key={tabId} onClick={() => setTab(tabId)}
+            className={`relative px-4 py-2.5 text-sm font-medium transition-colors ${
+              tab === tabId ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
             }`}>
-            {t}{t === 'saved' && saved.size > 0 ? ` (${saved.size})` : ''}
-            {tab === t && <span className="absolute bottom-0 left-2 right-2 h-0.5 rounded-t-full bg-gradient-to-r from-violet-400 to-indigo-500" />}
+            {tabId === 'following' ? t('news.following') : t('news.saved')}{tabId === 'saved' && saved.size > 0 ? ` (${saved.size})` : ''}
+            {tab === tabId && <span className="absolute bottom-0 left-2 right-2 h-0.5 rounded-t-full bg-gradient-to-r from-violet-400 to-indigo-500" />}
           </button>
         ))}
       </div>
@@ -162,7 +164,7 @@ function NewsContent() {
         <div className="p-10 text-center surface">
           <Newspaper size={28} strokeWidth={1.5} className="mx-auto mb-4 text-zinc-500" />
           <h3 className="font-semibold mb-1 text-white">
-            {tab === 'saved' ? 'Nothing saved yet' : 'You are not following any channels'}
+            {tab === 'saved' ? t('news.saved') : t('news.following')}
           </h3>
           <p className="text-sm text-zinc-400">
             {tab === 'saved'
@@ -201,7 +203,7 @@ function NewsContent() {
               <p className="text-sm text-zinc-400 leading-relaxed">{post.body}</p>
               {post.jobLink && (
                 <Link href="/jobs" className="inline-flex items-center gap-1.5 mt-3 text-xs font-medium text-indigo-400 hover:text-indigo-300">
-                  See their open roles in your matches <ArrowRight size={12} />
+                  {t('news.seeRoles')} <ArrowRight size={12} />
                 </Link>
               )}
             </article>

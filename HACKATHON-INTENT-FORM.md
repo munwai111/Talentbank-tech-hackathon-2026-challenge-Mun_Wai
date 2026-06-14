@@ -28,15 +28,11 @@
 
 ### The problem
 
-For most people across Asia, no one tells you what's next. You make the most consequential decisions of your professional life — which skills to build, which moves to make, when to push and when to pivot — with no data, no map, and no co-pilot. Just guesses, peer pressure, and hope.
+For most people, there is no single right decision that guarantees success, but there's always a sound decision. The great opportunity is always out there, yet our lack of connection to the right insights, guidance, community, and information can tunnel-vision our abilities to venture beyond our current capabilities — struggling to break from limited preconceptions, views, ambitions, and understanding of the real world's opportunities; failing to envision bigger and longer-term goals; choosing the wrong job or company; building the wrong skill; or struggling to grow into the right connection to be ahead of the game at all times. Worst of all is the growing population of the silently unemployed. This is not linearly and single-handedly correlated to the most feared issue of the "AI job-pocalypse," the rising scams of phantom jobs, or the hidden job-market dominations that greatly deteriorate job seekers' trust in the market itself. But the constant broadcasting and exposure to the amalgamated sense of job-market chaos — through social media, job rejections, peer feedback, and news — normalises cynicism in our worldviews, demonising people's perception of all large companies and the market as exploitative and heartless. Data alone doesn't decide careers — connection does. And without a space that promotes, hosts, and interconnects opportunities with the right stakeholders, even the best candidate in the market will be unknowingly filtered out. Hence, Career OS is not a tool, but a space that guides and journals throughout one's life-development cycle — to truly promote every phase, growth, and achievement of an individual to the right audience, business connection, and community that provides or supports similar efforts, interests, and qualities. To rebuild and regain trust in the market, in people, and most importantly, in ourselves.
 
-This is especially acute in Malaysia. A TVET graduate from Kedah with genuine technical ability has no way to show it. A mid-career professional wondering whether to pivot into data engineering has no way to see what that move actually looks like for someone with their background. A fresh IT diploma holder applying to 30 jobs has no idea which ones are realistic and which are out of reach — and why.
+### The response — what we built
 
-Career OS is the answer to that problem. Not a job board. A career co-pilot.
-
-### What we built
-
-Career OS is a dual-sided Career OS / Career Marketplace: candidates build living profiles and get AI-powered career navigation; employers post skills-first roles and see talent ranked by genuine fit.
+So we built the space. Career OS is a dual-sided Career OS / Career Marketplace: candidates build living profiles and get AI-powered career navigation; employers post skills-first roles and see talent ranked by genuine fit. It does not just match a CV to a keyword — it journals a person's growth and connects it to the people, communities, and opportunities that would actually value it.
 
 **Compulsory module — Career OS / Career Marketplace:**
 The platform connects both sides of Malaysia's hiring market. Candidates are not filtered by keyword — they're matched by skill overlap and career trajectory. Employers see not just who qualifies today, but who is heading in the right direction.
@@ -72,13 +68,21 @@ All AI calls are prompt-cached — static system prompts are cached across calls
 
 Career OS is built for Malaysia's actual talent pool — not the LinkedIn-native, English-fluent developer demographic. Skills map to roles common in the Malaysian market. Salary ranges are calibrated for MYR, with Singapore noted for comparison. The platform's skills framework is aligned with MYSkills (Malaysia's national skills recognition system) and supports HRDC-funded upskilling tracks as a future integration layer. The career path logic accounts for Malaysia's graduate pipeline: diploma holders, TVET graduates, fresh degree holders entering a market in rapid transition. Candidates in B40/M40 income brackets can be pointed toward SOCSO, PERKESO, and JKM reskilling grants via the AI Coach.
 
-### Integration story
+### How we operationalise and scale it — with Talentbank
 
-Career OS is not built to replace Talentbank — it's built to run on top of it. The database schema maps directly to candidate profiles, employer companies, and job listings. The AI layer (path navigator, coach, profile extractor) is modular and callable via API. A Talentbank integration path would involve: pointing the auth layer at Talentbank's existing user database, mapping the candidate and employer profile schemas, and activating the AI features against existing data. No rebuild required — configuration changes and data migration.
+A space like this only works if it runs where the people already are. Career OS is built to run *on top of* Talentbank, not beside it. The schema maps one-to-one onto candidate profiles, employer companies, and job listings; every AI capability lives behind a modular `src/lib/ai/` boundary and is callable as a service. Adoption is therefore a configuration-and-data-migration exercise, not a rebuild — point auth at Talentbank's existing user base, map the profiles, and switch the AI on against the live talent graph. Scalability is engineered in from day one: static system prompts are prompt-cached (~70–80% latency and cost reduction), matching is deterministic and explainable (so it stays cheap and auditable at millions of rows), and the whole experience already speaks 12 APAC languages. Talentbank brings the trust, the reach, and the employer network; Career OS brings the connective intelligence that turns that network into individual journeys.
 
-### Why this matters
+### Why now
 
-Talentbank is building Asia's Career OS. This submission is built with that goal in mind — not a generic platform adapted to Malaysia, but one designed from the start to serve the talent Talentbank knows best. The code is open, the architecture is adoptable, and the product is demo-ready today.
+The need is foundational and the timing is exact. Every person carries the same deep desires — to be seen for what they can truly do, to grow, to belong to a community that values their direction, and to trust that the system is not rigged against them. Those desires are going unmet at scale: APAC's graduate pipeline (TVET, diploma, and degree holders), mid-career pivoters, and the quietly disengaged are entering a market that is being reshaped faster than anyone can read it. Two forces make *now* the moment. First, the trust crisis is real — phantom jobs, opaque filters, and a relentless feed of rejection and chaos have made people cynical precisely when they most need to act with confidence. Second, for the first time, the technology to give every individual personalised, grounded, in-language guidance — at the cost of a few cents per interaction — actually exists. The gap between what people need and what is now technically possible has never been smaller. Waiting only deepens the disengagement.
+
+### The north star
+
+The ultimate impact we are reaching for: that every person in Asia has a lifelong career co-pilot and a living space that promotes who they are becoming — connecting their growth, phase by phase, to the right opportunities, mentors, and communities — so that no capable person is ever unknowingly filtered out again. A market where trust is the default, because connection, not noise, decides careers.
+
+### The resolution
+
+So, back to the question underneath all of this: how do we actually solve — or at least meaningfully attend to — the quiet erosion of opportunity and trust, with the tools and knowledge we have today? Not by building another job board, and not by promising certainty no one can deliver. We solve it by building the *space* — one that journals a person's real growth, translates it into language any stakeholder can understand (literally, in 12 languages, and figuratively, as evidence-grounded insight), and places it in front of the people who would value it. The technology is here, the architecture is adoptable, the product is demo-ready today, and the team has shown it can ship the whole arc. Talentbank is building Asia's Career OS; this is built, from the first line, to be exactly that — and to give people back their trust in the market, in each other, and most importantly, in themselves.
 
 ---
 

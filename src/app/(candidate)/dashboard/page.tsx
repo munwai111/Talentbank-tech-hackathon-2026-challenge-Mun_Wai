@@ -7,6 +7,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { CircularProgress } from '@/components/ui/CircularProgress'
 import { ProfileRail } from './ProfileRail'
+import { getT, type TranslationKey } from '@/lib/i18n/translations'
 import {
   BrainCircuit, Fingerprint, Waypoints, Check, ArrowRight,
   BadgeCheck, Clock, type LucideIcon,
@@ -60,6 +61,14 @@ export default async function DashboardPage() {
   if (!dbUser) redirect('/onboarding')
   if (dbUser.role === 'employer') redirect('/employer/dashboard')
 
+  // Resolve the candidate's saved interface language for server-side translation.
+  const { data: prefs } = await supabase
+    .from('user_preferences')
+    .select('language')
+    .eq('user_id', dbUser.id)
+    .single()
+  const t = getT(prefs?.language ?? 'en')
+
   const { data: profile } = await supabase
     .from('candidate_profiles')
     .select('id, headline, bio, location, github_url, career_data, work_experience, verified_candidate, skills(id)')
@@ -107,21 +116,21 @@ export default async function DashboardPage() {
 
         {/* ── Greeting ───────────────────────────────────────────────────── */}
         <div className="mb-6 animate-fade-up">
-          <p className="section-label mb-1">Home base</p>
+          <p className="section-label mb-1">{t('dash.eyebrow')}</p>
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold text-white tracking-tight">Hey {firstName}</h1>
+            <h1 className="text-2xl font-bold text-white tracking-tight">{t('dash.greeting')} {firstName}</h1>
             {profile?.verified_candidate ? (
               <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                 <BadgeCheck size={12} strokeWidth={2} /> Verified
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full bg-white/6 text-zinc-500 border border-white/10">
-                <Clock size={11} strokeWidth={2} /> Verification pending
+                <Clock size={11} strokeWidth={2} /> {t('dash.verifying')}
               </span>
             )}
           </div>
           <p className="text-zinc-500 mt-1 text-sm">
-            {skillCount >= 5 ? 'Your profile is live — employers can find you.' : 'Complete your setup to start getting matched.'}
+            {skillCount >= 5 ? t('dash.profileLive') : 'Complete your setup to start getting matched.'}
           </p>
         </div>
 
@@ -169,11 +178,11 @@ export default async function DashboardPage() {
           <div className="surface p-5 mb-5 animate-fade-up animate-delay-2">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="section-label mb-1">Your applications</p>
-                <p className="text-sm text-zinc-400">Live status — focus signals recalibrate as time passes.</p>
+                <p className="section-label mb-1">{t('dash.applicationsLabel')}</p>
+                <p className="text-sm text-zinc-400">{t('dash.applicationsSub')}</p>
               </div>
               <Link href="/applications" className="text-xs text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1">
-                View all <ArrowRight size={12} />
+                {t('common.viewAll')} <ArrowRight size={12} />
               </Link>
             </div>
             <div className="space-y-4">
@@ -190,7 +199,7 @@ export default async function DashboardPage() {
                         <p className="text-sm font-semibold text-white truncate">{job?.title ?? 'Role'}</p>
                         <p className="text-xs text-zinc-500">{job?.companies?.name} · applied {days === 0 ? 'today' : `${days}d ago`}</p>
                       </div>
-                      <span className="text-xs text-zinc-400 capitalize shrink-0">{app.status}</span>
+                      <span className="text-xs text-zinc-400 shrink-0">{t(`status.${app.status}` as TranslationKey)}</span>
                     </div>
                     {!isDead && (
                       <div className="flex items-center gap-1.5 mb-2">
@@ -206,7 +215,7 @@ export default async function DashboardPage() {
                         <p className={`text-xs ${signal.tone}`}>{signal.text}</p>
                         <Link href={`/coach?q=${encodeURIComponent(signal.coachQ)}`}
                           className="text-[11px] text-zinc-500 hover:text-indigo-300 transition-colors shrink-0 inline-flex items-center gap-1">
-                          <BrainCircuit size={11} /> Consult coach
+                          <BrainCircuit size={11} /> {t('dash.consultCoach')}
                         </Link>
                       </div>
                     )}
@@ -219,11 +228,11 @@ export default async function DashboardPage() {
 
         {/* ── Status cards ───────────────────────────────────────────────── */}
         <div className="grid grid-cols-3 gap-3 mb-5">
-          <StatCard label="Skills in vault" delay="animate-delay-2">
+          <StatCard label={t('dash.skillsVault')} delay="animate-delay-2">
             <p className="text-3xl font-bold text-white">{skillCount}</p>
-            <p className="text-xs text-zinc-500 mt-1">{skillCount >= 5 ? 'Matching-ready' : 'Add more to unlock matching'}</p>
+            <p className="text-xs text-zinc-500 mt-1">{skillCount >= 5 ? t('dash.matchingReady') : 'Add more to unlock matching'}</p>
           </StatCard>
-          <StatCard label="Match status" delay="animate-delay-3">
+          <StatCard label={t('dash.matchStatus')} delay="animate-delay-3">
             {skillCount >= 5 ? (
               <>
                 <div className="flex items-center gap-2">
@@ -231,9 +240,9 @@ export default async function DashboardPage() {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75" />
                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-cyan-400" />
                   </span>
-                  <span className="text-sm font-semibold text-cyan-300">Live</span>
+                  <span className="text-sm font-semibold text-cyan-300">{t('dash.live')}</span>
                 </div>
-                <p className="text-xs text-zinc-500 mt-1">Visible to employers</p>
+                <p className="text-xs text-zinc-500 mt-1">{t('dash.visibleEmployers')}</p>
               </>
             ) : (
               <>
@@ -242,10 +251,10 @@ export default async function DashboardPage() {
               </>
             )}
           </StatCard>
-          <StatCard label="Applications" delay="animate-delay-4">
+          <StatCard label={t('dash.applicationsStat')} delay="animate-delay-4">
             <p className="text-3xl font-bold text-white">{applications?.length ?? 0}</p>
             <p className="text-xs text-zinc-500 mt-1">
-              {(applications?.length ?? 0) === 0 ? 'None yet — browse matches' : 'In your pipeline'}
+              {(applications?.length ?? 0) === 0 ? 'None yet — browse matches' : t('dash.inPipeline')}
             </p>
           </StatCard>
         </div>
@@ -263,9 +272,9 @@ export default async function DashboardPage() {
           {skillCount > 0 && hasCareerIdentity && (
             <NudgeCard
               href="/paths" Icon={Waypoints}
-              title="See your Career Path Navigator"
-              desc="3 directions from your real skills — strong match today, emerging in 6–18 months, stretch goal."
-              cta="Navigate"
+              title={t('dash.navigatorCta')}
+              desc={t('dash.navigatorCtaSub')}
+              cta={t('dash.navigate')}
             />
           )}
           {coachNudge && (

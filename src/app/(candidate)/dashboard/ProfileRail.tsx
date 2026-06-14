@@ -11,6 +11,7 @@ import {
 import { GithubIcon, LinkedinIcon, FacebookIcon, InstagramIcon, TiktokIcon } from '@/components/ui/BrandIcons'
 import type { CandidateProfile } from '@/types/database'
 import { toExternalHref } from '@/lib/url'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 
 // ── Linked-account banners ────────────────────────────────────────────────────
 
@@ -117,6 +118,7 @@ function SubLink({ href, label }: { href: string; label: string }) {
 
 export function ProfileRail() {
   const { user } = useUser()
+  const { t } = useLanguage()
   const [profile, setProfile] = useState<CandidateProfile | null>(null)
 
   const displayName = user?.firstName
@@ -156,7 +158,7 @@ export function ProfileRail() {
               border border-transparent transition-all duration-200 hover:scale-105
               hover:border-indigo-400/50 hover:shadow-[0_0_14px_rgba(129,140,248,0.35)]
               animate-fade-up animate-delay-2">
-            My Profile
+            {t('dash.myProfile')}
           </Link>
         </div>
 
@@ -168,24 +170,24 @@ export function ProfileRail() {
           <Link href="/jobs"
             className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium
               text-zinc-300 hover:bg-white/6 hover:text-white transition-colors duration-150">
-            <Store size={15} strokeWidth={1.75} className="text-zinc-500" />Job Marketplace
+            <Store size={15} strokeWidth={1.75} className="text-zinc-500" />{t('dash.jobMarketplace')}
           </Link>
 
-          <ExpandableItem label="News" Icon={Newspaper}>
-            <SubLink href="/news" label="Following" />
-            <SubLink href="/news?tab=saved" label="Saved" />
+          <ExpandableItem label={t('nav.news')} Icon={Newspaper}>
+            <SubLink href="/news" label={t('news.following')} />
+            <SubLink href="/news?tab=saved" label={t('news.saved')} />
           </ExpandableItem>
 
-          <ExpandableItem label="My Events" Icon={CalendarDays}>
-            <SubLink href="/events" label="Discover events" />
-            <SubLink href="/events?tab=tickets" label="My Tickets" />
-            <SubLink href="/events?tab=host" label="Host an event" />
+          <ExpandableItem label={t('events.title')} Icon={CalendarDays}>
+            <SubLink href="/events" label={t('common.viewAll')} />
+            <SubLink href="/events?tab=tickets" label={t('events.ticketed')} />
+            <SubLink href="/events?tab=host" label="Host" />
           </ExpandableItem>
 
           <Link href="/settings"
             className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium
               text-zinc-300 hover:bg-white/6 hover:text-white transition-colors duration-150">
-            <Settings2 size={15} strokeWidth={1.75} className="text-zinc-500" />Settings
+            <Settings2 size={15} strokeWidth={1.75} className="text-zinc-500" />{t('settings.title')}
           </Link>
         </div>
       </div>

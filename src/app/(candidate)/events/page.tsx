@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { FadeUp } from '@/components/animations/FadeUp'
 import { Button } from '@/components/ui/button'
+import { useLanguage } from '@/lib/i18n/LanguageContext'
 import {
   CalendarDays, MapPin, Ticket, Check, Users, Mic2,
 } from 'lucide-react'
@@ -78,6 +79,7 @@ function EventsContent() {
   const initialTab = (['tickets', 'host'].includes(searchParams.get('tab') ?? '')
     ? searchParams.get('tab') : 'discover') as Tab
   const [tab, setTab] = useState<Tab>(initialTab)
+  const { t: tr } = useLanguage()
   const [tickets, setTickets] = useState<Set<string>>(new Set())
   const [hostSubmitted, setHostSubmitted] = useState(false)
   const [hostForm, setHostForm] = useState<HostForm>({ title: '', format: 'Online', about: '' })
@@ -114,10 +116,10 @@ function EventsContent() {
   return (
     <div className="px-6 py-6 max-w-3xl">
       <FadeUp className="mb-6" scrollTrigger={false}>
-        <p className="section-label mb-2">Meet the market</p>
-        <h1 className="text-2xl font-bold text-white">Events</h1>
+        <p className="section-label mb-2">{tr('events.eyebrow')}</p>
+        <h1 className="text-2xl font-bold text-white">{tr('events.title')}</h1>
         <p className="text-zinc-400 mt-1">
-          Career fairs, hiring weeks, and meetups — register to attend, or host your own.
+          {tr('events.subtitle')}
         </p>
       </FadeUp>
 
