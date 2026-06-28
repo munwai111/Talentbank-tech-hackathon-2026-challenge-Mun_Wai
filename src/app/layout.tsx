@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans, Syne } from "next/font/google";
+import { Plus_Jakarta_Sans, Syne, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/shared/ThemeProvider";
 import { AuraBackground } from "@/components/ui/AuraBackground";
@@ -22,6 +22,22 @@ const syne = Syne({
   display: "swap",
 });
 
+// Landing display font — geometric character for the public marketing front door
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-grotesk",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+});
+
+// Technical/mono accent — system readouts, eyebrows, salary figures
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "Career OS — Skills-First Hiring in APAC",
   description:
@@ -35,7 +51,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className={`${jakarta.variable} ${syne.variable} h-full antialiased`} suppressHydrationWarning>
+      <html lang="en" className={`${jakarta.variable} ${syne.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} h-full antialiased`} suppressHydrationWarning>
         <body className="min-h-full flex flex-col bg-background text-foreground">
           <ThemeProvider>
             <LanguageProvider>
