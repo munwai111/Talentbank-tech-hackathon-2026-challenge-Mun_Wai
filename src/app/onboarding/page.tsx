@@ -105,7 +105,7 @@ export default function OnboardingPage() {
             flex items-center justify-center text-sm font-bold shadow-lg shadow-violet-500/30">
             C
           </div>
-          <span className="font-bold text-xl tracking-tight text-white">Career OS</span>
+          <span className="font-bold text-xl tracking-tight text-white">Y.O.U</span>
         </div>
 
         {/* Heading */}

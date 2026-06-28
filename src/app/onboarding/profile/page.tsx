@@ -1095,7 +1095,7 @@ export default function OnboardingProfilePage() {
             style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', boxShadow: '0 4px 12px rgba(99,102,241,0.4)' }}>
             C
           </div>
-          <span className="text-slate-200 font-semibold text-sm tracking-tight">Career OS</span>
+          <span className="text-slate-200 font-semibold text-sm tracking-tight">Y.O.U</span>
         </div>
         <button onClick={() => router.push('/dashboard')} className="text-slate-600 hover:text-slate-400 text-xs transition-colors tracking-wide">
           Save & exit
@@ -1177,11 +1177,11 @@ export default function OnboardingProfilePage() {
 
         {/* Fine print */}
         <p className="text-center text-[10px] text-slate-800 mt-2">
-          Career OS respects your data. See our{' '}
+          Y.O.U respects your data. See our{' '}
           <a href="#" className="hover:text-slate-600 underline">Privacy Policy</a>
           {' '}and{' '}
           <a href="#" className="hover:text-slate-600 underline">Terms of Use</a>
-          {' '}· © 2026 Career OS. All rights reserved.
+          {' '}· © 2026 Y.O.U. All rights reserved.
         </p>
       </div>
     </div>

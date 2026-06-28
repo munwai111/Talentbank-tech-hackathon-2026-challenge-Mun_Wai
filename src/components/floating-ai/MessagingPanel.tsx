@@ -47,7 +47,7 @@ const INITIAL_THREADS: Record<string, ChatMessage[]> = {
     { id: 'm2', from: 'me', text: 'Hi Ee Lyn, thank you for reaching out. Though this isn\'t quite aligned with my current direction, I appreciate the thought!', time: '2:30 PM' },
   ],
   c3: [
-    { id: 'm1', from: 'them', text: 'Hi Mun Wai, thanks for connecting! I\'m Jasper from FinFlow. Your skills vault on Career OS caught our attention — we have a senior frontend role opening up.', time: '9:00 AM' },
+    { id: 'm1', from: 'them', text: 'Hi Mun Wai, thanks for connecting! I\'m Jasper from FinFlow. Your skills vault on Y.O.U caught our attention — we have a senior frontend role opening up.', time: '9:00 AM' },
   ],
 }
 

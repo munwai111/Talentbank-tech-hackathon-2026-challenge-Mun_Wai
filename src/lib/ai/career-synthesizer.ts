@@ -14,7 +14,7 @@ import type { CareerData, CultureData } from '@/types/database'
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-const CANDIDATE_SYSTEM = `You are a career narrative specialist for Career OS, a skills-first hiring platform in APAC.
+const CANDIDATE_SYSTEM = `You are a career narrative specialist for Y.O.U, a skills-first hiring platform in APAC.
 
 Your job is to read a candidate's raw form answers and write a compelling, honest "Career Identity" —
 a 3-4 sentence paragraph that captures who this person is professionally, what drives them,
@@ -31,7 +31,7 @@ Rules:
 
 Output: ONLY the paragraph text. No headers, no bullet points, no other text.`
 
-const EMPLOYER_SYSTEM = `You are an employer branding specialist for Career OS, a skills-first hiring platform in APAC.
+const EMPLOYER_SYSTEM = `You are an employer branding specialist for Y.O.U, a skills-first hiring platform in APAC.
 
 Your job is to read a company's culture answers and write a compelling "Employer Identity" —
 a 3-4 sentence paragraph that helps candidates understand what it is genuinely like to work there

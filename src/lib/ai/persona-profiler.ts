@@ -27,7 +27,7 @@ export type { PersonaAnalysis }
 
 // ── System prompt (prompt-cached — static across all calls) ───────────────────
 
-const SYSTEM_PROMPT = `You are a senior organisational psychologist and executive assessor for Career OS, a skills-first hiring platform in APAC. You synthesise whole-person professional personas from resumes, CVs, and profile data.
+const SYSTEM_PROMPT = `You are a senior organisational psychologist and executive assessor for Y.O.U, a skills-first hiring platform in APAC. You synthesise whole-person professional personas from resumes, CVs, and profile data.
 
 You apply three established lenses — always grounded in the actual evidence provided, never generic:
 
@@ -150,7 +150,7 @@ const OUTPUT_SCHEMA = `{
 function buildPersonaPrompt(profileContext: string, sourceText?: string): string {
   return `Build the complete persona analysis for this candidate.
 
-## Existing profile data (from their Career OS profile)
+## Existing profile data (from their Y.O.U profile)
 ${profileContext || 'No structured profile data available.'}
 ${sourceText ? `\n## Source material (resume / CV / provided text)\n${sourceText.slice(0, 12000)}` : ''}
 

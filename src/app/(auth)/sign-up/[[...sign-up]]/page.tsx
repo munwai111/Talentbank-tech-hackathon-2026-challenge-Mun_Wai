@@ -100,7 +100,7 @@ export default function SignUpPage() {
             Create your account
           </h1>
           <p className={`mt-1.5 text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Join APAC professionals on Career OS
+            Join APAC professionals on Y.O.U
           </p>
         </div>
 

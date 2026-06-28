@@ -39,9 +39,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Career OS — Skills-First Hiring in APAC",
+  title: "Y.O.U — Your Odyssey Vector",
   description:
-    "Match talent on proven skills, not school names. Built for the next million graduates across Asia.",
+    "The YOU beyond resume. Y.O.U reads your real skills and plots the routes only you could take — skills-first careers for the next million graduates across Asia.",
 };
 
 export default function RootLayout({

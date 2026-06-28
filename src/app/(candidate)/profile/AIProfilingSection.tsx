@@ -393,7 +393,7 @@ export function AIProfilingSection({ profile, onSave }: {
   }
 
   const sourceOptions: { id: SourceMode; icon: React.ComponentType<{ size?: number; className?: string }>; label: string; hint: string }[] = [
-    { id: 'profile', icon: User,     label: 'My profile data',  hint: 'Experience, education, skills & goals already on Career OS' },
+    { id: 'profile', icon: User,     label: 'My profile data',  hint: 'Experience, education, skills & goals already on Y.O.U' },
     { id: 'file',    icon: FileText, label: 'Upload resume/CV', hint: 'PDF, Word, text, JSON or image' },
     { id: 'text',    icon: Link2,    label: 'Paste text or URL', hint: 'LinkedIn export, portfolio URL, anything' },
   ]

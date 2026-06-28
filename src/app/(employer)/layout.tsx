@@ -4,8 +4,9 @@ import Link from 'next/link'
 import { currentUser } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase/server'
-import { Settings2, Radar } from 'lucide-react'
+import { Settings2 } from 'lucide-react'
 import { EmployerNav } from './EmployerNav'
+import { YouLogo } from '@/components/brand/YouLogo'
 
 export default async function EmployerLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUser()
@@ -28,14 +29,9 @@ export default async function EmployerLayout({ children }: { children: React.Rea
 
         {/* Logo */}
         <div className="relative px-5 py-5 border-b border-border">
-          <Link href="/employer/dashboard" className="flex items-center gap-2.5 group">
-            <span className="relative w-7 h-7 rounded-full border border-teal-400/40 flex items-center justify-center">
-              <Radar size={13} className="text-teal-400" strokeWidth={2} />
-            </span>
-            <div>
-              <p className="font-bold text-sm tracking-tight text-foreground leading-none">Career OS</p>
-              <p className="text-[10px] text-teal-400/80 mt-0.5 tracking-widest uppercase">Scout</p>
-            </div>
+          <Link href="/employer/dashboard" className="flex items-center gap-3 group text-foreground" aria-label="Y.O.U Scout home">
+            <YouLogo variant="adaptive" height={24} />
+            <span className="text-[10px] text-violet-400/80 tracking-widest uppercase border-l border-border pl-3">Scout</span>
           </Link>
         </div>
 

@@ -69,7 +69,7 @@ export type ExtractedProfile = {
 
 // ── System prompt (prompt-cached — static across all extraction calls) ────────
 
-const SYSTEM_PROMPT = `You are a senior career data analyst and technical recruiter for Career OS, a skills-first hiring platform in Southeast Asia.
+const SYSTEM_PROMPT = `You are a senior career data analyst and technical recruiter for Y.O.U, a skills-first hiring platform in Southeast Asia.
 
 Extract, structure, and INTELLIGENTLY VET profile information from any source: resumes, LinkedIn text, Seek profiles, personal websites, plain text.
 

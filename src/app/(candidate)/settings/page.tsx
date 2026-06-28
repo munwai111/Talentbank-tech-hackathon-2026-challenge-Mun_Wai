@@ -475,7 +475,7 @@ export default function SettingsPage() {
                 </p>
               )}
               <p className="text-zinc-400 text-sm mb-6">
-                Thank you for trying Career OS.
+                Thank you for trying Y.O.U.
                 If you ever want to come back, you can re-register with the same email — fresh start.
               </p>
               <button
@@ -491,10 +491,10 @@ export default function SettingsPage() {
 
       {/* ── Fine print ────────────────────────────────────────────── */}
       <p className="text-xs text-zinc-400 text-center mt-8">
-        Career OS processes your data in accordance with our{' '}
+        Y.O.U processes your data in accordance with our{' '}
         <a href="#" className="underline hover:text-zinc-600">Privacy Policy</a>.
         {' '}Data retention and deletion follow Malaysian PDPA requirements.
-        {' '}© 2026 Career OS. All rights reserved.
+        {' '}© 2026 Y.O.U. All rights reserved.
       </p>
     </div>
   )

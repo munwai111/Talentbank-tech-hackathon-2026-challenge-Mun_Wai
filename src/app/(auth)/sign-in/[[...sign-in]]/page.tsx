@@ -100,7 +100,7 @@ export default function SignInPage() {
             Welcome back
           </h1>
           <p className={`mt-1.5 text-sm ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Sign in to Career OS
+            Sign in to Y.O.U
           </p>
         </div>
 

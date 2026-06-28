@@ -8,6 +8,7 @@ import {
   ArrowRight, Check,
 } from 'lucide-react'
 import { CareerTrajectory } from './CareerTrajectory'
+import { YouLogo } from '@/components/brand/YouLogo'
 
 /* ── Motion primitives ─────────────────────────────────────────────────────── */
 const EASE = [0.23, 1, 0.32, 1] as const
@@ -124,7 +125,7 @@ export function LandingPage({ openRoles = 0 }: { openRoles?: number }) {
 
       {/* ── NAV ── */}
       <nav className="cos-nav">
-        <div className="cos-nav-logo"><span className="cos-logo-dot" />Career OS</div>
+        <Link href="/" aria-label="Y.O.U home" style={{ lineHeight: 0 }}><YouLogo height={30} /></Link>
         <ul className="cos-nav-links">
           <li className="nav-hide-mobile"><a href="#modules">Modules</a></li>
           <li className="nav-hide-mobile"><a href="#how">How it works</a></li>
@@ -149,7 +150,7 @@ export function LandingPage({ openRoles = 0 }: { openRoles?: number }) {
               <span className="line-accent">resume.</span>
             </h1>
             <p className="cos-hero-sub">
-              Career OS reads your <strong>real skills</strong> — from GitHub, your CV, your work history — and plots realistic routes forward. Salaries in MYR. <strong>No keyword games.</strong> No gatekeeping.
+              Y.O.U reads your <strong>real skills</strong> — from GitHub, your CV, your work history — and plots the routes only you could take. Salaries in MYR. <strong>No keyword games.</strong> No gatekeeping.
             </p>
             <div className="cos-hero-actions">
               <Link href="/sign-up" className="cos-btn-primary">Plot my route <ArrowRight size={16} strokeWidth={2.2} /></Link>
@@ -251,7 +252,7 @@ export function LandingPage({ openRoles = 0 }: { openRoles?: number }) {
       <section className="cos-manifesto">
         <Reveal as="div">
           <p className="cos-manifesto-quote">
-            Hiring in Asia is broken because it filters on <em>credentials</em> and keywords. Career OS filters on <em>demonstrated capability</em> and trajectory.
+            Hiring in Asia is broken because it filters on <em>credentials</em> and keywords. Y.O.U filters on <em>demonstrated capability</em> and trajectory.
           </p>
           <p className="cos-manifesto-sub">Built for the next million graduates across Asia — the ones the system keeps overlooking.</p>
         </Reveal>
@@ -294,7 +295,7 @@ export function LandingPage({ openRoles = 0 }: { openRoles?: number }) {
 
       {/* ── FOOTER ── */}
       <footer className="cos-footer">
-        <div className="cos-footer-logo"><span className="cos-logo-dot" />Career OS</div>
+        <YouLogo height={26} interactive={false} />
         <p className="cos-footer-copy">Built solo for the Talentbank Tech Hackathon 2026 · Skills-first hiring for APAC</p>
         <ul className="cos-footer-links">
           <li><a href="https://github.com/munwai111/Talentbank-tech-hackathon-2026-challenge-Mun_Wai" target="_blank" rel="noopener noreferrer">GitHub</a></li>

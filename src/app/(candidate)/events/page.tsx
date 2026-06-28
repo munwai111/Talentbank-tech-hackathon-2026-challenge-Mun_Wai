@@ -204,7 +204,7 @@ function EventsContent() {
             <div>
               <p className="section-label mb-1">Host an event</p>
               <p className="text-sm text-zinc-400">
-                Run a meetup, portfolio clinic, or hiring session for the Career OS community.
+                Run a meetup, portfolio clinic, or hiring session for the Y.O.U community.
               </p>
             </div>
             <div>

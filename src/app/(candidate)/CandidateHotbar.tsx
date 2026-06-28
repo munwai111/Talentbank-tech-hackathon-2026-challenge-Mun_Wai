@@ -12,6 +12,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { useLanguage } from '@/lib/i18n/LanguageContext'
 import type { TranslationKey } from '@/lib/i18n/translations'
 import { OPEN_GUIDE_EVENT } from '@/components/onboarding/OnboardingGuide'
+import { YouLogo } from '@/components/brand/YouLogo'
 
 const NAV_ITEMS: { href: string; key: TranslationKey; Icon: LucideIcon }[] = [
   { href: '/dashboard',    key: 'nav.home',         Icon: Zap },
@@ -22,14 +23,6 @@ const NAV_ITEMS: { href: string; key: TranslationKey; Icon: LucideIcon }[] = [
   { href: '/events',       key: 'nav.events',       Icon: CalendarDays },
 ]
 
-function Brandmark() {
-  return (
-    <span className="relative inline-flex items-center justify-center w-7 h-7 rounded-full border border-indigo-400/40" aria-hidden>
-      <span className="absolute inset-[27%] rounded-full bg-indigo-400" />
-    </span>
-  )
-}
-
 export function CandidateHotbar() {
   const pathname = usePathname()
   const { t } = useLanguage()
@@ -39,9 +32,8 @@ export function CandidateHotbar() {
       <div className="max-w-6xl mx-auto px-4 flex items-center gap-2 h-14">
 
         {/* Brand */}
-        <Link href="/dashboard" className="flex items-center gap-2.5 pr-3 shrink-0">
-          <Brandmark />
-          <span className="font-bold text-[15px] tracking-tight text-foreground hidden md:inline">Career OS</span>
+        <Link href="/dashboard" className="flex items-center pr-3 shrink-0 text-foreground" aria-label="Y.O.U home">
+          <YouLogo variant="adaptive" height={26} />
         </Link>
 
         {/* Nav — icon over label, active gets journey accent + underline */}
