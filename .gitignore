@@ -45,3 +45,10 @@ recovery-codes.txt
 *.rtf
 debug-*.ts
 debug-*.js
+
+# Impeccable design skill — local dev tooling (reinstall via `npx impeccable install`)
+.claude/skills/impeccable/
+.claude/settings.local.json
+.agents/
+.codex/
+.impeccable/

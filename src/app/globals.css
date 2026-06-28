@@ -1452,3 +1452,22 @@
   .cos-landing .cos-headline { letter-spacing: -2px; }
   .cos-landing .cos-hero-actions { flex-direction: column; align-items: stretch; }
 }
+
+/* ─── IMPECCABLE POLISH: keyboard focus + reduced motion ─── */
+.cos-landing a:focus-visible,
+.cos-landing button:focus-visible {
+  outline: 2px solid var(--cos-chartreuse);
+  outline-offset: 3px;
+  border-radius: 5px;
+}
+/* chartreuse-on-chartreuse would vanish — violet ring on the primary CTA */
+.cos-landing .cos-nav-cta:focus-visible,
+.cos-landing .cos-btn-primary:focus-visible { outline-color: var(--cos-violet); }
+
+@media (prefers-reduced-motion: reduce) {
+  /* infinite CSS loops stutter when capped to one iteration — stop them cleanly */
+  .cos-landing .cos-ticker,
+  .cos-landing .cos-logo-dot,
+  .cos-landing .cos-live-dot,
+  .cos-landing .cos-typewriter-cursor { animation: none !important; }
+}
