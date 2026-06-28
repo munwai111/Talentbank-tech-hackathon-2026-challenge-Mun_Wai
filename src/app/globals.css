@@ -958,8 +958,72 @@
   height: 100%;
   width: 0;
   border-radius: 2px;
-  transition: width 1.4s cubic-bezier(0.23, 1, 0.32, 1);
 }
+
+/* ─── CAREER TRAJECTORY (hero data-viz) ─── */
+.cos-landing .cos-trajectory {
+  background: var(--cos-card);
+  border: 1px solid var(--cos-card-border);
+  border-radius: 16px;
+  padding: 22px 24px 18px;
+  max-width: 480px;
+  position: relative;
+  overflow: hidden;
+}
+.cos-landing .cos-trajectory::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--cos-violet), transparent);
+}
+.cos-landing .cos-traj-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.cos-landing .cos-traj-confidence {
+  font-family: var(--cos-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  color: var(--cos-green);
+  background: rgba(46,255,154,0.1);
+  border: 1px solid rgba(46,255,154,0.25);
+  padding: 3px 9px;
+  border-radius: 5px;
+}
+.cos-landing .cos-traj-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 4px 0 8px;
+}
+.cos-landing .cos-traj-axis {
+  font-family: var(--cos-mono);
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  fill: var(--cos-muted);
+}
+.cos-landing .cos-traj-node-title {
+  font-family: var(--cos-display);
+  font-size: 11px;
+  font-weight: 600;
+}
+.cos-landing .cos-traj-node-salary {
+  font-family: var(--cos-mono);
+  font-size: 9.5px;
+  fill: var(--cos-muted);
+  font-variant-numeric: tabular-nums;
+}
+.cos-landing .cos-traj-detail {
+  border-top: 1px solid rgba(255,255,255,0.05);
+  margin-top: 6px;
+  padding-top: 4px;
+}
+.cos-landing .cos-route-salary { font-variant-numeric: tabular-nums; }
+.cos-landing .cos-stat-number { font-variant-numeric: tabular-nums; }
 
 /* ─── STATS BAR ─── */
 .cos-landing .cos-stats-bar {
