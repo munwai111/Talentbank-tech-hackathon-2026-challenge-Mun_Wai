@@ -148,14 +148,16 @@ export function YouLogo({
 
           {/* ── U → bullish breakout ── */}
           <g strokeLinecap="round" strokeLinejoin="round" fill="none">
-            <path d="M210 28 L210 53 C210 59 214 62 219 62 C224 62 228 59 228 53"
+            {/* tight U bowl */}
+            <path d="M210 28 L210 52 C210 59 215 62 221 62 C227 62 232 59 232 52"
               stroke={c.letter} strokeWidth="8" />
-            {/* stock-uptrend vector: pullback → higher high → breakout arrow */}
-            <motion.path d="M228 53 L238 46 L245 50 L264 21"
+            {/* one clean accelerating curve out of the bowl — bullish growth, no tangle */}
+            <motion.path d="M232 52 Q250 34 264 20"
               stroke={c.accent} strokeWidth="7"
               filter={variant === 'void' ? `url(#glow-${uid})` : undefined}
-              animate={{ opacity: hovered ? 1 : 0.92, pathLength: 1 }} />
-            <motion.path d="M255 22 L264 21 L263 30" stroke={c.accent} strokeWidth="6"
+              animate={{ opacity: hovered ? 1 : 0.92 }} />
+            {/* arrowhead, lifts on hover */}
+            <motion.path d="M255 21 L264 20 L263 30" stroke={c.accent} strokeWidth="6"
               animate={hovered ? { x: 3, y: -3, opacity: 1 } : { x: 0, y: 0, opacity: 0.92 }}
               transition={eyeSpring} />
           </g>
