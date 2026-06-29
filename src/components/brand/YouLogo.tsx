@@ -2,14 +2,21 @@
 
 // Y.O.U — Your Odyssey Vector
 // ─────────────────────────────────────────────────────────────────────────────
-// Aesthetic: "Orbital Brutalism". The O is the still centre (YOU); a satellite
-// orbits it (your odyssey); the U launches a vector (your trajectory).
-// Hand-built geometric letterforms — resolution- and font-independent, the way
-// a real logomark is drawn. Interactive: orbit + hub pulse idle, glow + vector
-// extension on hover, ripple on press. Fully reduced-motion aware.
+// "Orbital Brutalism", now alive and mouse-reactive:
+//   • Y  — a cheering human figure: a head dot hovering above two raised arms.
+//   • O  — an EYE. Iris + pupil that track the cursor (pupil tracks hardest),
+//          enlarging and blooming a glow on hover. A satellite orbits it.
+//   • U  — fuses into a bullish breakout: a tight bowl that launches a
+//          stock-uptrend vector (pullback → higher high → arrow).
+// The whole wordmark tilts in 3D to "face" the cursor (parallax depth: tilt <
+// iris < pupil), the eye reading as the strongest tracker. Performant CSS-3D +
+// framer-motion pointer springs — no WebGL. Fully reduced-motion aware.
 
-import { useId, useState } from 'react'
-import { motion, useReducedMotion, type Transition } from 'motion/react'
+import { useId, useRef, useState } from 'react'
+import {
+  motion, useReducedMotion, useMotionValue, useSpring, useTransform,
+  type Transition,
+} from 'motion/react'
 
 type Variant = 'void' | 'chartreuse' | 'light' | 'adaptive'
 
@@ -17,10 +24,11 @@ const PALETTE: Record<Variant, { letter: string; hub: string; accent: string; or
   void:       { letter: '#F0F0F0',       hub: '#E8FF47', accent: '#E8FF47', orbit: 'rgba(240,240,240,0.16)' },
   chartreuse: { letter: '#0A0A0F',       hub: '#0A0A0F', accent: '#7B61FF', orbit: 'rgba(10,10,15,0.28)' },
   light:      { letter: '#7B61FF',       hub: '#7B61FF', accent: '#7B61FF', orbit: 'rgba(123,97,255,0.22)' },
-  // For themeable app surfaces: letters follow text colour; violet accent
-  // (the brand's "Variant 3" tone) stays legible on both light and dark.
   adaptive:   { letter: 'currentColor',  hub: '#7B61FF', accent: '#7B61FF', orbit: 'rgba(123,97,255,0.30)' },
 }
+
+const VB_W = 300, VB_H = 96
+const CX = 150, CY = 46, ORBIT_R = 33, IRIS_R = 15
 
 export function YouLogo({
   variant = 'void',
@@ -38,90 +46,128 @@ export function YouLogo({
   const reduced = useReducedMotion()
   const uid = useId().replace(/:/g, '')
   const c = PALETTE[variant]
+  const ref = useRef<HTMLSpanElement>(null)
   const [pressed, setPressed] = useState(0)
+  const [hovered, setHovered] = useState(false)
 
-  const VB_W = 300, VB_H = 96
-  const cx = 150, cy = 46
-  const orbitR = 33
+  // Pointer position, normalised to [-1, 1] within the mark, spring-smoothed.
+  const px = useMotionValue(0)
+  const py = useMotionValue(0)
+  const springCfg = { stiffness: 170, damping: 18, mass: 0.4 }
+  const sx = useSpring(px, springCfg)
+  const sy = useSpring(py, springCfg)
+
+  // Three depth layers — the eye tracks hardest, the wordmark tilt least.
+  const rotateY = useTransform(sx, [-1, 1], [-14, 14])
+  const rotateX = useTransform(sy, [-1, 1], [10, -10])
+  const irisX = useTransform(sx, [-1, 1], [-4.5, 4.5])
+  const irisY = useTransform(sy, [-1, 1], [-3.8, 3.8])
+  const pupilX = useTransform(sx, [-1, 1], [-8, 8])
+  const pupilY = useTransform(sy, [-1, 1], [-6.5, 6.5])
+
+  const track = interactive && !reduced
+  function onMove(e: React.PointerEvent) {
+    if (!track || !ref.current) return
+    const r = ref.current.getBoundingClientRect()
+    px.set(((e.clientX - r.left) / r.width - 0.5) * 2)
+    py.set(((e.clientY - r.top) / r.height - 0.5) * 2)
+  }
+  function reset() { px.set(0); py.set(0); setHovered(false) }
 
   const spin: Transition = { duration: 16, repeat: Infinity, ease: 'linear' }
-  const pulse: Transition = { duration: 3.2, repeat: Infinity, ease: 'easeInOut' }
+  const eyeSpring: Transition = { type: 'spring', stiffness: 300, damping: 20 }
+  const w = (height * VB_W) / VB_H
 
   return (
     <motion.span
+      ref={ref}
       className={className}
-      style={{ display: 'inline-flex', lineHeight: 0, cursor: interactive ? 'pointer' : 'default' }}
-      whileHover={interactive ? 'hover' : undefined}
-      initial="idle"
-      animate="idle"
+      style={{ display: 'inline-flex', lineHeight: 0, perspective: 620, cursor: interactive ? 'pointer' : 'default' }}
+      onPointerMove={onMove}
+      onPointerEnter={() => interactive && setHovered(true)}
+      onPointerLeave={reset}
+      onPointerDown={() => interactive && setPressed(p => p + 1)}
       whileTap={interactive ? { scale: 0.97 } : undefined}
-      onTapStart={() => interactive && setPressed(p => p + 1)}
       aria-label={ariaLabel}
       role="img"
     >
-      <svg width={(height * VB_W) / VB_H} height={height} viewBox={`0 0 ${VB_W} ${VB_H}`}
-        fill="none" xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
-        <defs>
-          <filter id={`glow-${uid}`} x="-60%" y="-60%" width="220%" height="220%">
-            <feGaussianBlur stdDeviation="3.2" result="b" />
-            <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
-          </filter>
-        </defs>
+      <motion.span
+        style={{ display: 'inline-flex', lineHeight: 0, rotateX: track ? rotateX : 0, rotateY: track ? rotateY : 0, transformStyle: 'preserve-3d' }}
+      >
+        <svg width={w} height={height} viewBox={`0 0 ${VB_W} ${VB_H}`} fill="none"
+          xmlns="http://www.w3.org/2000/svg" style={{ overflow: 'visible' }}>
+          <defs>
+            <filter id={`glow-${uid}`} x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur stdDeviation="3.2" result="b" />
+              <feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+            <filter id={`bloom-${uid}`} x="-120%" y="-120%" width="340%" height="340%">
+              <feGaussianBlur stdDeviation="6" />
+            </filter>
+          </defs>
 
-        {/* static faint orbit ring */}
-        <circle cx={cx} cy={cy} r={orbitR} stroke={c.orbit} strokeWidth="1.25" />
+          {/* ── O = orbit + eye ── */}
+          <circle cx={CX} cy={CY} r={ORBIT_R} stroke={c.orbit} strokeWidth="1.25" />
+          <motion.g
+            style={{ originX: `${CX}px`, originY: `${CY}px` }}
+            animate={reduced ? undefined : { rotate: 360 }}
+            transition={reduced ? undefined : spin}
+          >
+            <circle cx={CX} cy={CY - ORBIT_R} r="3.6" fill={c.accent} filter={variant === 'void' ? `url(#glow-${uid})` : undefined} />
+          </motion.g>
 
-        {/* orbiting satellite (revolves around the hub) */}
-        <motion.g
-          style={{ originX: `${cx}px`, originY: `${cy}px` }}
-          animate={reduced ? undefined : { rotate: 360 }}
-          transition={reduced ? undefined : spin}
-          variants={{ hover: { transition: { duration: 7, repeat: Infinity, ease: 'linear' } } }}
-        >
-          <circle cx={cx} cy={cy - orbitR} r="3.6" fill={c.accent} filter={`url(#glow-${uid})`} />
-        </motion.g>
+          {/* hover glow bloom behind the iris — a soft filled halo */}
+          <motion.circle cx={CX} cy={CY} r={IRIS_R + 4} fill={c.hub}
+            filter={`url(#bloom-${uid})`} initial={{ opacity: 0 }}
+            animate={{ opacity: hovered ? 0.5 : 0 }} transition={{ duration: 0.3 }}
+            style={{ originX: `${CX}px`, originY: `${CY}px` }} />
 
-        {/* O hub — the still centre; soft pulse */}
-        <motion.circle cx={cx} cy={cy} r="15" stroke={c.hub} strokeWidth="6"
-          filter={variant === 'void' ? `url(#glow-${uid})` : undefined}
-          animate={reduced ? undefined : { scale: [1, 1.06, 1], opacity: [0.92, 1, 0.92] }}
-          transition={reduced ? undefined : pulse}
-          style={{ originX: `${cx}px`, originY: `${cy}px` }}
-          variants={{ hover: { scale: 1.12, opacity: 1 } }} />
+          {/* iris (tracks softly, enlarges on hover) */}
+          <motion.circle cx={CX} cy={CY} r={IRIS_R} stroke={c.hub} strokeWidth="6" fill="none"
+            style={{ x: track ? irisX : 0, y: track ? irisY : 0, originX: `${CX}px`, originY: `${CY}px` }}
+            animate={{ scale: hovered ? 1.16 : 1 }} transition={eyeSpring} />
 
-        {/* Y */}
-        <g stroke={c.letter} strokeWidth="8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M58 28 L70 46" />
-          <path d="M82 28 L70 46" />
-          <path d="M70 46 L70 66" />
-        </g>
+          {/* pupil (tracks hardest — the gaze) */}
+          <motion.circle cx={CX} cy={CY} r="4.4" fill={c.hub}
+            style={{ x: track ? pupilX : 0, y: track ? pupilY : 0 }}
+            animate={{ scale: hovered ? 0.82 : 1 }} transition={eyeSpring} />
 
-        {/* mid dots */}
-        <circle cx="103" cy={cy} r="3" fill={c.accent} />
-        <circle cx="197" cy={cy} r="3" fill={c.accent} />
+          {/* ── Y = cheering figure (head dot + raised arms + body) ── */}
+          <g stroke={c.letter} strokeWidth="8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M58 28 L70 46" />
+            <path d="M82 28 L70 46" />
+            <path d="M70 46 L70 66" />
+          </g>
+          <motion.circle cx="70" cy="17" r="4.4" fill={c.accent}
+            animate={reduced ? undefined : { y: hovered ? [-3, -5, -3] : [-1.5, 1.5, -1.5] }}
+            transition={reduced ? undefined : { duration: 2.4, repeat: Infinity, ease: 'easeInOut' }} />
 
-        {/* U + vector (the hybrid V / trajectory) */}
-        <g strokeLinecap="round" strokeLinejoin="round">
-          <path d="M214 28 L214 56 C214 64 220 68 228 68 C236 68 242 64 242 56"
-            stroke={c.letter} strokeWidth="8" fill="none" />
-          {/* the vector launches up-right out of the U */}
-          <motion.path d="M242 56 L262 24"
-            stroke={c.accent} strokeWidth="8" fill="none"
-            filter={variant === 'void' ? `url(#glow-${uid})` : undefined}
-            variants={{ idle: { pathLength: 1, opacity: 0.92 }, hover: { pathLength: 1, opacity: 1 } }} />
-          <motion.path d="M254 25 L262 24 L261 33"
-            stroke={c.accent} strokeWidth="6" fill="none"
-            variants={{ idle: { opacity: 0.92, x: 0, y: 0 }, hover: { opacity: 1, x: 3, y: -3 } }}
-            transition={{ type: 'spring', stiffness: 320, damping: 16 }} />
-        </g>
+          {/* mid dots */}
+          <circle cx="106" cy={CY} r="3" fill={c.accent} />
+          <circle cx="192" cy={CY} r="3" fill={c.accent} />
 
-        {/* press ripple */}
-        {!reduced && pressed > 0 && (
-          <motion.circle key={pressed} cx={cx} cy={cy} stroke={c.accent} strokeWidth="1.5" fill="none"
-            initial={{ r: 16, opacity: 0.7 }} animate={{ r: 64, opacity: 0 }}
-            transition={{ duration: 0.7, ease: 'easeOut' }} />
-        )}
-      </svg>
+          {/* ── U → bullish breakout ── */}
+          <g strokeLinecap="round" strokeLinejoin="round" fill="none">
+            <path d="M210 28 L210 53 C210 59 214 62 219 62 C224 62 228 59 228 53"
+              stroke={c.letter} strokeWidth="8" />
+            {/* stock-uptrend vector: pullback → higher high → breakout arrow */}
+            <motion.path d="M228 53 L238 46 L245 50 L264 21"
+              stroke={c.accent} strokeWidth="7"
+              filter={variant === 'void' ? `url(#glow-${uid})` : undefined}
+              animate={{ opacity: hovered ? 1 : 0.92, pathLength: 1 }} />
+            <motion.path d="M255 22 L264 21 L263 30" stroke={c.accent} strokeWidth="6"
+              animate={hovered ? { x: 3, y: -3, opacity: 1 } : { x: 0, y: 0, opacity: 0.92 }}
+              transition={eyeSpring} />
+          </g>
+
+          {/* press ripple */}
+          {!reduced && pressed > 0 && (
+            <motion.circle key={pressed} cx={CX} cy={CY} stroke={c.accent} strokeWidth="1.5" fill="none"
+              initial={{ r: 16, opacity: 0.7 }} animate={{ r: 70, opacity: 0 }}
+              transition={{ duration: 0.7, ease: 'easeOut' }} />
+          )}
+        </svg>
+      </motion.span>
     </motion.span>
   )
 }
