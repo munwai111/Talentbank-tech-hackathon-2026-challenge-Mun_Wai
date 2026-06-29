@@ -50,7 +50,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      // Pin auth routes in code so the live deployment always uses the in-app
+      // /sign-in and /sign-up pages instead of falling back to Clerk's hosted
+      // Account Portal (*.clerk.accounts.dev) when the NEXT_PUBLIC_CLERK_* env
+      // vars aren't set on the host. Keeps auth working on any public server.
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      signInFallbackRedirectUrl="/dashboard"
+      signUpFallbackRedirectUrl="/onboarding"
+    >
       <html lang="en" className={`${jakarta.variable} ${syne.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} h-full antialiased`} suppressHydrationWarning>
         <body className="min-h-full flex flex-col bg-background text-foreground">
           <ThemeProvider>

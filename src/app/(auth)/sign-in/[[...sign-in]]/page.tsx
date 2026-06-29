@@ -7,6 +7,7 @@ import { SignIn } from '@clerk/nextjs'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { YouLogo } from '@/components/brand/YouLogo'
 
 // ── Clerk appearance variables ────────────────────────────────────────────────
 
@@ -91,10 +92,9 @@ export default function SignInPage() {
       <div className="relative flex flex-col items-center w-full max-w-[26rem] px-4">
 
         {/* Header */}
-        <div className="text-center mb-6 w-full">
-          <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl mb-4
-            bg-gradient-to-br from-violet-500 to-indigo-600 shadow-lg shadow-violet-500/30">
-            <span className="text-sm font-bold text-white">C</span>
+        <div className="text-center mb-6 w-full flex flex-col items-center">
+          <div className="mb-4" style={{ color: isDark ? '#F0F0F0' : '#1a1a2e' }}>
+            <YouLogo variant="adaptive" height={30} interactive={false} />
           </div>
           <h1 className={`text-2xl font-bold tracking-tight ${isDark ? 'text-white/90' : 'text-slate-800'}`}>
             Welcome back
@@ -107,6 +107,9 @@ export default function SignInPage() {
         {/* Clerk widget */}
         <div className="w-full">
           <SignIn
+            routing="path"
+            path="/sign-in"
+            signUpUrl="/sign-up"
             forceRedirectUrl="/dashboard"
             appearance={{
               variables: isDark ? DARK_VARS : LIGHT_VARS,
