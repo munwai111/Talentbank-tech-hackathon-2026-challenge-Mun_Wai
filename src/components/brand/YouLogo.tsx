@@ -58,8 +58,10 @@ export function YouLogo({
   const sy = useSpring(py, springCfg)
 
   // Three depth layers — the eye tracks hardest, the wordmark tilt least.
-  const rotateY = useTransform(sx, [-1, 1], [-14, 14])
-  const rotateX = useTransform(sy, [-1, 1], [10, -10])
+  // Tilt TOWARD the cursor: the edge nearest the pointer lifts toward the
+  // viewer, so the mark "leans into" the mouse and matches the eye's gaze.
+  const rotateY = useTransform(sx, [-1, 1], [14, -14])
+  const rotateX = useTransform(sy, [-1, 1], [-10, 10])
   const irisX = useTransform(sx, [-1, 1], [-4.5, 4.5])
   const irisY = useTransform(sy, [-1, 1], [-3.8, 3.8])
   const pupilX = useTransform(sx, [-1, 1], [-8, 8])
